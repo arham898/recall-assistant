@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# uv
+.venv/
+
+# Secrets and local overrides
+.env
+CLAUDE.local.md
+
+# Data (raw downloads, git-ignored)
+data/
+
+# Model caches
+.cache/
+models/
+
+# Generated metrics
+results/
+
+# IDE and tools
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.claude/
+.pytest_cache/
