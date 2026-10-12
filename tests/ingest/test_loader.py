@@ -9,30 +9,11 @@ from pathlib import Path
 import psycopg
 import pytest
 
-from recall_assistant.config import Settings
 from recall_assistant.ingest.filters import filter_recalls
 from recall_assistant.ingest.loader import upsert_recalls
-from recall_assistant.ingest.migrator import run_migrations
 from recall_assistant.ingest.parser import parse_recalls
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture
-def db_conn():
-    """Connect to the test database, run migrations, and clean up after."""
-    settings = Settings()
-    conn = psycopg.connect(settings.database_url)
-    run_migrations(conn)
-
-    yield conn
-
-    # Clean up test data
-    with conn.cursor() as cur:
-        cur.execute("DELETE FROM recall_vehicles")
-        cur.execute("DELETE FROM recalls")
-    conn.commit()
-    conn.close()
 
 
 def test_load_fixture_counts(

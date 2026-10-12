@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     recall_type_filter: str = "V"
     min_model_year: int = 2018
 
+    # Embeddings
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_batch_size: int = 256
+    chunk_max_tokens: int = 400
+    chunk_overlap_tokens: int = 50
+
     @property
     def database_url(self) -> str:
         return (
