@@ -5,8 +5,8 @@ Metrics produced by evaluation scripts in this repo. Every number here must be r
 ## Token-length measurements (Module 1.2)
 
 Measured with `BAAI/bge-small-en-v1.5` BertTokenizer (WordPiece, max 512 tokens).
-Dataset: 7,633 vehicle-type recalls (post-2010, model year ≥ 2018).
-Chunkers apply the current splitting logic (400-token windows, 50-token overlap).
+Dataset: 7,514 vehicle-type recalls (post-2010, model year ≥ 2018 or report date ≥ 2018-01-01).
+HTML anchor tags stripped. Chunkers apply 400-token windows, 50-token overlap, word-boundary snapping.
 
 ```
 Command: uv run python scripts/measure_tokens.py
@@ -17,43 +17,66 @@ Date:    2026-10-12
 
 | Stat | Value |
 |------|-------|
-| Total chunks | 7,758 |
-| Median tokens | 186 |
-| Mean tokens | 196 |
-| p90 / p95 / p99 | 258 / 294 / 400 |
+| Total chunks | 7,537 |
+| Median tokens | 185 |
+| Mean tokens | 195 |
+| p90 / p95 / p99 | 253 / 282 / 350 |
 | Max tokens | 400 |
 | > 512 tokens | 0 (0.00%) |
-| > 256 tokens | 807 (10.4%) |
+| > 256 tokens | 695 (9.2%) |
 
-125 extra chunks from window splitting vs. 7,633 campaigns (1.6% of campaigns split).
+23 extra chunks from window splitting vs. 7,514 campaigns (0.3% of campaigns split).
 
 ### Field chunker (one chunk per non-empty text field, with splitting)
 
 | Stat | Value |
 |------|-------|
-| Total chunks | 22,902 |
+| Total chunks | 22,545 |
 | Median tokens | 72 |
-| Mean tokens | 75 |
-| p90 / p95 / p99 | 114 / 134 / 192 |
+| Mean tokens | 74 |
+| p90 / p95 / p99 | 112 / 129 / 174 |
 | Max tokens | 400 |
 | > 512 tokens | 0 (0.00%) |
 | > 256 tokens | 28 (0.12%) |
 
-3 extra chunks from window splitting vs. 22,899 base fields.
+3 extra chunks from window splitting vs. 22,542 base fields.
 
 #### Per field
 
 | Field | Total chunks | Max tokens | > 256 |
 |-------|-------------|------------|-------|
-| defect_summary | 7,636 | 400 | 24 (0.31%) |
-| consequence_summary | 7,633 | 137 | 0 (0.00%) |
-| corrective_action | 7,633 | 301 | 4 (0.05%) |
+| defect_summary | 7,517 | 400 | 24 (0.32%) |
+| consequence_summary | 7,514 | 137 | 0 (0.00%) |
+| corrective_action | 7,514 | 301 | 4 (0.05%) |
 
-### Design decisions from these measurements
+### Integrity checks
 
-- **Record chunker reorders fields**: vehicles and component go first so they survive truncation. Long records are split into overlapping windows of ~400 tokens.
-- **Window splitting keeps all chunks under 400 tokens**: before splitting, 111 record chunks (1.45%) exceeded 512 tokens (max 2,097). After splitting, the max is 400 and zero exceed 512.
-- **Field chunker rarely needs splitting**: only 3 extra windows were created out of 22,899 base fields. Consequence summaries never exceed 137 tokens.
+Printed by `measure_tokens.py` on every run, covering all recalls and both chunkers:
+
+| Check | Result |
+|-------|--------|
+| Chunks exceeding 400 tokens | 0 |
+| Strictly-increasing-starts failures | 0 |
+| Full-text coverage failures | 0 |
+
+### Design decisions
+
+- **Record chunker reorders fields**: vehicles and component go first so they survive truncation. Long records split into overlapping windows of ~400 tokens.
+- **Window splitting keeps all chunks under 400 tokens**: before splitting, 111 record chunks (1.45%) exceeded 512 tokens (max 2,097). After splitting + word-boundary snapping, the max is 400.
+- **Field chunker rarely needs splitting**: only 3 extra windows created out of 22,542 base fields. Consequence summaries never exceed 137 tokens.
+
+## Data loading (Module 1.2)
+
+```
+Command: uv run python scripts/load_recalls.py
+Date:    2026-10-12
+```
+
+| Metric | Value |
+|--------|-------|
+| Campaigns loaded | 7,514 |
+| Vehicle entries | 36,353 |
+| Campaigns removed | 0 |
 
 ## EXPLAIN plans for dense search (Module 1.2)
 

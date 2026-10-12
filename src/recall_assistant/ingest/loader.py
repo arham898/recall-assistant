@@ -9,13 +9,47 @@ from recall_assistant.ingest.models import Recall
 logger = logging.getLogger(__name__)
 
 
-def upsert_recalls(conn: psycopg.Connection, recalls: list[Recall]) -> int:
-    """Upsert recalls and their vehicles into the database.
+class MassDeleteBlocked(Exception):
+    """Raised when a delete would remove more than the safety threshold."""
+
+
+def check_mass_delete(
+    to_remove: int,
+    total_existing: int,
+    threshold: float = 0.10,
+) -> bool:
+    """Return True if the delete should be blocked.
+
+    Pure function so it can be tested without a database.
+    """
+    if to_remove <= 0 or total_existing <= 0:
+        return False
+    return to_remove / total_existing > threshold
+
+
+def upsert_recalls(
+    conn: psycopg.Connection,
+    recalls: list[Recall],
+    *,
+    allow_mass_delete: bool = False,
+    mass_delete_threshold: float = 0.10,
+) -> tuple[int, int]:
+    """Upsert recalls and their vehicles, then delete stale campaigns.
 
     Uses ON CONFLICT DO UPDATE so re-running is safe and picks up
-    any changes in the source data.  Returns the number of campaigns upserted.
+    any changes in the source data.
+
+    Campaigns in the database that are not in the new set are deleted.
+    ON DELETE CASCADE on recall_vehicles and chunks handles cleanup.
+
+    Raises MassDeleteBlocked if the delete would remove more than
+    mass_delete_threshold (default 10%) of existing recalls, unless
+    allow_mass_delete is True.
+
+    Returns (upserted_count, removed_count).
     """
     upserted = 0
+    new_campaign_ids = [r.campaign_id for r in recalls]
 
     with conn.cursor() as cur:
         for recall in recalls:
@@ -94,6 +128,35 @@ def upsert_recalls(conn: psycopg.Connection, recalls: list[Recall]) -> int:
                 )
             upserted += 1
 
+        # Delete campaigns no longer in the filtered set.
+        # ON DELETE CASCADE handles recall_vehicles and chunks.
+        cur.execute("SELECT count(*) FROM recalls")
+        total_existing = cur.fetchone()[0]
+
+        cur.execute(
+            "SELECT count(*) FROM recalls WHERE campaign_id <> ALL(%s)",
+            (new_campaign_ids,),
+        )
+        to_remove = cur.fetchone()[0]
+
+        if to_remove > 0:
+            if not allow_mass_delete and check_mass_delete(
+                to_remove, total_existing, mass_delete_threshold
+            ):
+                conn.rollback()
+                raise MassDeleteBlocked(
+                    f"Would delete {to_remove} of {total_existing} recalls "
+                    f"({to_remove / total_existing:.1%}), exceeding the "
+                    f"{mass_delete_threshold:.0%} safety threshold. "
+                    f"Pass --allow-mass-delete to proceed."
+                )
+
+            cur.execute(
+                "DELETE FROM recalls WHERE campaign_id <> ALL(%s)",
+                (new_campaign_ids,),
+            )
+            logger.info("Removed %d stale campaigns", to_remove)
+
     conn.commit()
-    logger.info("Upserted %d campaigns", upserted)
-    return upserted
+    logger.info("Upserted %d campaigns, removed %d", upserted, to_remove)
+    return upserted, to_remove

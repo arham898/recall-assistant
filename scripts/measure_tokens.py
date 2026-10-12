@@ -17,7 +17,12 @@ from pathlib import Path
 from transformers import AutoTokenizer
 
 from recall_assistant.config import Settings
-from recall_assistant.ingest.chunkers import chunk_fields, chunk_record
+from recall_assistant.ingest.chunkers import (
+    _compact_vehicles,
+    _full_vehicles,
+    chunk_fields,
+    chunk_record,
+)
 from recall_assistant.ingest.filters import filter_recalls
 from recall_assistant.ingest.parser import parse_recalls
 
@@ -113,6 +118,85 @@ def main() -> None:
         subset = [c for c in field_chunks if c.field_name.startswith(fname)]
         if subset:
             measure(subset, tokenizer, f"field — {fname}")
+
+    # Integrity checks: full-text coverage and strictly-increasing starts
+    print(f"\n{'=' * 60}")
+    print("Integrity checks (all recalls, both chunkers)")
+    print(f"{'=' * 60}")
+
+    over_limit = 0
+    monotonicity_failures = 0
+    coverage_failures = 0
+
+    for r in recalls:
+        for chunker_fn, label in [(chunk_record, "record"), (chunk_fields, "field")]:
+            chunks = chunker_fn(
+                r,
+                tokenizer,
+                max_tokens=settings.chunk_max_tokens,
+                overlap=settings.chunk_overlap_tokens,
+            )
+
+            # Token limit
+            for c in chunks:
+                if len(tokenizer.encode(c.body)) > settings.chunk_max_tokens:
+                    over_limit += 1
+
+            if len(chunks) <= 1:
+                continue
+
+            # Determine prefix
+            if label == "record":
+                prefix = f"Vehicles: {_full_vehicles(r)}\nComponent: {r.component}\n"
+            else:
+                prefix = f"{_compact_vehicles(r)} | {r.component} — "
+
+            bodies = [c.body[len(prefix) :] for c in chunks]
+
+            # Build the original text that was split
+            if label == "record":
+                orig = (
+                    f"Defect: {r.defect_summary}\n"
+                    f"Consequence: {r.consequence_summary}\n"
+                    f"Remedy: {r.corrective_action}"
+                )
+            else:
+                fname = chunks[0].field_name.split(":")[0]
+                field_map = {
+                    "defect_summary": r.defect_summary,
+                    "consequence_summary": r.consequence_summary,
+                    "corrective_action": r.corrective_action,
+                }
+                orig = field_map.get(fname, "")
+
+            # Strictly increasing starts
+            starts = []
+            for body in bodies:
+                snippet = body[:40] if len(body) >= 40 else body
+                pos = orig.find(snippet)
+                starts.append(pos)
+
+            for i in range(1, len(starts)):
+                if starts[i] >= 0 and starts[i - 1] >= 0 and starts[i] <= starts[i - 1]:
+                    monotonicity_failures += 1
+                    break
+
+            # Full text coverage
+            covered = set()
+            for body in bodies:
+                snippet = body[:40] if len(body) >= 40 else body
+                idx = orig.find(snippet)
+                if idx >= 0:
+                    covered.update(range(idx, idx + len(body)))
+
+            for i, ch in enumerate(orig):
+                if not ch.isspace() and i not in covered:
+                    coverage_failures += 1
+                    break
+
+    print(f"  Chunks exceeding {settings.chunk_max_tokens} tokens: {over_limit}")
+    print(f"  Strictly-increasing-starts failures:  {monotonicity_failures}")
+    print(f"  Full-text coverage failures:          {coverage_failures}")
 
 
 if __name__ == "__main__":

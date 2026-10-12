@@ -400,3 +400,98 @@ class TestWithRealTokenizer:
                 assert "ECM" in window  # uppercase acronym preserved
             if "CAUSE" in text[: len(body) + 100]:
                 assert "CAUSE" in window  # uppercase word preserved
+
+    def test_no_mid_word_splits(self, real_tokenizer):
+        """Windows must not start or end mid-word (e.g. WEBASTO'S)."""
+        from recall_assistant.ingest.chunkers import _split_windows
+
+        prefix = "Vehicles: WEBASTO (Unknown)\nComponent: SUNROOF\n"
+        text = (
+            "WEBASTO'S WEBSITE AT HTTP://WWW.SUNROOFCHECK.COM FOR MORE "
+            "INFORMATION ABOUT THE RECALL AND REPLACEMENT PROCEDURES. "
+        ) * 15
+
+        windows = _split_windows(
+            prefix, text, real_tokenizer, max_tokens=100, overlap=20
+        )
+
+        assert len(windows) > 1
+        for i, window in enumerate(windows):
+            body = window[len(prefix) :]
+            if i > 0 and body:
+                # Non-first window: must not start mid-word
+                # (the char before our slice in the original text should be
+                # whitespace, or we should start at position 0)
+                start_in_text = text.index(body[:20])
+                if start_in_text > 0:
+                    assert text[start_in_text - 1].isspace(), (
+                        f"Window {i} starts mid-word: "
+                        f"...{text[start_in_text - 5 : start_in_text + 15]}..."
+                    )
+
+    def test_long_url_does_not_loop(self, real_tokenizer):
+        """A single word longer than the window capacity is cut at the
+        token boundary rather than causing an infinite loop."""
+        from recall_assistant.ingest.chunkers import _split_windows
+
+        prefix = "P — "
+        long_url = "HTTP://WWW." + "X" * 300 + ".COM"
+        text = f"Visit {long_url} for details."
+
+        windows = _split_windows(
+            prefix, text, real_tokenizer, max_tokens=100, overlap=20
+        )
+
+        assert len(windows) >= 1
+        for window in windows:
+            n_tokens = len(real_tokenizer.encode(window))
+            assert n_tokens <= 100, f"Window has {n_tokens} tokens, exceeds 100"
+
+    def test_window_starts_strictly_increase(self, real_tokenizer):
+        """The start offset of each window must strictly increase."""
+        from recall_assistant.ingest.chunkers import _split_windows
+
+        prefix = "HONDA CIVIC | BRAKES — "
+        text = " ".join(f"word{i}" for i in range(500))
+
+        windows = _split_windows(
+            prefix, text, real_tokenizer, max_tokens=100, overlap=20
+        )
+
+        starts = []
+        for window in windows:
+            body = window[len(prefix) :]
+            start = text.find(body[:30])
+            starts.append(start)
+
+        for i in range(1, len(starts)):
+            assert starts[i] > starts[i - 1], (
+                f"Window {i} start ({starts[i]}) does not advance past "
+                f"window {i - 1} start ({starts[i - 1]})"
+            )
+
+    def test_full_text_coverage(self, real_tokenizer):
+        """Every character of the original text must fall inside at least
+        one window."""
+        from recall_assistant.ingest.chunkers import _split_windows
+
+        prefix = "FORD F-150 | ENGINE — "
+        text = " ".join(f"word{i}" for i in range(500))
+
+        windows = _split_windows(
+            prefix, text, real_tokenizer, max_tokens=100, overlap=20
+        )
+
+        covered = set()
+        for window in windows:
+            body = window[len(prefix) :]
+            start = text.find(body)
+            if start >= 0:
+                covered.update(range(start, start + len(body)))
+
+        # Every non-whitespace character should be covered
+        for i, ch in enumerate(text):
+            if not ch.isspace():
+                assert i in covered, (
+                    f"Character at position {i} ({ch!r}) not covered by any window"
+                )

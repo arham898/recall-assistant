@@ -106,6 +106,45 @@ def _compress_year_list(years: list[int]) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _snap_end_to_word_boundary(text: str, char_end: int) -> int:
+    """Snap char_end forward to include the rest of the current word.
+
+    If char_end is already at whitespace or end-of-string, return as-is.
+    """
+    if char_end >= len(text):
+        return len(text)
+    # Already at a word boundary (whitespace at char_end)
+    if text[char_end].isspace():
+        return char_end
+    # Scan forward to find the next whitespace or end of string
+    pos = char_end
+    while pos < len(text) and not text[pos].isspace():
+        pos += 1
+    return pos
+
+
+def _snap_start_past_partial_word(text: str, char_start: int) -> int:
+    """If char_start is mid-word, skip forward to the next word start.
+
+    Only skips if the character before char_start is not whitespace
+    (meaning we landed inside a word).
+    """
+    if char_start == 0:
+        return 0
+    if char_start >= len(text):
+        return char_start
+    # Character before is whitespace → we're at a word start already
+    if text[char_start - 1].isspace():
+        return char_start
+    # Mid-word: skip to next whitespace, then past it
+    pos = char_start
+    while pos < len(text) and not text[pos].isspace():
+        pos += 1
+    while pos < len(text) and text[pos].isspace():
+        pos += 1
+    return pos
+
+
 def _split_windows(
     prefix: str,
     text: str,
@@ -117,7 +156,8 @@ def _split_windows(
     prepended with prefix.
 
     Uses the tokenizer's offset mapping to cut at token boundaries in the
-    original string, preserving case and spacing.
+    original string, then snaps to word boundaries so no window starts or
+    ends mid-word.  Preserves case and spacing.
     """
     full = f"{prefix}{text}"
     n_full = len(tokenizer.encode(full))
@@ -150,9 +190,31 @@ def _split_windows(
     while start_tok < len(token_ids):
         end_tok = min(start_tok + text_capacity, len(token_ids))
 
-        # Character range in the original text
+        # Character range from token offsets
         char_start = offsets[start_tok][0]
         char_end = offsets[end_tok - 1][1]
+
+        # Snap end to word boundary — try extending first
+        snapped_end = _snap_end_to_word_boundary(text, char_end)
+        candidate = f"{prefix}{text[char_start:snapped_end]}"
+        if len(tokenizer.encode(candidate)) > max_tokens:
+            # Extension exceeded budget — snap backward instead
+            snapped_end = char_end
+            while snapped_end > char_start and not text[snapped_end - 1].isspace():
+                snapped_end -= 1
+            # If we couldn't snap backward (single long word), keep the
+            # token-boundary cut to avoid infinite loops
+            if snapped_end <= char_start:
+                snapped_end = char_end
+        char_end = snapped_end
+
+        # Snap start past partial word (only for non-first windows)
+        if windows:
+            char_start = _snap_start_past_partial_word(text, char_start)
+
+        if char_start >= len(text):
+            break
+
         window_text = text[char_start:char_end]
         windows.append(f"{prefix}{window_text}")
 

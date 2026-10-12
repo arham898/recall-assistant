@@ -1,5 +1,6 @@
 """Parse, filter, migrate, and load NHTSA recalls into Postgres."""
 
+import argparse
 import logging
 import sys
 from pathlib import Path
@@ -22,6 +23,14 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Load NHTSA recalls into Postgres")
+    parser.add_argument(
+        "--allow-mass-delete",
+        action="store_true",
+        help="Allow deleting more than 10%% of existing recalls",
+    )
+    args = parser.parse_args()
+
     settings = Settings()
 
     # Find the flat file
@@ -57,8 +66,14 @@ def main() -> None:
         if applied:
             logger.info("Applied migrations: %s", applied)
 
-        count = upsert_recalls(conn, filtered)
-        logger.info("Done — %d campaigns loaded into database", count)
+        upserted, removed = upsert_recalls(
+            conn, filtered, allow_mass_delete=args.allow_mass_delete
+        )
+        logger.info(
+            "Done — %d campaigns loaded, %d removed from database",
+            upserted,
+            removed,
+        )
 
 
 if __name__ == "__main__":

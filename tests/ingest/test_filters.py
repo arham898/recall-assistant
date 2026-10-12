@@ -1,9 +1,42 @@
 """Unit tests for recall filtering."""
 
+from datetime import date
 from pathlib import Path
 
 from recall_assistant.ingest.filters import filter_recalls
+from recall_assistant.ingest.models import Recall, RecallVehicle
 from recall_assistant.ingest.parser import parse_recalls
+
+
+def _make_recall(
+    campaign_id: str = "TEST001",
+    recall_type: str = "V",
+    report_date: date | None = None,
+    vehicles: list[RecallVehicle] | None = None,
+) -> Recall:
+    if vehicles is None:
+        vehicles = [RecallVehicle(make="TEST", model="CAR", year=2021)]
+    return Recall(
+        campaign_id=campaign_id,
+        manufacturer="TEST",
+        manufacturer_campaign_number="",
+        component="ENGINE",
+        recall_type=recall_type,
+        potential_units_affected=None,
+        defect_summary="test",
+        consequence_summary="test",
+        corrective_action="test",
+        notes="",
+        report_received_date=report_date,
+        record_creation_date=None,
+        manufacturing_begin_date=None,
+        manufacturing_end_date=None,
+        owner_notification_date=None,
+        influenced_by="",
+        do_not_drive=False,
+        park_outside=False,
+        vehicles=vehicles,
+    )
 
 
 def test_filter_keeps_only_vehicle_type(sample_rcl_path: Path) -> None:
@@ -44,12 +77,60 @@ def test_filter_drops_campaign_with_no_qualifying_vehicles(
     assert "24V001" not in campaign_ids
 
 
-def test_filter_keeps_unknown_year(sample_rcl_path: Path) -> None:
-    """Vehicles with year=None (9999 in source) are kept regardless of min year."""
+def test_filter_keeps_unknown_year_with_recent_report(sample_rcl_path: Path) -> None:
+    """Unknown-year vehicle kept when report date >= min_model_year cutoff.
+
+    24E001 has year=None and report_received_date=2024-03-01.
+    With min_model_year=2024, report date (2024-03-01) >= 2024-01-01 → kept.
+    """
     recalls, _ = parse_recalls(sample_rcl_path)
-    # Change filter to E type so we can test the equipment recall with year=None
-    filtered = filter_recalls(recalls, recall_type="E", min_model_year=2025)
+    filtered = filter_recalls(recalls, recall_type="E", min_model_year=2024)
 
     assert len(filtered) == 1
     assert filtered[0].campaign_id == "24E001"
     assert filtered[0].vehicles[0].year is None
+
+
+# ---------------------------------------------------------------------------
+# Report-date fallback policy tests
+# ---------------------------------------------------------------------------
+
+
+def test_known_year_2021_reported_2024_kept():
+    """Known model year >= min_model_year → keep regardless of report date."""
+    r = _make_recall(
+        vehicles=[RecallVehicle(make="T", model="C", year=2021)],
+        report_date=date(2024, 6, 1),
+    )
+    filtered = filter_recalls([r], recall_type="V", min_model_year=2018)
+    assert len(filtered) == 1
+
+
+def test_unknown_year_reported_2010_dropped():
+    """Unknown year + old report date → drop."""
+    r = _make_recall(
+        vehicles=[RecallVehicle(make="W", model="S", year=None)],
+        report_date=date(2010, 12, 10),
+    )
+    filtered = filter_recalls([r], recall_type="V", min_model_year=2018)
+    assert len(filtered) == 0
+
+
+def test_unknown_year_reported_2027_kept():
+    """Unknown year + recent report date → keep."""
+    r = _make_recall(
+        vehicles=[RecallVehicle(make="W", model="S", year=None)],
+        report_date=date(2027, 3, 15),
+    )
+    filtered = filter_recalls([r], recall_type="V", min_model_year=2018)
+    assert len(filtered) == 1
+
+
+def test_known_year_2015_only_reported_2015_dropped():
+    """All known years below min + old report date → drop."""
+    r = _make_recall(
+        vehicles=[RecallVehicle(make="F", model="T", year=2015)],
+        report_date=date(2015, 6, 1),
+    )
+    filtered = filter_recalls([r], recall_type="V", min_model_year=2018)
+    assert len(filtered) == 0
