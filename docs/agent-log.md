@@ -12,3 +12,11 @@ Record of AI agent actions during development — what the agent did, how I caug
 
 |Bumped setup-uv to a tag that doesn’t exist (@v10), assuming every action publishes major-version tags. I checked the repo’s tags before pushing.|
 
+|Agent said the FORD/RANGER/2021 filter matched "~1 campaign" to explain why Postgres skipped the HNSW index, however, it's own results shpowed 6 Ranger 2021 recalls. I asked it to explain/analyse.|
+
+|Asked for dense and hybrid plans for each chunker. It returned only dense and keyword. Found it by checking the output against the request. Challenged.|
+
+|Claimed HNSW gives "~99% recall at our scale". Completely false figure as this is what layer 2 does which is not impemented yet. Removed the figure|
+
+|Plan review caught three bugs before any code development. 1.3 plan used SET LOCAL with a parameter, which psycopg 3 can't send. Also proposed an RRF test built from random fake vectors that couldn't produce the tie it claimed to test and finally had a punctuation test that returned before reaching Postgres. Reviewed plan before approving it with bug fixes in place|
+

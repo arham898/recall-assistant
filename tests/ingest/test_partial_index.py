@@ -20,7 +20,13 @@ pytestmark = pytest.mark.integration
 @pytest.fixture(autouse=True)
 def _seed_chunks(db_conn: psycopg.Connection):
     """Insert enough dummy chunks with embeddings for the planner to
-    have something to work with."""
+    have something to work with.
+
+    ANALYZE afterwards so the planner has accurate statistics for the
+    freshly-inserted rows — DELETE-based cleanup between tests does not
+    reset pg_class.reltuples, and stale stats can make the planner
+    prefer a btree+sort plan over HNSW.
+    """
     with db_conn.cursor() as cur:
         cur.execute(
             """
@@ -45,6 +51,8 @@ def _seed_chunks(db_conn: psycopg.Connection):
                 },
             )
     db_conn.commit()
+    with db_conn.cursor() as cur:
+        cur.execute("ANALYZE chunks")
 
 
 def _get_forced_explain_plan(conn: psycopg.Connection, chunker: str) -> str:
@@ -56,6 +64,7 @@ def _get_forced_explain_plan(conn: psycopg.Connection, chunker: str) -> str:
         cur.execute("BEGIN")
         cur.execute("SET LOCAL enable_seqscan = off")
         cur.execute("SET LOCAL enable_bitmapscan = off")
+        cur.execute("SET LOCAL enable_sort = off")
         cur.execute(
             """
             EXPLAIN SELECT id, body, embedding <=> %s::vector AS distance

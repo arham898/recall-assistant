@@ -53,3 +53,20 @@ Removed recalls: an upsert only adds and updates, so the loader now also deletes
 Limitations:
 - The cleaner only handles anchor tags. Other HTML in a future file would pass through.
 - A single word longer than a window, such as a long URL, is still cut mid-way.
+
+## Module 3 - Retrieval modes
+Four search modes return one hit per recall: dense, keyword, hybrid and rerank. Every mode takes the chunker as a setting. Make, model and year filters use the recall_vehicles table through EXISTS, so a recall covering several matching vehicles isn't returned twice.
+
+Dense embeds the question with the BGE query prefix through one shared function, so no mode can forget it. The chunker is validated and inserted as a literal rather than a parameter, so Postgres always knows which partial HNSW index applies. pgvector 0.8.7's iterative scan keeps pulling cards until the limit is filled, and results are re-sorted by exact distance afterwards. For a narrow filter such as FORD RANGER 2021 (6 recalls), Postgres skips HNSW and does an exact scan, which is correct, so the index isn't forced.
+
+Keyword uses Postgres's built-in full-text search with ts_rank_cd, because pg_textsearch (BM25) isn't in the pgvector image. Words are combined with OR rather than websearch_to_tsquery's AND, so a natural question like "my car takes longer to stop" still returns results. Each word goes through plainto_tsquery, so question text is never pasted into a query string.
+
+Hybrid fuses dense and keyword with reciprocal rank fusion (k = 60) in one SQL query. Each list is collapsed to one card per recall before fusing, so a recall with three field cards can't push others down. Ranks are used rather than scores because cosine similarity and ts_rank_cd are on different scales. Ties are broken by dense rank, with recalls missing from the dense list last, then by campaign ID, so results don't change between runs. Each list puts forward a fixed pool of 50 recalls whatever k is; when the pool was tied to k, the top 3 changed depending on whether 3 or 30 results were requested. The fusion SQL is shared with fuse_ranks(), so the hand-calculated RRF test covers the real query.
+
+Rerank re-scores hybrid's top 30 with the ms-marco MiniLM cross-encoder. For the field chunker it reads one card per recall: the closest card by embedding distance, or the top keyword card if the recall isn't in the dense list. Layer 2 will show whether that costs accuracy.
+
+Limitations:
+- No BM25. ts_rank_cd is a simpler keyword ranking.
+- Retrieval always returns results, even when nothing matches. "brake problems" filtered to a 2021 Ranger returns seat-belt and child-seat recalls, because no Ranger 2021 brake recall exists. The answer step has to decline.
+- Without a filter, a vehicle named in the question is only a weak signal: "2021 Ranger brake hose" returns brake hose recalls for any vehicle.
+- Rerank can only re-order hybrid's top 30, so it can't recover a recall hybrid missed.

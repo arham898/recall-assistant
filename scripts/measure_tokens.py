@@ -113,6 +113,18 @@ def main() -> None:
     measure(record_chunks, tokenizer, "record (one chunk per campaign, with splitting)")
     measure(field_chunks, tokenizer, "field (one chunk per text field, with splitting)")
 
+    # Max cards per campaign — determines the fetch_limit multiplier
+    # needed by dense retrieval to guarantee k distinct campaigns.
+    from collections import Counter
+
+    record_by_campaign = Counter(c.campaign_id for c in record_chunks)
+    field_by_campaign = Counter(c.campaign_id for c in field_chunks)
+    print(f"\n{'=' * 60}")
+    print("Max cards per campaign (for retrieval fetch_limit)")
+    print(f"{'=' * 60}")
+    print(f"  Record chunker: {max(record_by_campaign.values())}")
+    print(f"  Field chunker:  {max(field_by_campaign.values())}")
+
     # Break down field chunks by field_name prefix
     for fname in ["defect_summary", "consequence_summary", "corrective_action"]:
         subset = [c for c in field_chunks if c.field_name.startswith(fname)]

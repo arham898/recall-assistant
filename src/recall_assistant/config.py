@@ -31,6 +31,15 @@ class Settings(BaseSettings):
     chunk_max_tokens: int = 400
     chunk_overlap_tokens: int = 50
 
+    # Retrieval
+    default_chunker: str = "record"
+    retrieval_k: int = 10
+    pool_size: int = 50
+    rrf_k: int = 60
+    ef_search: int = 40
+    rerank_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    rerank_candidates: int = 30
+
     @property
     def database_url(self) -> str:
         return (
