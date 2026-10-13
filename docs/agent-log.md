@@ -20,3 +20,8 @@ Record of AI agent actions during development — what the agent did, how I caug
 
 |Plan review caught three bugs before any code development. 1.3 plan used SET LOCAL with a parameter, which psycopg 3 can't send. Also proposed an RRF test built from random fake vectors that couldn't produce the tie it claimed to test and finally had a punctuation test that returned before reaching Postgres. Reviewed plan before approving it with bug fixes in place|
 
+|Planned from memory assuming httpx when the SDK now used HTTPX2 and hard coded a model ID. Plan was reviewed and changed against the installed SDK with no default model|
+
+|Used [24V-001] as the citaiton example and labelled sources [1], while real data shows ID's as 24V13000 so correct citations would fail it's own parser. Reviewed and changed.|
+
+|Integration tests were wrapped in a fake retriever so the real Retriever was never tested. Reviewed and updated to use the real Retriever.|

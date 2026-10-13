@@ -70,3 +70,23 @@ Limitations:
 - Retrieval always returns results, even when nothing matches. "brake problems" filtered to a 2021 Ranger returns seat-belt and child-seat recalls, because no Ranger 2021 brake recall exists. The answer step has to decline.
 - Without a filter, a vehicle named in the question is only a weak signal: "2021 Ranger brake hose" returns brake hose recalls for any vehicle.
 - Rerank can only re-order hybrid's top 30, so it can't recover a recall hybrid missed.
+
+## Module 4 - LLM Answers with Citations
+openai SDK (3.x) over OpenRouter’s SDK or raw HTTP: one standard interface across providers, typed errors that map to the retry rules, and a fake transport can be injected for tests.
+SDK retries off (max_retries=0): the SDK already retries 408, 409, 429 and 5xx. Stacked with mine, that’s up to 12 requests, including codes I don’t want retried.
+Retry rules:
+429 and 5xx: back off and retry, honouring Retry-After.
+402: stop; the credit cap is hit.
+Other 4xx: stop; the same request fails the same way.
+Timeouts: not retried; 4 × 60 s is too long, and the request may already be billed.
+Connection errors: retried; the request never arrived.
+Retry-After over 30 s: stop and show the wait; retrying early only gets another 429.
+Three statuses (answered, declined, invalid): so an empty or cut-off reply can’t pass as a decline.
+Decline only on the exact marker: a decline with extra text can hide an uncited claim. The cost is that some honest declines count as invalid, and run 3 did exactly that (NO_RECALL_FOUND). Measure how often in layer 2 before loosening.
+Citations checked by membership in the retrieved set, not by ID format: a well-formed ID can still be invented. A source number like [2] counts as invalid.
+Prompt uses the real ID format ([24V123000]) and unbracketed source labels: models copy formats they see, and the first draft would have made correct citations fail the check.
+Prices in settings with the date checked; “unknown” if not priced; actual charge printed beside the estimate: prices change, and the charge checks the estimate.
+perf_counter, not monotonic: on Windows with Python 3.12, monotonic has 15.6 ms resolution.
+Retry tests use the real SDK with a mock transport: they test the SDK’s real error handling, not my guess of it. That caught a crash on connection errors before any real call.
+argparse: no new dependency for two commands.
+gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by default, so no reasoning tokens eat max_tokens.

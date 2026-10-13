@@ -10,7 +10,8 @@ import pytest
 
 from recall_assistant.retrieval import BGE_QUERY_PREFIX, Reranker
 from recall_assistant.retrieval.rerank import rerank_search
-from tests.retrieval.conftest import FakeReranker, RecordingEmbedder
+from tests.fakes import FakeReranker
+from tests.retrieval.conftest import RecordingEmbedder
 
 pytestmark = pytest.mark.integration
 
