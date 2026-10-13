@@ -3,7 +3,7 @@
 from datetime import date
 from pathlib import Path
 
-from recall_assistant.ingest.parser import parse_recalls
+from recall_assistant.ingest.parser import parse_recalls, strip_anchor_tags
 
 
 def test_parse_groups_by_campaign(sample_rcl_path: Path) -> None:
@@ -76,3 +76,31 @@ def test_parse_dates(sample_rcl_path: Path) -> None:
     assert ford.manufacturing_begin_date == date(2014, 6, 1)
     assert ford.manufacturing_end_date == date(2015, 3, 1)
     assert ford.owner_notification_date == date(2024, 2, 1)
+
+
+# ---------------------------------------------------------------------------
+# strip_anchor_tags tests
+# ---------------------------------------------------------------------------
+
+
+def test_strip_anchor_tags_middle_of_sentence():
+    text = "Visit <a href=http://www.sunroofcheck.com> WWW.SUNROOFCHECK.COM</a> for more info."
+    result = strip_anchor_tags(text)
+    assert result == "Visit  WWW.SUNROOFCHECK.COM for more info."
+
+
+def test_strip_anchor_tags_uppercase():
+    text = "<A HREF=HTTP://WWW.SAFERCAR.GOV>HTTP://WWW.SAFERCAR.GOV</A>"
+    result = strip_anchor_tags(text)
+    assert result == "HTTP://WWW.SAFERCAR.GOV"
+
+
+def test_strip_anchor_tags_plain_text_with_angle_brackets():
+    """Text with <, > and & that are NOT anchor tags passes through unchanged."""
+    text = "SPEEDS <5 MPH & PUMP&REGULATOR > 100 PSI"
+    assert strip_anchor_tags(text) == text
+
+
+def test_strip_anchor_tags_no_html():
+    text = "Plain text with no HTML at all."
+    assert strip_anchor_tags(text) == text

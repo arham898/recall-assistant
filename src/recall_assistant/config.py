@@ -1,6 +1,7 @@
 """Application settings, loaded from environment variables / .env file."""
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,6 +25,34 @@ class Settings(BaseSettings):
     # Ingest filters
     recall_type_filter: str = "V"
     min_model_year: int = 2018
+
+    # Embeddings
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_batch_size: int = 256
+    chunk_max_tokens: int = 400
+    chunk_overlap_tokens: int = 50
+
+    # Retrieval
+    default_mode: Literal["dense", "keyword", "hybrid", "rerank"] = "hybrid"
+    default_chunker: str = "record"
+    retrieval_k: int = 10
+    pool_size: int = 50
+    rrf_k: int = 60
+    ef_search: int = 40
+    rerank_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    rerank_candidates: int = 30
+
+    # LLM
+    openrouter_api_key: str = ""
+    llm_model: str = ""
+    llm_max_tokens: int = 1024
+    llm_temperature: float = 0.0
+    llm_request_timeout: float = 60.0
+    llm_max_retries: int = 3
+    llm_max_retry_wait: float = 30.0
+    llm_model_prices: dict[str, tuple[float, float, str]] = {
+        "google/gemini-2.5-flash-lite": (0.10, 0.40, "2026-10-13"),
+    }
 
     @property
     def database_url(self) -> str:

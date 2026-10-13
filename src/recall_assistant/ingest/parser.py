@@ -2,6 +2,7 @@
 
 import csv
 import logging
+import re
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
@@ -44,6 +45,18 @@ _COL = {
 }
 
 EXPECTED_COLUMNS = 29
+
+
+_ANCHOR_TAG_RE = re.compile(r"</?[aA]\b[^>]*>", re.IGNORECASE)
+
+
+def strip_anchor_tags(text: str) -> str:
+    """Remove <a ...> and </a> tags, keeping the visible text.
+
+    Only targets anchor tags so that text like "SPEEDS <5 MPH" or
+    "PUMP&REGULATOR" passes through unchanged.
+    """
+    return _ANCHOR_TAG_RE.sub("", text)
 
 
 def _parse_date(value: str) -> date | None:
@@ -98,10 +111,10 @@ def _row_to_recall_stub(row: list[str]) -> Recall:
         component=row[_COL["COMPNAME"]].strip(),
         recall_type=row[_COL["RCLTYPECD"]].strip(),
         potential_units_affected=_parse_int(row[_COL["POTAFF"]]),
-        defect_summary=row[_COL["DESC_DEFECT"]].strip(),
-        consequence_summary=row[_COL["CONEQUENCE_DEFECT"]].strip(),
-        corrective_action=row[_COL["CORRECTIVE_ACTION"]].strip(),
-        notes=row[_COL["NOTES"]].strip(),
+        defect_summary=strip_anchor_tags(row[_COL["DESC_DEFECT"]].strip()),
+        consequence_summary=strip_anchor_tags(row[_COL["CONEQUENCE_DEFECT"]].strip()),
+        corrective_action=strip_anchor_tags(row[_COL["CORRECTIVE_ACTION"]].strip()),
+        notes=strip_anchor_tags(row[_COL["NOTES"]].strip()),
         report_received_date=_parse_date(row[_COL["RCDATE"]]),
         record_creation_date=_parse_date(row[_COL["DATEA"]]),
         manufacturing_begin_date=_parse_date(row[_COL["BGMAN"]]),
