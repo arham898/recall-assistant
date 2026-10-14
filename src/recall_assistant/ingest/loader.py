@@ -126,6 +126,17 @@ def upsert_recalls(
                     """,
                     (recall.campaign_id, v.make, v.model, v.year),
                 )
+            # Replace components: delete old ones, insert current set.
+            cur.execute(
+                "DELETE FROM recall_components WHERE campaign_id = %s",
+                (recall.campaign_id,),
+            )
+            for comp in recall.components:
+                cur.execute(
+                    "INSERT INTO recall_components (campaign_id, component) "
+                    "VALUES (%s, %s)",
+                    (recall.campaign_id, comp),
+                )
             upserted += 1
 
         # Delete campaigns no longer in the filtered set.

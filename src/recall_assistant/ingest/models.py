@@ -36,3 +36,4 @@ class Recall:
     do_not_drive: bool
     park_outside: bool
     vehicles: list[RecallVehicle] = field(default_factory=list)
+    components: list[str] = field(default_factory=list)

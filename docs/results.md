@@ -203,3 +203,74 @@ Limit  (cost=5937.03..5937.08 rows=20 width=452)
 
 Index used: **seq/bitmap**
 
+## Component statistics (Layer 2, Module 0)
+
+```
+Command: uv run python scripts/component_stats.py
+Date:    2026-10-14
+```
+
+| Metric | Value |
+|--------|-------|
+| Total campaigns | 7,514 |
+| Total component rows | 9,166 |
+| Campaigns with 0 components | 0 |
+| Campaigns with >1 component | 1,497 |
+| Campaigns with >1 top-level category | 1,006 |
+
+### Hidden categories
+
+Categories present in `recall_components` but not in `recalls.component` for that campaign (top 10):
+
+| Category | Campaigns |
+|----------|-----------|
+| ELECTRICAL SYSTEM | 226 |
+| EQUIPMENT | 100 |
+| STRUCTURE | 100 |
+| TIRES | 62 |
+| SUSPENSION | 48 |
+| SERVICE BRAKES, HYDRAULIC | 45 |
+| EXTERIOR LIGHTING | 42 |
+| STEERING | 40 |
+| AIR BAGS | 38 |
+| POWER TRAIN | 36 |
+
+37 categories total. Full list printed by the script.
+
+### Examples
+
+| Campaign | recalls.component | recall_components |
+|----------|------------------|-------------------|
+| 16V955000 | SEAT BELTS:PRETENSIONER | AIR BAGS:FRONTAL:DRIVER SIDE:INFLATOR MODULE, AIR BAGS:FRONTAL:PASSENGER SIDE:INFLATOR MODULE, AIR BAGS:SIDE/WINDOW, SEAT BELTS:PRETENSIONER |
+| 17V266000 | EQUIPMENT:OTHER:LABELS | EQUIPMENT:OTHER:LABELS, TIRES |
+| 17V270000 | EXTERIOR LIGHTING:TAIL LIGHTS | EXTERIOR LIGHTING, EXTERIOR LIGHTING:TAIL LIGHTS |
+
+## Component-vehicle link analysis (Layer 2, Module 0)
+
+```
+Command: uv run python scripts/component_vehicle_link.py
+Date:    2026-10-14
+```
+
+| Metric | Value |
+|--------|-------|
+| Kept campaigns | 7,514 |
+| Kept vehicle entries | 36,353 |
+| (a) Category on some but not all kept vehicles | 0 |
+| (b) Category only on removed vehicles | 0 |
+
+### Embed safety check
+
+```
+Command: uv run python scripts/embed.py --chunker record
+         uv run python scripts/embed.py --chunker field
+Date:    2026-10-14
+```
+
+| Chunker | Chunks embedded |
+|---------|----------------|
+| record | 0 |
+| field | 0 |
+
+`recalls.component` is unchanged; chunk bodies are identical; no embeddings were cleared or regenerated.
+

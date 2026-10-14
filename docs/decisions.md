@@ -90,3 +90,10 @@ perf_counter, not monotonic: on Windows with Python 3.12, monotonic has 15.6 ms 
 Retry tests use the real SDK with a mock transport: they test the SDK’s real error handling, not my guess of it. That caught a crash on connection errors before any real call.
 argparse: no new dependency for two commands.
 gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by default, so no reasoning tokens eat max_tokens.
+
+## Layer 2, module 0: every component per recall
+
+- The loader kept only the first raw row's component. 1,497 of 7,514 recalls had more than one, and 1,006 had one in a top-level category their card never shows. Example: 16V955000's card says seat belts, but three of its four components are airbag inflators.
+- Added a recall_components table with every component. Left recalls.component and the cards unchanged, so layer 2 measures retrieval as it was built. Listing every component in the card header comes after 2.2, so that change gets measured too.
+- Components are stored per campaign, not per vehicle. component_vehicle_link.py found 0 campaigns where a category covers only some of the vehicles, and 0 where it sits only on vehicles the filter removed. Its tests show it does find both cases when they exist.
+- Still open: recalls.component depends on row order in the raw file.

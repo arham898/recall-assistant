@@ -12,7 +12,7 @@ from recall_assistant.ingest.models import Recall, RecallVehicle
 logger = logging.getLogger(__name__)
 
 # Column indices (0-based) matching the RCL.txt field layout.
-_COL = {
+COL = {
     "RECORD_ID": 0,
     "CAMPNO": 1,
     "MAKETXT": 2,
@@ -59,7 +59,7 @@ def strip_anchor_tags(text: str) -> str:
     return _ANCHOR_TAG_RE.sub("", text)
 
 
-def _parse_date(value: str) -> date | None:
+def parse_date(value: str) -> date | None:
     """Parse an 8-digit YYYYMMDD string into a date, or None if empty/invalid."""
     value = value.strip()
     if not value or len(value) != 8:
@@ -81,7 +81,7 @@ def _parse_int(value: str) -> int | None:
         return None
 
 
-def _parse_year(value: str) -> int | None:
+def parse_year(value: str) -> int | None:
     """Parse model year; returns None for 9999 (unknown/N/A)."""
     year = _parse_int(value)
     if year == 9999:
@@ -96,33 +96,33 @@ def _parse_bool_flag(value: str) -> bool:
 
 def _row_to_vehicle(row: list[str]) -> RecallVehicle:
     return RecallVehicle(
-        make=row[_COL["MAKETXT"]].strip(),
-        model=row[_COL["MODELTXT"]].strip(),
-        year=_parse_year(row[_COL["YEARTXT"]]),
+        make=row[COL["MAKETXT"]].strip(),
+        model=row[COL["MODELTXT"]].strip(),
+        year=parse_year(row[COL["YEARTXT"]]),
     )
 
 
 def _row_to_recall_stub(row: list[str]) -> Recall:
     """Build a Recall from campaign-level fields (vehicles list starts empty)."""
     return Recall(
-        campaign_id=row[_COL["CAMPNO"]].strip(),
-        manufacturer=row[_COL["MFGNAME"]].strip(),
-        manufacturer_campaign_number=row[_COL["MFGCAMPNO"]].strip(),
-        component=row[_COL["COMPNAME"]].strip(),
-        recall_type=row[_COL["RCLTYPECD"]].strip(),
-        potential_units_affected=_parse_int(row[_COL["POTAFF"]]),
-        defect_summary=strip_anchor_tags(row[_COL["DESC_DEFECT"]].strip()),
-        consequence_summary=strip_anchor_tags(row[_COL["CONEQUENCE_DEFECT"]].strip()),
-        corrective_action=strip_anchor_tags(row[_COL["CORRECTIVE_ACTION"]].strip()),
-        notes=strip_anchor_tags(row[_COL["NOTES"]].strip()),
-        report_received_date=_parse_date(row[_COL["RCDATE"]]),
-        record_creation_date=_parse_date(row[_COL["DATEA"]]),
-        manufacturing_begin_date=_parse_date(row[_COL["BGMAN"]]),
-        manufacturing_end_date=_parse_date(row[_COL["ENDMAN"]]),
-        owner_notification_date=_parse_date(row[_COL["ODATE"]]),
-        influenced_by=row[_COL["INFLUENCED_BY"]].strip(),
-        do_not_drive=_parse_bool_flag(row[_COL["DO_NOT_DRIVE"]]),
-        park_outside=_parse_bool_flag(row[_COL["PARK_OUTSIDE"]]),
+        campaign_id=row[COL["CAMPNO"]].strip(),
+        manufacturer=row[COL["MFGNAME"]].strip(),
+        manufacturer_campaign_number=row[COL["MFGCAMPNO"]].strip(),
+        component=row[COL["COMPNAME"]].strip(),
+        recall_type=row[COL["RCLTYPECD"]].strip(),
+        potential_units_affected=_parse_int(row[COL["POTAFF"]]),
+        defect_summary=strip_anchor_tags(row[COL["DESC_DEFECT"]].strip()),
+        consequence_summary=strip_anchor_tags(row[COL["CONEQUENCE_DEFECT"]].strip()),
+        corrective_action=strip_anchor_tags(row[COL["CORRECTIVE_ACTION"]].strip()),
+        notes=strip_anchor_tags(row[COL["NOTES"]].strip()),
+        report_received_date=parse_date(row[COL["RCDATE"]]),
+        record_creation_date=parse_date(row[COL["DATEA"]]),
+        manufacturing_begin_date=parse_date(row[COL["BGMAN"]]),
+        manufacturing_end_date=parse_date(row[COL["ENDMAN"]]),
+        owner_notification_date=parse_date(row[COL["ODATE"]]),
+        influenced_by=row[COL["INFLUENCED_BY"]].strip(),
+        do_not_drive=_parse_bool_flag(row[COL["DO_NOT_DRIVE"]]),
+        park_outside=_parse_bool_flag(row[COL["PARK_OUTSIDE"]]),
         vehicles=[],
     )
 
@@ -136,6 +136,7 @@ def parse_recalls(path: Path) -> tuple[list[Recall], int]:
     # First pass: group rows by campaign number.
     campaigns: dict[str, Recall] = {}
     seen_vehicles: dict[str, set[tuple[str, str, int | None]]] = defaultdict(set)
+    seen_components: dict[str, set[str]] = defaultdict(set)
     skipped = 0
 
     with open(path, encoding="latin-1", newline="") as f:
@@ -151,7 +152,7 @@ def parse_recalls(path: Path) -> tuple[list[Recall], int]:
                 skipped += 1
                 continue
 
-            campaign_id = row[_COL["CAMPNO"]].strip()
+            campaign_id = row[COL["CAMPNO"]].strip()
             if not campaign_id:
                 logger.warning("Row %d: empty campaign number — skipping", line_num)
                 skipped += 1
@@ -176,6 +177,13 @@ def parse_recalls(path: Path) -> tuple[list[Recall], int]:
             if key not in seen_vehicles[campaign_id]:
                 seen_vehicles[campaign_id].add(key)
                 campaigns[campaign_id].vehicles.append(vehicle)
+
+            comp = row[COL["COMPNAME"]].strip()
+            if comp:
+                seen_components[campaign_id].add(comp)
+
+    for cid, recall in campaigns.items():
+        recall.components = sorted(seen_components.get(cid, set()))
 
     recalls = list(campaigns.values())
     logger.info(
