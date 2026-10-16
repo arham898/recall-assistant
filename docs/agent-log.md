@@ -53,3 +53,5 @@ Record of AI agent actions during development — what the agent did, how I caug
 |2.0 plan guessed "~40k campaigns" to explain a reconciliation gap. results.md says 15,303, and there was no gap.|
 
 |2.0 summary said the most components on one campaign is 4. psql showed 6 (20V771000).|
+
+|R2 before the 2.0 commit found a dead marker variable, a commented-out import, and test helpers re-running the whole script on every row. Fixed before committing.|

@@ -97,3 +97,29 @@ gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by de
 - Added a recall_components table with every component. Left recalls.component and the cards unchanged, so layer 2 measures retrieval as it was built. Listing every component in the card header comes after 2.2, so that change gets measured too.
 - Components are stored per campaign, not per vehicle. component_vehicle_link.py found 0 campaigns where a category covers only some of the vehicles, and 0 where it sits only on vehicles the filter removed. Its tests show it does find both cases when they exist.
 - Still open: recalls.component depends on row order in the raw file.
+
+## Layer 2, module 1: the golden question set
+
+- 150 questions: about 100 generated from the database fields, plus 30 hard ones and 20 unanswerable ones I write myself. Generated questions have known answers but are easier and repetitive, so generated and handwritten results are always reported separately.
+- Gold answers come from recall_components, not the card's single component, so 16V955000 counts as both a seat belt and an airbag recall.
+- Component groups use NHTSA's top-level categories as exact strings, never a prefix match.
+  - Brakes is every SERVICE BRAKES category plus PARKING BRAKE, because an owner says "brakes" for any of them. A Ranger with a hose recall and a parking brake recall has two brake recalls, not one.
+  - Fuel is every FUEL category, including diesel and FUEL/PROPULSION SYSTEM. For a hydrogen car the tank is the fuel tank.
+  - EQUIPMENT, VISIBILITY, LATCHES/LOCKS/LINKAGES and STRUCTURE are left out of component questions, because no name an owner would use fits everything in them. An RV emergency exit window isn't a "body structure" problem to its owner. They still count for "What recalls affect...".
+  - Backup camera leaves out two kinds of component: the pedestrian warning sound (WARNINGS: EXTERNAL/PEDESTRIAN ALERT) and reverse automatic braking. One sampled question, the 2022 Pilotcar PC-4, had a sound recall in its answer key. A recall with both a camera and a sound component still counts.
+- Sampling: 20 questions per template, 5 per component group across the remedy, consequence, existence and count templates, each vehicle used once, fixed seed. Equal numbers keep template scores comparable. 5 per group is too few to report groups on their own.
+- No recall is gold in more than one question. One recall usually covers several model years, so the same seat belt recall came back for both the 2018 and 2019 Lexus LX570. Repeats aren't independent: one retrieval miss would cost two questions.
+- Count and all_recalls questions only use vehicles with 2 to 10 gold recalls. With one gold recall, an assistant that finds one recall and stops would still pass, so the question wouldn't test finding every recall.
+- At most 5 questions per make. The dry run showed it never binds (the highest make had 4), so it's a safety limit, not something shaping the sample.
+- The sample follows NHTSA's catalogue, so many questions are about trucks, buses, RVs, trailers and motorcycles. I kept that instead of stratifying: it's honest and easy to explain, the count and all_recalls rule already puts 40 questions on vehicles with several recalls, 2.2 reports results by the vehicle's total recall count, and my handwritten questions cover mainstream cars.
+- Jaguar and Land Rover are excluded, from my own questions too. It's public data, but I grade the answers by hand and don't want any question of inside knowledge.
+- Vehicles with more than 10 gold recalls are skipped, because retrieval returns 10 results and "cite every gold recall" would be impossible.
+- Remedy and consequence questions say "recall" or "recalls" to match the number of gold recalls, so a question never sounds like it has one answer when it has two.
+- Display names use a simple capitalisation rule plus overrides for codes and brands, checked by eye against the final 100. Names don't change which vehicles are sampled.
+- Leakage: the 5-word check blanks out the row's own vehicle name first, because every question has to name its vehicle and a 5-word name tripped the check on its own. My handwritten rows get the same check as a warning.
+- Pass rules were fixed before any answers exist. An unanswerable question passes only on a proper decline. A malformed decline like NO_RECALL_FOUND counts as invalid, not as a pass.
+- The gold query lives in one place in the package (evals/gold.py), used by the generator, the validator and the tests. Before, the validator had its own copy.
+- pydantic is now a direct dependency because GoldenRow uses it directly. Before, it only came in through pydantic-settings. The alternative was dataclasses with hand-written checks.
+- The generator excludes model year 9999 even though the parser turns it into NULL, so a raw value can never produce "the 9999 Ford Ranger".
+- Known biases: existence questions always have the answer "yes", and groups follow NHTSA's labels, so a backup camera fault filed under electrical isn't gold for "backup camera".
+- Still open: move the unknown-year constant into the parser (ingest/ was out of scope for this module). NHTSA spells one make two ways (MERCEDES-BENZ and MERCEDES BENZ), so a make filter misses recalls filed under the other. Reference texts include boilerplate like mailing dates and phone numbers, so 2.3's answer checks must look for the fix itself.

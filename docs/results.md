@@ -274,3 +274,135 @@ Date:    2026-10-14
 
 `recalls.component` is unchanged; chunk bodies are identical; no embeddings were cleared or regenerated.
 
+## Layer 2, module 1: golden question set
+
+### Validation summary
+
+Validator checks: schema, unique IDs, unique questions, no shared gold across generated rows, gold IDs exist, gold drift, vehicle exists, unanswerable rules, leakage.
+
+```
+Command: uv run python scripts/validate_golden.py
+Date:    2026-10-16
+```
+
+```
+Counts by source:
+  generated: 100
+  handwritten: 0
+  unanswerable: 0
+
+Counts by template:
+  remedy: 20
+  consequence: 20
+  existence: 20
+  count: 20
+  all_recalls: 20
+
+Counts by component group:
+  (none): 20
+  brakes: 5
+  fuel_system: 5
+  engine: 5
+  collision_avoidance: 5
+  stability_control: 5
+  airbags: 5
+  seat_belts: 5
+  steering: 5
+  exterior_lights: 5
+  tires: 5
+  suspension: 5
+  powertrain: 5
+  backup_camera: 5
+  seats: 5
+  electrical_system: 5
+  wheels: 5
+
+Counts by make (top 20):
+  INTERNATIONAL: 4
+  FCCC: 3
+  WESTERN STAR: 2
+  NISSAN: 2
+  LINCOLN: 2
+  ALFA ROMEO: 2
+  ENTEGRA: 2
+  BLUE BIRD: 2
+  CHRYSLER: 2
+  RAM: 2
+  PORSCHE: 2
+  MAC TRAILERS: 2
+  HONDA: 2
+  LEXUS: 2
+  CHEVROLET: 2
+  BMW: 2
+  FOREST RIVER: 2
+  CUSHMAN: 1
+  APRILIA: 1
+  IC BUS: 1
+
+Counts by model year:
+  2018: 19
+  2019: 18
+  2020: 7
+  2021: 15
+  2022: 12
+  2023: 9
+  2024: 8
+  2025: 10
+  2026: 2
+
+Rows with >1 gold ID: 50
+
+--- 2 warnings ---
+  WARNING: Shortfall: 0/30 handwritten
+  WARNING: Shortfall: 0/20 unanswerable
+
+All checks passed.
+```
+
+### Group statistics
+
+Recall and vehicle counts per component group, eligible candidates (gold count 1-10), count-eligible candidates (gold count 2-10), and candidates removed by the >10 gold limit.
+
+```
+Command: uv run python scripts/make_generated_questions.py --dry-run
+Date:    2026-10-16
+```
+
+```
+  brakes                    recalls=  686  vehicles= 2324  eligible= 2322  count_eligible=  563  over_limit=2
+  fuel_system               recalls=  410  vehicles= 1830  eligible= 1830  count_eligible=  408  over_limit=0
+  engine                    recalls=  335  vehicles= 1102  eligible= 1102  count_eligible=  200  over_limit=0
+  collision_avoidance       recalls=   66  vehicles=  252  eligible=  252  count_eligible=   43  over_limit=0
+  stability_control         recalls=   72  vehicles=  445  eligible=  445  count_eligible=   52  over_limit=0
+  airbags                   recalls=  322  vehicles= 1012  eligible= 1012  count_eligible=  235  over_limit=0
+  seat_belts                recalls=  285  vehicles= 1079  eligible= 1079  count_eligible=  197  over_limit=0
+  steering                  recalls=  405  vehicles= 1380  eligible= 1380  count_eligible=  399  over_limit=0
+  exterior_lights           recalls=  455  vehicles= 1589  eligible= 1589  count_eligible=  240  over_limit=0
+  tires                     recalls=  219  vehicles=  795  eligible=  795  count_eligible=   75  over_limit=0
+  suspension                recalls=  355  vehicles= 1294  eligible= 1294  count_eligible=  167  over_limit=0
+  powertrain                recalls=  387  vehicles= 1318  eligible= 1318  count_eligible=  236  over_limit=0
+  backup_camera             recalls=  230  vehicles= 1193  eligible= 1193  count_eligible=  363  over_limit=0
+  seats                     recalls=  268  vehicles=  765  eligible=  764  count_eligible=  113  over_limit=1
+  electrical_system         recalls= 1343  vehicles= 4492  eligible= 4490  count_eligible= 1479  over_limit=2
+  wheels                    recalls=  100  vehicles=  350  eligible=  350  count_eligible=   16  over_limit=0
+
+  all_recalls              vehicles=13923  eligible=13510  count_eligible= 6233  over_limit=413
+```
+
+### Gold-size distribution per template (sampled questions)
+
+How many gold recalls each sampled question has, grouped by template. Count and all_recalls sample only from candidates with 2+ gold recalls.
+
+```
+Command: uv run python scripts/make_generated_questions.py --dry-run
+Date:    2026-10-16
+```
+
+```
+  remedy               1:17, 2:2, 3:1
+  consequence          1:17, 2:3
+  existence            1:16, 2:3, 3:1
+  count                2:14, 3:6
+  all_recalls          2:10, 3:5, 4:1, 5:1, 6:3
+```
+
