@@ -149,6 +149,36 @@ def check_gold_ids_exist(conn: psycopg.Connection, rows: list[GoldenRow]) -> lis
     return errors
 
 
+def check_gold_vehicle_link(
+    conn: psycopg.Connection, rows: list[GoldenRow]
+) -> list[str]:
+    """Check that each gold campaign actually covers the stated vehicle.
+
+    For every handwritten row with make, model and year set, each gold
+    campaign ID must have a recall_vehicles row for that exact vehicle.
+    """
+    errors: list[str] = []
+    for r in rows:
+        if r.source != "handwritten":
+            continue
+        if r.make is None or r.model is None or r.year is None:
+            continue
+        for cid in r.gold_campaign_ids:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """SELECT 1 FROM recall_vehicles
+                       WHERE campaign_id = %s AND make = %s
+                         AND model = %s AND year = %s LIMIT 1""",
+                    (cid, r.make, r.model, r.year),
+                )
+                if cur.fetchone() is None:
+                    errors.append(
+                        f"Gold {cid} in {r.id} not linked to vehicle "
+                        f"({r.make}, {r.model}, {r.year})"
+                    )
+    return errors
+
+
 def check_gold_drift(conn: psycopg.Connection, rows: list[GoldenRow]) -> list[str]:
     """For generated rows, recompute gold set and compare."""
     errors: list[str] = []
@@ -350,6 +380,7 @@ def main() -> None:
         all_errors.extend(check_unique_questions(all_rows))
         all_errors.extend(check_no_shared_gold(all_rows))
         all_errors.extend(check_gold_ids_exist(conn, all_rows))
+        all_errors.extend(check_gold_vehicle_link(conn, all_rows))
         all_errors.extend(check_gold_drift(conn, all_rows))
 
         vehicle_errors, vehicle_warnings = check_vehicles_exist(conn, all_rows)

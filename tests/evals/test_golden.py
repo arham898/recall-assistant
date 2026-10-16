@@ -22,6 +22,7 @@ from scripts.validate_golden import (
     check_db_not_empty,
     check_generated_file,
     check_gold_ids_exist,
+    check_gold_vehicle_link,
     check_no_shared_gold,
     check_unanswerable,
     check_unique_ids,
@@ -665,6 +666,24 @@ class TestValidatorBrokenRows:
         errors = check_generated_file(empty)
         assert errors
         assert "empty" in errors[0]
+
+    def test_gold_not_on_vehicle(self, db_conn, eval_seed_data):
+        """Gold campaign that exists but isn't linked to the stated vehicle."""
+        row = GoldenRow(
+            id="bad_link",
+            question="Q",
+            source="handwritten",
+            gold_campaign_ids=["24V123000"],  # exists, but on FORD RANGER 2021
+            reference_answer="A",
+            make="LINCOLN",
+            model="CORSAIR",
+            year=2021,
+            pass_rule="cite_any_gold",
+        )
+        errors = check_gold_vehicle_link(db_conn, [row])
+        assert errors
+        assert "24V123000" in errors[0]
+        assert "LINCOLN" in errors[0]
 
     def test_unicode_round_trip(self, tmp_path):
         """A row with curly apostrophe and accented letter survives write/read."""
