@@ -16,14 +16,18 @@ if TYPE_CHECKING:
 def build_group_where(
     categories: tuple[str, ...],
     excluded_subs: tuple[ExcludedSub, ...] = (),
+    *,
+    column: str = "rc.component",
 ) -> tuple[str, list]:
     """Build the WHERE clause and params for a component group gold query.
 
-    Returns (where_fragment, params) that filter recall_components rows
-    to those matching the group.  The fragment references ``rc.component``.
+    Returns (where_fragment, params) that filter whichever table the
+    *column* belongs to (``recall_components`` by default, via
+    ``rc.component``).  Pass e.g. ``column='r.component'`` to filter
+    the ``recalls`` table instead.
     """
     placeholders = ",".join(["%s"] * len(categories))
-    clause = f"TRIM(SPLIT_PART(rc.component, ':', 1)) IN ({placeholders})"
+    clause = f"TRIM(SPLIT_PART({column}, ':', 1)) IN ({placeholders})"
     params: list = list(categories)
 
     if excluded_subs:
@@ -31,12 +35,12 @@ def build_group_where(
         for ex in excluded_subs:
             if ex.level3:
                 parts.append(
-                    "(TRIM(SPLIT_PART(rc.component, ':', 2)) = %s"
-                    " AND TRIM(SPLIT_PART(rc.component, ':', 3)) = %s)"
+                    f"(TRIM(SPLIT_PART({column}, ':', 2)) = %s"
+                    f" AND TRIM(SPLIT_PART({column}, ':', 3)) = %s)"
                 )
                 params.extend([ex.level2, ex.level3])
             else:
-                parts.append("TRIM(SPLIT_PART(rc.component, ':', 2)) = %s")
+                parts.append(f"TRIM(SPLIT_PART({column}, ':', 2)) = %s")
                 params.append(ex.level2)
         clause += " AND NOT (" + " OR ".join(parts) + ")"
 
