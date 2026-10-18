@@ -123,3 +123,20 @@ gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by de
 - The generator excludes model year 9999 even though the parser turns it into NULL, so a raw value can never produce "the 9999 Ford Ranger".
 - Known biases: existence questions always have the answer "yes", and groups follow NHTSA's labels, so a backup camera fault filed under electrical isn't gold for "backup camera".
 - Still open: move the unknown-year constant into the parser (ingest/ was out of scope for this module). NHTSA spells one make two ways (MERCEDES-BENZ and MERCEDES BENZ), so a make filter misses recalls filed under the other. Reference texts include boilerplate like mailing dates and phone numbers, so 2.3's answer checks must look for the fix itself.
+
+## Layer 2, module 2: retrieval metrics
+
+- Headline numbers are unfiltered hit@5 and MRR, per mode and chunker, with generated and handwritten rows reported separately. Filtered numbers are secondary: with the filter on, a vehicle with 10 or fewer recalls gets every recall into the top 10 whatever the order. The 2021 Ranger has 6 recalls, so filtered hit@10 is 100% even when the right one comes 6th.
+- Results are also broken down by the vehicle's total recall count: 1, 2-3, 4-10, more than 10. Filtered numbers only say something about ranking in the last bucket.
+- recall@k divides by the number of gold recalls, not by k. Three rows have 6 gold recalls, so they can score at most 5/6 at k = 5. Dividing by k would cap every single-gold row at 0.2.
+- MRR uses the rank of the first gold recall, 1-based, and 0 when none is found.
+- Latency is p50 and p95 per configuration, nearest-rank, after one untimed warm-up call per mode and chunker. With 130 calls, p95 is the 124th fastest.
+- Hidden components are scored per (question, gold recall) pair, keyed by component group and campaign. 16V955000 is visible for a seat belt question and hidden for an airbag question. This is the number the card-header change should move.
+- Rerank top scores are recorded for answerable and unanswerable rows, per chunker and filter. Measured only; no threshold is set from them yet.
+- Run labels: baseline first, then cards_all_components after the card header lists every component. Each label has its own section in results.md, and re-running a label replaces only that section.
+- Decline rule for the 15 real-car unanswerable rows: "no airbag recall on this car, but here are the others [IDs]" counts as answered, not declined, and fails.
+- The eval logic lives in src/recall_assistant/evals/retrieval_eval.py and scripts/eval_retrieval.py only wires the command line. The 2.1 validator crashed outside pytest because its code only worked on pytest's import path. The tests now import the package the same way the script does.
+- The run refuses to start on a dirty tree, and the JSON records the commit, the card seal and every retrieval setting, so a result can always be tied to the code and cards that produced it. Code is committed before any run.
+- A duplicate campaign ID in a hit list stops the run instead of being dropped. One hit per recall is something retrieval promises, so dropping repeats quietly would hide a bug.
+- results/ is git-ignored and the baseline JSON is added with --force, so the per-question ranks are kept with the code.
+- Still open: 22 defect summaries contain a mis-decoded non-breaking space (Â). MERCEDES-BENZ is spelt two ways in the NHTSA file.

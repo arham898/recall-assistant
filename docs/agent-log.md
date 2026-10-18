@@ -55,3 +55,49 @@ Record of AI agent actions during development — what the agent did, how I caug
 |2.0 summary said the most components on one campaign is 4. psql showed 6 (20V771000).|
 
 |R2 before the 2.0 commit found a dead marker variable, a commented-out import, and test helpers re-running the whole script on every row. Fixed before committing.|
+
+|2.1 build used the wrong category name, then edited the query result by hand instead of re-running it. Caught because the plan contradicted itself. Asked for the query to be re-run with raw output.|
+
+|2.1 quota "Option B" added up to 85 questions, not 100. Caught by doing the sum.|
+
+|Rewrote an approved test to match the code and only said so afterwards. Caught by reading the summary. The code was fixed and the test put back.|
+
+|Wrote permanent "mutation tests" that copied the generator into the test file, broke the copy and showed the copy failing. The real code was never touched. Caught by listing the test classes. Removed them and ran the mutations as one-off edits to the real code.|
+
+|Called NHTSA's back-over prevention category a fit for "backup camera" after looking one level down. Two levels down it held 18 pedestrian warning sound recalls, one already in the sample. I asked for the next level. Sound and reverse auto-braking are now excluded.|
+
+|The validator kept its own copy of the gold query and imported it in a way that only worked under pytest. All 219 tests passed and it crashed the first time I ran it. Query moved to evals/gold.py, and a test now runs both scripts the way I do.|
+
+|The validator printed "No rows to validate." and passed with nothing to check. Caught by reading the output.|
+
+|Skipped the red run (test failing before the fix) twice, once because Docker was down. The matching break-it-on-purpose run stood in.|
+
+|Said "148 existing + 46 new" tests. Caught by adding up the per-file counts: 158 + 36.|
+
+|2.2 plan swapped the shared gold query for a top-level category copy and called it simpler. The copy ignored the backup camera exclusions. Caught in plan review. Now uses build_group_where with the card column.|
+
+|Scored hidden components per row on a subset, not per gold recall. Caught in plan review. Now a found rate per (row, gold recall) pair.|
+
+|Listed a mutation (filtered runs pass no filter) with no test that could catch it, because the aggregation tests bypassed retrieval. Caught by checking each mutation against the test list. Added test_filter_kwargs.|
+
+|Planned to restore untracked new files with git checkout after mutations, which can't restore a file git has never seen. Caught in plan review. New files are staged first.|
+
+|Planned to drop duplicate campaign IDs silently, which would hide a retrieval bug. Caught in plan review. A duplicate now stops the run.|
+
+|Said "no existing files modified" while planning to change tests/fakes.py. Caught by reading the file list.|
+
+|Its aggregation fixture put a vehicle with 2 gold recalls in bucket "1". Caught by reading the fixture.|
+
+|Keyed visibility by recall only. 16V955000 is visible for seat belts and hidden for airbags, so it has to be keyed by group and recall. Caught in plan review.|
+
+|Planned to add test recalls to the shared conftest.py fixture without listing it, which could have changed 2.1's brakes test. Caught in plan review. The integration tests got their own fixture.|
+
+|Planned to run the baseline before the code was committed, so git_commit and dirty_worktree would have meant nothing. Caught in plan review. Commit first, then run.|
+
+|R2 found --limit 5 ran all 20 unanswerable rows and printed "80 calls" when 160 ran. Fixed to take the first N of each and print the calls actually made.|
+
+|R2 found rows without a complete vehicle would get a no-op "filtered" run. Fixed to run those unfiltered only and print the count.|
+
+|R2 found the tests imported the script through a sys.path trick. The logic moved into src/ and the script only wires the command line.|
+
+|Recorded the command as " ".join(sys.argv), which drops "python". Caught by reading the code. Now prefixed.|
