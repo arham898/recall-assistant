@@ -406,3 +406,396 @@ Date:    2026-10-16
   all_recalls          2:10, 3:5, 4:1, 5:1, 6:3
 ```
 
+
+## Retrieval evaluation: baseline (Module 2.2)
+
+```
+Command: python scripts/eval_retrieval.py --label baseline
+Date:    2026-10-18
+```
+
+### Overall
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 130 | 0.900 | 0.946 | 0.817 | 0.884 | 0.756 | 81ms | 98ms |
+| dense_record_filtered | 130 | 0.985 | 1.000 | 0.965 | 0.997 | 0.939 | 70ms | 84ms |
+| dense_field_unfiltered | 130 | 0.877 | 0.946 | 0.781 | 0.870 | 0.673 | 93ms | 119ms |
+| dense_field_filtered | 130 | 1.000 | 1.000 | 0.976 | 0.994 | 0.915 | 69ms | 79ms |
+| keyword_record_unfiltered | 130 | 0.700 | 0.785 | 0.579 | 0.701 | 0.542 | 167ms | 928ms |
+| keyword_record_filtered | 130 | 0.962 | 0.992 | 0.929 | 0.988 | 0.835 | 3ms | 5ms |
+| keyword_field_unfiltered | 130 | 0.669 | 0.800 | 0.575 | 0.712 | 0.480 | 271ms | 1798ms |
+| keyword_field_filtered | 130 | 0.962 | 0.985 | 0.917 | 0.974 | 0.807 | 3ms | 6ms |
+| hybrid_record_unfiltered | 130 | 0.931 | 0.977 | 0.845 | 0.935 | 0.750 | 273ms | 1109ms |
+| hybrid_record_filtered | 130 | 0.992 | 1.000 | 0.979 | 0.997 | 0.922 | 35ms | 72ms |
+| hybrid_field_unfiltered | 130 | 0.946 | 0.969 | 0.845 | 0.922 | 0.755 | 430ms | 2544ms |
+| hybrid_field_filtered | 130 | 0.992 | 1.000 | 0.974 | 1.000 | 0.921 | 33ms | 76ms |
+| rerank_record_unfiltered | 130 | 0.985 | 0.992 | 0.922 | 0.968 | 0.879 | 1692ms | 2569ms |
+| rerank_record_filtered | 130 | 0.992 | 0.992 | 0.983 | 0.992 | 0.985 | 198ms | 953ms |
+| rerank_field_unfiltered | 130 | 0.931 | 0.977 | 0.869 | 0.954 | 0.834 | 1506ms | 3441ms |
+| rerank_field_filtered | 130 | 0.985 | 1.000 | 0.976 | 0.997 | 0.936 | 136ms | 582ms |
+
+### By source
+
+**generated**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 100 | 0.900 | 0.940 | 0.824 | 0.886 | 0.779 | 82ms | 100ms |
+| dense_record_filtered | 100 | 0.980 | 1.000 | 0.958 | 0.997 | 0.946 | 70ms | 82ms |
+| dense_field_unfiltered | 100 | 0.900 | 0.950 | 0.807 | 0.880 | 0.720 | 96ms | 120ms |
+| dense_field_filtered | 100 | 1.000 | 1.000 | 0.973 | 0.992 | 0.932 | 69ms | 79ms |
+| keyword_record_unfiltered | 100 | 0.700 | 0.790 | 0.582 | 0.708 | 0.547 | 163ms | 958ms |
+| keyword_record_filtered | 100 | 0.980 | 1.000 | 0.955 | 1.000 | 0.859 | 3ms | 5ms |
+| keyword_field_unfiltered | 100 | 0.690 | 0.820 | 0.586 | 0.737 | 0.483 | 263ms | 1886ms |
+| keyword_field_filtered | 100 | 0.980 | 1.000 | 0.938 | 0.992 | 0.843 | 3ms | 5ms |
+| hybrid_record_unfiltered | 100 | 0.920 | 0.970 | 0.840 | 0.923 | 0.739 | 522ms | 1111ms |
+| hybrid_record_filtered | 100 | 1.000 | 1.000 | 0.987 | 0.997 | 0.926 | 64ms | 74ms |
+| hybrid_field_unfiltered | 100 | 0.970 | 0.980 | 0.881 | 0.935 | 0.779 | 822ms | 2566ms |
+| hybrid_field_filtered | 100 | 0.990 | 1.000 | 0.970 | 1.000 | 0.947 | 63ms | 76ms |
+| rerank_record_unfiltered | 100 | 0.990 | 1.000 | 0.943 | 0.977 | 0.875 | 1842ms | 2585ms |
+| rerank_record_filtered | 100 | 1.000 | 1.000 | 0.992 | 1.000 | 0.990 | 181ms | 821ms |
+| rerank_field_unfiltered | 100 | 0.950 | 0.980 | 0.895 | 0.963 | 0.859 | 1778ms | 3454ms |
+| rerank_field_filtered | 100 | 1.000 | 1.000 | 0.992 | 0.997 | 0.951 | 128ms | 448ms |
+
+**handwritten**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 30 | 0.900 | 0.967 | 0.794 | 0.877 | 0.677 | 77ms | 88ms |
+| dense_record_filtered | 30 | 1.000 | 1.000 | 0.989 | 1.000 | 0.917 | 71ms | 86ms |
+| dense_field_unfiltered | 30 | 0.800 | 0.933 | 0.694 | 0.837 | 0.518 | 85ms | 100ms |
+| dense_field_filtered | 30 | 1.000 | 1.000 | 0.983 | 1.000 | 0.856 | 70ms | 79ms |
+| keyword_record_unfiltered | 30 | 0.700 | 0.767 | 0.568 | 0.676 | 0.524 | 224ms | 289ms |
+| keyword_record_filtered | 30 | 0.900 | 0.967 | 0.844 | 0.950 | 0.756 | 4ms | 5ms |
+| keyword_field_unfiltered | 30 | 0.600 | 0.733 | 0.540 | 0.631 | 0.469 | 346ms | 478ms |
+| keyword_field_filtered | 30 | 0.900 | 0.933 | 0.844 | 0.917 | 0.688 | 4ms | 6ms |
+| hybrid_record_unfiltered | 30 | 0.967 | 1.000 | 0.863 | 0.973 | 0.786 | 267ms | 350ms |
+| hybrid_record_filtered | 30 | 0.967 | 1.000 | 0.956 | 1.000 | 0.911 | 31ms | 38ms |
+| hybrid_field_unfiltered | 30 | 0.867 | 0.933 | 0.727 | 0.879 | 0.677 | 381ms | 515ms |
+| hybrid_field_filtered | 30 | 1.000 | 1.000 | 0.989 | 1.000 | 0.833 | 31ms | 46ms |
+| rerank_record_unfiltered | 30 | 0.967 | 0.967 | 0.852 | 0.940 | 0.892 | 1495ms | 1886ms |
+| rerank_record_filtered | 30 | 0.967 | 0.967 | 0.956 | 0.967 | 0.967 | 255ms | 988ms |
+| rerank_field_unfiltered | 30 | 0.867 | 0.967 | 0.781 | 0.923 | 0.750 | 1086ms | 1743ms |
+| rerank_field_filtered | 30 | 0.933 | 1.000 | 0.922 | 1.000 | 0.887 | 145ms | 745ms |
+
+### By template (generated only)
+
+**all_recalls**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 20 | 0.850 | 0.950 | 0.688 | 0.812 | 0.753 | 74ms | 91ms |
+| dense_record_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 70ms | 85ms |
+| dense_field_unfiltered | 20 | 0.900 | 1.000 | 0.704 | 0.842 | 0.657 | 91ms | 119ms |
+| dense_field_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 69ms | 75ms |
+| keyword_record_unfiltered | 20 | 0.700 | 0.750 | 0.461 | 0.558 | 0.557 | 114ms | 164ms |
+| keyword_record_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 3ms | 4ms |
+| keyword_field_unfiltered | 20 | 0.750 | 0.900 | 0.554 | 0.692 | 0.466 | 168ms | 235ms |
+| keyword_field_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 3ms | 5ms |
+| hybrid_record_unfiltered | 20 | 0.850 | 1.000 | 0.692 | 0.833 | 0.714 | 168ms | 646ms |
+| hybrid_record_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 30ms | 70ms |
+| hybrid_field_unfiltered | 20 | 0.950 | 1.000 | 0.762 | 0.858 | 0.716 | 236ms | 1070ms |
+| hybrid_field_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 29ms | 76ms |
+| rerank_record_unfiltered | 20 | 1.000 | 1.000 | 0.850 | 0.950 | 0.829 | 1654ms | 2130ms |
+| rerank_record_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 143ms | 232ms |
+| rerank_field_unfiltered | 20 | 1.000 | 1.000 | 0.792 | 0.958 | 0.850 | 1546ms | 2104ms |
+| rerank_field_filtered | 20 | 1.000 | 1.000 | 0.975 | 1.000 | 1.000 | 114ms | 139ms |
+
+**consequence**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 20 | 0.950 | 0.950 | 0.900 | 0.950 | 0.925 | 87ms | 98ms |
+| dense_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.975 | 69ms | 77ms |
+| dense_field_unfiltered | 20 | 0.950 | 0.950 | 0.925 | 0.925 | 0.852 | 99ms | 123ms |
+| dense_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 70ms | 77ms |
+| keyword_record_unfiltered | 20 | 0.800 | 0.850 | 0.800 | 0.850 | 0.593 | 154ms | 985ms |
+| keyword_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.839 | 3ms | 8ms |
+| keyword_field_unfiltered | 20 | 0.900 | 0.900 | 0.900 | 0.900 | 0.674 | 312ms | 2608ms |
+| keyword_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.828 | 3ms | 5ms |
+| hybrid_record_unfiltered | 20 | 0.950 | 1.000 | 0.950 | 1.000 | 0.840 | 220ms | 1133ms |
+| hybrid_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.925 | 32ms | 71ms |
+| hybrid_field_unfiltered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.912 | 415ms | 2670ms |
+| hybrid_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.950 | 31ms | 72ms |
+| rerank_record_unfiltered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.967 | 1715ms | 2521ms |
+| rerank_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 153ms | 387ms |
+| rerank_field_unfiltered | 20 | 0.950 | 1.000 | 0.950 | 1.000 | 0.921 | 1538ms | 3727ms |
+| rerank_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.975 | 100ms | 202ms |
+
+**count**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 20 | 0.950 | 0.950 | 0.783 | 0.842 | 0.817 | 82ms | 96ms |
+| dense_record_filtered | 20 | 1.000 | 1.000 | 0.917 | 0.983 | 0.950 | 72ms | 81ms |
+| dense_field_unfiltered | 20 | 0.950 | 0.950 | 0.783 | 0.833 | 0.777 | 91ms | 119ms |
+| dense_field_filtered | 20 | 1.000 | 1.000 | 0.917 | 0.983 | 0.942 | 69ms | 112ms |
+| keyword_record_unfiltered | 20 | 0.750 | 0.850 | 0.558 | 0.700 | 0.715 | 170ms | 715ms |
+| keyword_record_filtered | 20 | 0.950 | 1.000 | 0.867 | 1.000 | 0.856 | 3ms | 4ms |
+| keyword_field_unfiltered | 20 | 0.650 | 0.850 | 0.450 | 0.725 | 0.544 | 273ms | 1341ms |
+| keyword_field_filtered | 20 | 1.000 | 1.000 | 0.875 | 1.000 | 0.837 | 3ms | 5ms |
+| hybrid_record_unfiltered | 20 | 1.000 | 1.000 | 0.783 | 0.933 | 0.796 | 711ms | 810ms |
+| hybrid_record_filtered | 20 | 1.000 | 1.000 | 0.958 | 0.983 | 0.925 | 67ms | 72ms |
+| hybrid_field_unfiltered | 20 | 1.000 | 1.000 | 0.808 | 0.942 | 0.785 | 1167ms | 1537ms |
+| hybrid_field_filtered | 20 | 1.000 | 1.000 | 0.942 | 1.000 | 1.000 | 65ms | 76ms |
+| rerank_record_unfiltered | 20 | 1.000 | 1.000 | 0.917 | 0.958 | 0.860 | 1917ms | 2278ms |
+| rerank_record_filtered | 20 | 1.000 | 1.000 | 0.983 | 1.000 | 1.000 | 343ms | 821ms |
+| rerank_field_unfiltered | 20 | 1.000 | 1.000 | 0.958 | 0.958 | 0.908 | 1952ms | 2728ms |
+| rerank_field_filtered | 20 | 1.000 | 1.000 | 0.983 | 0.983 | 0.950 | 192ms | 448ms |
+
+**existence**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 20 | 0.900 | 0.950 | 0.900 | 0.925 | 0.710 | 82ms | 95ms |
+| dense_record_filtered | 20 | 0.950 | 1.000 | 0.950 | 1.000 | 0.933 | 70ms | 80ms |
+| dense_field_unfiltered | 20 | 0.850 | 0.950 | 0.800 | 0.900 | 0.685 | 94ms | 114ms |
+| dense_field_filtered | 20 | 1.000 | 1.000 | 0.975 | 0.975 | 0.892 | 69ms | 79ms |
+| keyword_record_unfiltered | 20 | 0.600 | 0.700 | 0.525 | 0.675 | 0.453 | 153ms | 766ms |
+| keyword_record_filtered | 20 | 0.950 | 1.000 | 0.950 | 1.000 | 0.822 | 3ms | 5ms |
+| keyword_field_unfiltered | 20 | 0.550 | 0.750 | 0.475 | 0.725 | 0.404 | 249ms | 1419ms |
+| keyword_field_filtered | 20 | 1.000 | 1.000 | 0.975 | 0.975 | 0.833 | 3ms | 5ms |
+| hybrid_record_unfiltered | 20 | 0.900 | 0.950 | 0.875 | 0.950 | 0.655 | 811ms | 895ms |
+| hybrid_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.912 | 68ms | 74ms |
+| hybrid_field_unfiltered | 20 | 0.950 | 0.950 | 0.900 | 0.925 | 0.772 | 1384ms | 1607ms |
+| hybrid_field_filtered | 20 | 0.950 | 1.000 | 0.950 | 1.000 | 0.883 | 66ms | 89ms |
+| rerank_record_unfiltered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.852 | 2120ms | 2475ms |
+| rerank_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.975 | 189ms | 1229ms |
+| rerank_field_unfiltered | 20 | 0.900 | 0.950 | 0.875 | 0.950 | 0.809 | 2060ms | 2919ms |
+| rerank_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.942 | 152ms | 596ms |
+
+**remedy**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 20 | 0.850 | 0.900 | 0.850 | 0.900 | 0.690 | 83ms | 106ms |
+| dense_record_filtered | 20 | 0.950 | 1.000 | 0.950 | 1.000 | 0.871 | 70ms | 80ms |
+| dense_field_unfiltered | 20 | 0.850 | 0.900 | 0.825 | 0.900 | 0.627 | 98ms | 137ms |
+| dense_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.829 | 67ms | 73ms |
+| keyword_record_unfiltered | 20 | 0.650 | 0.800 | 0.567 | 0.758 | 0.419 | 182ms | 1009ms |
+| keyword_record_filtered | 20 | 1.000 | 1.000 | 0.983 | 1.000 | 0.777 | 3ms | 5ms |
+| keyword_field_unfiltered | 20 | 0.600 | 0.700 | 0.550 | 0.642 | 0.329 | 251ms | 1886ms |
+| keyword_field_filtered | 20 | 0.900 | 1.000 | 0.867 | 0.983 | 0.715 | 3ms | 5ms |
+| hybrid_record_unfiltered | 20 | 0.900 | 0.900 | 0.900 | 0.900 | 0.692 | 1025ms | 1155ms |
+| hybrid_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.867 | 66ms | 74ms |
+| hybrid_field_unfiltered | 20 | 0.950 | 0.950 | 0.933 | 0.950 | 0.708 | 1763ms | 1998ms |
+| hybrid_field_filtered | 20 | 1.000 | 1.000 | 0.983 | 1.000 | 0.900 | 66ms | 74ms |
+| rerank_record_unfiltered | 20 | 0.950 | 1.000 | 0.950 | 0.975 | 0.870 | 2283ms | 2674ms |
+| rerank_record_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.975 | 175ms | 509ms |
+| rerank_field_unfiltered | 20 | 0.900 | 0.950 | 0.900 | 0.950 | 0.808 | 2432ms | 3374ms |
+| rerank_field_filtered | 20 | 1.000 | 1.000 | 1.000 | 1.000 | 0.887 | 124ms | 267ms |
+
+### By tag (handwritten only)
+
+**all_recalls**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 4 | 0.750 | 1.000 | 0.417 | 0.700 | 0.598 | 73ms | 82ms |
+| dense_record_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 66ms | 81ms |
+| dense_field_unfiltered | 4 | 1.000 | 1.000 | 0.417 | 0.650 | 0.521 | 82ms | 115ms |
+| dense_field_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 67ms | 77ms |
+| keyword_record_unfiltered | 4 | 0.750 | 0.750 | 0.300 | 0.400 | 0.550 | 101ms | 173ms |
+| keyword_record_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 3ms | 4ms |
+| keyword_field_unfiltered | 4 | 0.500 | 0.750 | 0.300 | 0.400 | 0.525 | 147ms | 239ms |
+| keyword_field_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 3ms | 3ms |
+| hybrid_record_unfiltered | 4 | 1.000 | 1.000 | 0.433 | 0.800 | 0.600 | 181ms | 673ms |
+| hybrid_record_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 28ms | 65ms |
+| hybrid_field_unfiltered | 4 | 0.750 | 1.000 | 0.283 | 0.717 | 0.500 | 259ms | 1113ms |
+| hybrid_field_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 33ms | 64ms |
+| rerank_record_unfiltered | 4 | 1.000 | 1.000 | 0.600 | 0.800 | 0.688 | 1377ms | 1800ms |
+| rerank_record_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 183ms | 265ms |
+| rerank_field_unfiltered | 4 | 1.000 | 1.000 | 0.567 | 0.800 | 0.667 | 980ms | 1579ms |
+| rerank_field_filtered | 4 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 99ms | 153ms |
+
+**component_specific**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 1 | 1.000 | 1.000 | 0.500 | 0.500 | 0.200 | 80ms | 80ms |
+| dense_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 70ms | 70ms |
+| dense_field_unfiltered | 1 | 0.000 | 1.000 | 0.000 | 0.500 | 0.100 | 90ms | 90ms |
+| dense_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 67ms | 67ms |
+| keyword_record_unfiltered | 1 | 1.000 | 1.000 | 0.500 | 0.500 | 1.000 | 207ms | 207ms |
+| keyword_record_filtered | 1 | 1.000 | 1.000 | 0.500 | 0.500 | 1.000 | 4ms | 4ms |
+| keyword_field_unfiltered | 1 | 1.000 | 1.000 | 0.500 | 0.500 | 0.333 | 323ms | 323ms |
+| keyword_field_filtered | 1 | 1.000 | 1.000 | 0.500 | 0.500 | 0.333 | 6ms | 6ms |
+| hybrid_record_unfiltered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 227ms | 227ms |
+| hybrid_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 36ms | 36ms |
+| hybrid_field_unfiltered | 1 | 1.000 | 1.000 | 0.500 | 1.000 | 1.000 | 364ms | 364ms |
+| hybrid_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 30ms | 30ms |
+| rerank_record_unfiltered | 1 | 1.000 | 1.000 | 0.500 | 1.000 | 0.500 | 1431ms | 1431ms |
+| rerank_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 988ms | 988ms |
+| rerank_field_unfiltered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 0.250 | 1863ms | 1863ms |
+| rerank_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 894ms | 894ms |
+
+**count**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 1 | 0.000 | 1.000 | 0.000 | 0.200 | 0.143 | 73ms | 73ms |
+| dense_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 65ms | 65ms |
+| dense_field_unfiltered | 1 | 1.000 | 1.000 | 0.200 | 0.400 | 0.250 | 82ms | 82ms |
+| dense_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 67ms | 67ms |
+| keyword_record_unfiltered | 1 | 1.000 | 1.000 | 0.200 | 0.200 | 0.200 | 92ms | 92ms |
+| keyword_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 3ms | 3ms |
+| keyword_field_unfiltered | 1 | 0.000 | 1.000 | 0.000 | 0.200 | 0.100 | 143ms | 143ms |
+| keyword_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 3ms | 3ms |
+| hybrid_record_unfiltered | 1 | 1.000 | 1.000 | 0.200 | 0.400 | 0.200 | 117ms | 117ms |
+| hybrid_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 24ms | 24ms |
+| hybrid_field_unfiltered | 1 | 0.000 | 1.000 | 0.000 | 0.600 | 0.167 | 171ms | 171ms |
+| hybrid_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 29ms | 29ms |
+| rerank_record_unfiltered | 1 | 1.000 | 1.000 | 0.200 | 0.600 | 0.250 | 1384ms | 1384ms |
+| rerank_record_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 265ms | 265ms |
+| rerank_field_unfiltered | 1 | 1.000 | 1.000 | 0.400 | 0.400 | 0.333 | 732ms | 732ms |
+| rerank_field_filtered | 1 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 140ms | 140ms |
+
+**specific**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.762 | 77ms | 92ms |
+| dense_record_filtered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 71ms | 86ms |
+| dense_field_unfiltered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.702 | 85ms | 94ms |
+| dense_field_filtered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.929 | 71ms | 79ms |
+| keyword_record_unfiltered | 7 | 0.571 | 0.714 | 0.571 | 0.714 | 0.446 | 213ms | 269ms |
+| keyword_record_filtered | 7 | 0.857 | 1.000 | 0.857 | 1.000 | 0.694 | 4ms | 11ms |
+| keyword_field_unfiltered | 7 | 0.571 | 0.714 | 0.571 | 0.714 | 0.479 | 338ms | 459ms |
+| keyword_field_filtered | 7 | 0.714 | 0.857 | 0.714 | 0.857 | 0.587 | 4ms | 11ms |
+| hybrid_record_unfiltered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.810 | 267ms | 300ms |
+| hybrid_record_filtered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.905 | 32ms | 37ms |
+| hybrid_field_unfiltered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.738 | 353ms | 507ms |
+| hybrid_field_filtered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.893 | 31ms | 36ms |
+| rerank_record_unfiltered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.929 | 1495ms | 1609ms |
+| rerank_record_filtered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 255ms | 1396ms |
+| rerank_field_unfiltered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.814 | 913ms | 1170ms |
+| rerank_field_filtered | 7 | 1.000 | 1.000 | 1.000 | 1.000 | 0.905 | 139ms | 745ms |
+
+**vague**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 18 | 0.889 | 0.944 | 0.815 | 0.889 | 0.688 | 77ms | 88ms |
+| dense_record_filtered | 18 | 1.000 | 1.000 | 0.981 | 1.000 | 0.861 | 72ms | 86ms |
+| dense_field_unfiltered | 18 | 0.722 | 0.889 | 0.676 | 0.833 | 0.469 | 83ms | 100ms |
+| dense_field_filtered | 18 | 1.000 | 1.000 | 0.972 | 1.000 | 0.787 | 71ms | 80ms |
+| keyword_record_unfiltered | 18 | 0.722 | 0.778 | 0.630 | 0.731 | 0.523 | 240ms | 293ms |
+| keyword_record_filtered | 18 | 0.889 | 0.944 | 0.824 | 0.944 | 0.713 | 3ms | 5ms |
+| keyword_field_unfiltered | 18 | 0.611 | 0.722 | 0.583 | 0.657 | 0.460 | 404ms | 495ms |
+| keyword_field_filtered | 18 | 0.944 | 0.944 | 0.880 | 0.944 | 0.677 | 4ms | 6ms |
+| hybrid_record_unfiltered | 18 | 0.944 | 1.000 | 0.898 | 1.000 | 0.806 | 278ms | 350ms |
+| hybrid_record_filtered | 18 | 0.944 | 1.000 | 0.926 | 1.000 | 0.889 | 29ms | 38ms |
+| hybrid_field_unfiltered | 18 | 0.833 | 0.889 | 0.731 | 0.861 | 0.675 | 447ms | 515ms |
+| hybrid_field_filtered | 18 | 1.000 | 1.000 | 0.981 | 1.000 | 0.764 | 31ms | 46ms |
+| rerank_record_unfiltered | 18 | 0.944 | 0.944 | 0.870 | 0.944 | 0.944 | 1558ms | 1987ms |
+| rerank_record_filtered | 18 | 0.944 | 0.944 | 0.926 | 0.944 | 0.944 | 357ms | 936ms |
+| rerank_field_unfiltered | 18 | 0.778 | 0.944 | 0.731 | 0.917 | 0.771 | 1106ms | 1743ms |
+| rerank_field_filtered | 18 | 0.889 | 1.000 | 0.870 | 1.000 | 0.849 | 175ms | 526ms |
+
+### By vehicle recall-count bucket
+
+**1**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 17 | 0.941 | 0.941 | 0.941 | 0.941 | 0.882 | 87ms | 106ms |
+| dense_record_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 68ms | 95ms |
+| dense_field_unfiltered | 17 | 0.882 | 0.941 | 0.882 | 0.941 | 0.816 | 102ms | 127ms |
+| dense_field_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 68ms | 72ms |
+| keyword_record_unfiltered | 17 | 0.706 | 0.765 | 0.706 | 0.765 | 0.597 | 164ms | 1022ms |
+| keyword_record_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 3ms | 10ms |
+| keyword_field_unfiltered | 17 | 0.765 | 0.765 | 0.765 | 0.765 | 0.627 | 312ms | 2445ms |
+| keyword_field_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 3ms | 5ms |
+| hybrid_record_unfiltered | 17 | 0.882 | 0.882 | 0.882 | 0.882 | 0.750 | 819ms | 1146ms |
+| hybrid_record_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 65ms | 72ms |
+| hybrid_field_unfiltered | 17 | 0.941 | 0.941 | 0.941 | 0.941 | 0.809 | 1416ms | 2638ms |
+| hybrid_field_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 65ms | 79ms |
+| rerank_record_unfiltered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 0.931 | 2250ms | 2541ms |
+| rerank_record_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 100ms | 127ms |
+| rerank_field_unfiltered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 0.909 | 2363ms | 3985ms |
+| rerank_field_filtered | 17 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 92ms | 126ms |
+
+**2-3**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 35 | 0.857 | 0.914 | 0.810 | 0.881 | 0.766 | 79ms | 97ms |
+| dense_record_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 0.986 | 70ms | 85ms |
+| dense_field_unfiltered | 35 | 0.886 | 0.943 | 0.819 | 0.881 | 0.691 | 94ms | 120ms |
+| dense_field_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 69ms | 82ms |
+| keyword_record_unfiltered | 35 | 0.686 | 0.714 | 0.586 | 0.638 | 0.515 | 139ms | 1009ms |
+| keyword_record_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 0.890 | 3ms | 5ms |
+| keyword_field_unfiltered | 35 | 0.743 | 0.829 | 0.657 | 0.757 | 0.470 | 231ms | 2608ms |
+| keyword_field_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 0.905 | 3ms | 5ms |
+| hybrid_record_unfiltered | 35 | 0.914 | 1.000 | 0.810 | 0.929 | 0.716 | 222ms | 1111ms |
+| hybrid_record_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 0.971 | 37ms | 74ms |
+| hybrid_field_unfiltered | 35 | 0.971 | 1.000 | 0.871 | 0.929 | 0.717 | 353ms | 2566ms |
+| hybrid_field_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 36ms | 86ms |
+| rerank_record_unfiltered | 35 | 1.000 | 1.000 | 0.971 | 1.000 | 0.860 | 1718ms | 2674ms |
+| rerank_record_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 0.986 | 149ms | 191ms |
+| rerank_field_unfiltered | 35 | 0.971 | 1.000 | 0.905 | 1.000 | 0.910 | 1669ms | 3374ms |
+| rerank_field_filtered | 35 | 1.000 | 1.000 | 1.000 | 1.000 | 0.986 | 110ms | 157ms |
+
+**4-10**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 58 | 0.931 | 0.966 | 0.818 | 0.883 | 0.758 | 79ms | 101ms |
+| dense_record_filtered | 58 | 1.000 | 1.000 | 0.983 | 1.000 | 0.927 | 70ms | 82ms |
+| dense_field_unfiltered | 58 | 0.879 | 0.948 | 0.749 | 0.852 | 0.663 | 89ms | 123ms |
+| dense_field_filtered | 58 | 1.000 | 1.000 | 0.974 | 1.000 | 0.879 | 70ms | 80ms |
+| keyword_record_unfiltered | 58 | 0.707 | 0.845 | 0.568 | 0.755 | 0.553 | 170ms | 918ms |
+| keyword_record_filtered | 58 | 0.966 | 1.000 | 0.943 | 1.000 | 0.809 | 3ms | 5ms |
+| keyword_field_unfiltered | 58 | 0.672 | 0.810 | 0.557 | 0.714 | 0.486 | 284ms | 1611ms |
+| keyword_field_filtered | 58 | 0.983 | 1.000 | 0.960 | 1.000 | 0.777 | 3ms | 6ms |
+| hybrid_record_unfiltered | 58 | 0.931 | 0.983 | 0.846 | 0.940 | 0.768 | 263ms | 1104ms |
+| hybrid_record_filtered | 58 | 1.000 | 1.000 | 0.991 | 1.000 | 0.899 | 31ms | 72ms |
+| hybrid_field_unfiltered | 58 | 0.914 | 0.948 | 0.808 | 0.900 | 0.762 | 415ms | 2544ms |
+| hybrid_field_filtered | 58 | 1.000 | 1.000 | 0.991 | 1.000 | 0.874 | 33ms | 74ms |
+| rerank_record_unfiltered | 58 | 0.983 | 1.000 | 0.889 | 0.952 | 0.908 | 1643ms | 2569ms |
+| rerank_record_filtered | 58 | 1.000 | 1.000 | 0.991 | 1.000 | 1.000 | 255ms | 510ms |
+| rerank_field_unfiltered | 58 | 0.897 | 0.966 | 0.818 | 0.920 | 0.783 | 1200ms | 3182ms |
+| rerank_field_filtered | 58 | 0.983 | 1.000 | 0.974 | 1.000 | 0.898 | 147ms | 290ms |
+
+**>10**
+| Config | n | hit@5 | hit@10 | recall@5 | recall@10 | MRR | p50 | p95 |
+|--------|---|-------|--------|----------|-----------|-----|-----|-----|
+| dense_record_unfiltered | 20 | 0.850 | 0.950 | 0.725 | 0.842 | 0.623 | 81ms | 95ms |
+| dense_record_filtered | 20 | 0.900 | 1.000 | 0.825 | 0.983 | 0.842 | 74ms | 80ms |
+| dense_field_unfiltered | 20 | 0.850 | 0.950 | 0.725 | 0.842 | 0.551 | 94ms | 107ms |
+| dense_field_filtered | 20 | 1.000 | 1.000 | 0.917 | 0.958 | 0.796 | 69ms | 78ms |
+| keyword_record_unfiltered | 20 | 0.700 | 0.750 | 0.492 | 0.600 | 0.511 | 200ms | 757ms |
+| keyword_record_filtered | 20 | 0.850 | 0.950 | 0.708 | 0.925 | 0.675 | 4ms | 5ms |
+| keyword_field_unfiltered | 20 | 0.450 | 0.750 | 0.325 | 0.583 | 0.356 | 312ms | 1331ms |
+| keyword_field_filtered | 20 | 0.800 | 0.900 | 0.575 | 0.833 | 0.558 | 5ms | 6ms |
+| hybrid_record_unfiltered | 20 | 1.000 | 1.000 | 0.875 | 0.975 | 0.756 | 294ms | 1026ms |
+| hybrid_record_filtered | 20 | 0.950 | 1.000 | 0.892 | 0.983 | 0.838 | 33ms | 75ms |
+| hybrid_field_unfiltered | 20 | 1.000 | 1.000 | 0.825 | 0.958 | 0.758 | 477ms | 1953ms |
+| hybrid_field_filtered | 20 | 0.950 | 1.000 | 0.858 | 1.000 | 0.850 | 32ms | 76ms |
+| rerank_record_unfiltered | 20 | 0.950 | 0.950 | 0.867 | 0.933 | 0.785 | 1558ms | 2283ms |
+| rerank_record_filtered | 20 | 0.950 | 0.950 | 0.917 | 0.950 | 0.925 | 821ms | 1396ms |
+| rerank_field_unfiltered | 20 | 0.900 | 0.950 | 0.842 | 0.933 | 0.787 | 1170ms | 2432ms |
+| rerank_field_filtered | 20 | 0.950 | 1.000 | 0.917 | 0.983 | 0.906 | 444ms | 832ms |
+
+### Hidden vs visible gold recalls (found rate)
+- **dense_record_unfiltered**: visible 0.896 (n=96), hidden 0.864 (n=22)
+- **dense_record_filtered**: visible 0.990 (n=96), hidden 1.000 (n=22)
+- **dense_field_unfiltered**: visible 0.885 (n=96), hidden 0.773 (n=22)
+- **dense_field_filtered**: visible 0.979 (n=96), hidden 1.000 (n=22)
+- **keyword_record_unfiltered**: visible 0.781 (n=96), hidden 0.636 (n=22)
+- **keyword_record_filtered**: visible 1.000 (n=96), hidden 1.000 (n=22)
+- **keyword_field_unfiltered**: visible 0.792 (n=96), hidden 0.591 (n=22)
+- **keyword_field_filtered**: visible 0.979 (n=96), hidden 1.000 (n=22)
+- **hybrid_record_unfiltered**: visible 0.938 (n=96), hidden 0.955 (n=22)
+- **hybrid_record_filtered**: visible 0.990 (n=96), hidden 1.000 (n=22)
+- **hybrid_field_unfiltered**: visible 0.958 (n=96), hidden 0.864 (n=22)
+- **hybrid_field_filtered**: visible 1.000 (n=96), hidden 1.000 (n=22)
+- **rerank_record_unfiltered**: visible 0.990 (n=96), hidden 0.909 (n=22)
+- **rerank_record_filtered**: visible 1.000 (n=96), hidden 1.000 (n=22)
+- **rerank_field_unfiltered**: visible 0.969 (n=96), hidden 0.909 (n=22)
+- **rerank_field_filtered**: visible 1.000 (n=96), hidden 0.955 (n=22)
+
+### Rerank score distribution (top-1 cross-encoder)
+
+**rerank_field_filtered**
+- answerable (n=130): min=-3.195, p25=3.840, median=4.912, p75=6.453, max=8.911
+- unanswerable (n=15): min=0.602, p25=3.887, median=4.356, p75=6.483, max=7.193
+
+**rerank_field_unfiltered**
+- answerable (n=130): min=-1.857, p25=4.049, median=4.969, p75=6.517, max=8.911
+- unanswerable (n=20): min=1.054, p25=4.031, median=5.692, p75=6.483, max=8.343
+
+**rerank_record_filtered**
+- answerable (n=130): min=0.252, p25=4.961, median=6.144, p75=7.314, max=8.984
+- unanswerable (n=15): min=2.260, p25=4.604, median=5.523, p75=6.621, max=7.638
+
+**rerank_record_unfiltered**
+- answerable (n=130): min=0.252, p25=4.971, median=6.186, p75=7.342, max=8.984
+- unanswerable (n=20): min=2.042, p25=4.767, median=6.075, p75=7.067, max=8.333
+
+Rows with >5 gold IDs: 3
