@@ -18,10 +18,10 @@ from transformers import AutoTokenizer
 
 from recall_assistant.config import Settings
 from recall_assistant.ingest.chunkers import (
-    _compact_vehicles,
-    _full_vehicles,
     chunk_fields,
     chunk_record,
+    field_prefix,
+    record_prefix,
 )
 from recall_assistant.ingest.filters import filter_recalls
 from recall_assistant.ingest.parser import parse_recalls
@@ -159,9 +159,9 @@ def main() -> None:
 
             # Determine prefix
             if label == "record":
-                prefix = f"Vehicles: {_full_vehicles(r)}\nComponent: {r.component}\n"
+                prefix = record_prefix(r)
             else:
-                prefix = f"{_compact_vehicles(r)} | {r.component} — "
+                prefix = field_prefix(r)
 
             bodies = [c.body[len(prefix) :] for c in chunks]
 

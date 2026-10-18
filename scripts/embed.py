@@ -48,12 +48,22 @@ def _load_recalls(conn: psycopg.Connection) -> list[Recall]:
         )
         vehicle_rows = cur.fetchall()
 
+        cur.execute(
+            "SELECT campaign_id, component FROM recall_components ORDER BY campaign_id"
+        )
+        component_rows = cur.fetchall()
+
     # Group vehicles by campaign
     vehicles_by_campaign: dict[str, list[RecallVehicle]] = {}
     for cid, make, model, year in vehicle_rows:
         vehicles_by_campaign.setdefault(cid, []).append(
             RecallVehicle(make=make, model=model, year=year)
         )
+
+    # Group components by campaign
+    components_by_campaign: dict[str, list[str]] = {}
+    for cid, comp in component_rows:
+        components_by_campaign.setdefault(cid, []).append(comp)
 
     recalls = []
     for row in recall_rows:
@@ -80,6 +90,7 @@ def _load_recalls(conn: psycopg.Connection) -> list[Recall]:
                 do_not_drive=data["do_not_drive"],
                 park_outside=data["park_outside"],
                 vehicles=vehicles_by_campaign.get(cid, []),
+                components=components_by_campaign.get(cid, []),
             )
         )
     return recalls

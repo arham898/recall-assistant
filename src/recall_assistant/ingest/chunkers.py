@@ -42,6 +42,26 @@ class Chunk:
 
 
 # ---------------------------------------------------------------------------
+# Component helper
+# ---------------------------------------------------------------------------
+
+
+def _component_text(recall: Recall) -> str:
+    """All components for this recall, sorted and de-duped, joined by ' | '.
+
+    Raises ValueError if recall.components is empty — every recall in the
+    database has at least one recall_components row.
+    """
+    components = sorted(set(recall.components))
+    if not components:
+        raise ValueError(
+            f"Recall {recall.campaign_id} has no components; "
+            f"recall_components must be loaded before chunking"
+        )
+    return " | ".join(components)
+
+
+# ---------------------------------------------------------------------------
 # Vehicle header helpers
 # ---------------------------------------------------------------------------
 
@@ -99,6 +119,21 @@ def _compress_year_list(years: list[int]) -> str:
             start = prev = y
     ranges.append(f"{start}-{prev}" if prev > start else str(start))
     return ", ".join(ranges)
+
+
+# ---------------------------------------------------------------------------
+# Prefix builders (one rule, one place)
+# ---------------------------------------------------------------------------
+
+
+def record_prefix(recall: Recall) -> str:
+    """Prefix for the record chunker: vehicles + all components."""
+    return f"Vehicles: {_full_vehicles(recall)}\nComponent: {_component_text(recall)}\n"
+
+
+def field_prefix(recall: Recall) -> str:
+    """Prefix for the field chunker: compact vehicles + all components."""
+    return f"{_compact_vehicles(recall)} | {_component_text(recall)} — "
 
 
 # ---------------------------------------------------------------------------
@@ -241,7 +276,7 @@ def chunk_record(
     Vehicles and component go first so they survive truncation.
     Splits into overlapping windows if the full text exceeds max_tokens.
     """
-    prefix = f"Vehicles: {_full_vehicles(recall)}\nComponent: {recall.component}\n"
+    prefix = record_prefix(recall)
     text = (
         f"Defect: {recall.defect_summary}\n"
         f"Consequence: {recall.consequence_summary}\n"
@@ -271,8 +306,7 @@ def chunk_fields(
 
     Splits long fields into overlapping windows.
     """
-    compact = _compact_vehicles(recall)
-    prefix = f"{compact} | {recall.component} — "
+    prefix = field_prefix(recall)
 
     chunks: list[Chunk] = []
     for field_name, text in [
