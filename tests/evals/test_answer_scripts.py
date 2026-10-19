@@ -34,7 +34,9 @@ class TestCacheKey:
     def test_same_inputs_cache_hit(self, tmp_path, monkeypatch):
         """Pre-populated cache entry is returned by _load_cache."""
         monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
-        key = _cache_key("Q1", "rerank", "record", "model/x", "aaa", "bbb")
+        key = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "bbb", "unfiltered"
+        )
         row = {"question_id": "Q1", "status": "answered"}
         _save_cache(key, row)
         loaded = _load_cache(key)
@@ -44,29 +46,55 @@ class TestCacheKey:
     def test_changed_prompt_hash_misses(self, tmp_path, monkeypatch):
         """Different prompt hash → cache miss."""
         monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
-        key_old = _cache_key("Q1", "rerank", "record", "model/x", "aaa", "bbb")
+        key_old = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "bbb", "unfiltered"
+        )
         _save_cache(key_old, {"question_id": "Q1"})
 
-        key_new = _cache_key("Q1", "rerank", "record", "model/x", "zzz", "bbb")
+        key_new = _cache_key(
+            "Q1", "rerank", "record", "model/x", "zzz", "bbb", "unfiltered"
+        )
         assert _load_cache(key_new) is None
 
     def test_changed_model_misses(self, tmp_path, monkeypatch):
         """Different model → cache miss."""
         monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
-        key_old = _cache_key("Q1", "rerank", "record", "model/x", "aaa", "bbb")
+        key_old = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "bbb", "unfiltered"
+        )
         _save_cache(key_old, {"question_id": "Q1"})
 
-        key_new = _cache_key("Q1", "rerank", "record", "model/y", "aaa", "bbb")
+        key_new = _cache_key(
+            "Q1", "rerank", "record", "model/y", "aaa", "bbb", "unfiltered"
+        )
         assert _load_cache(key_new) is None
 
     def test_changed_seal_hash_misses(self, tmp_path, monkeypatch):
         """Different seal hash → cache miss."""
         monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
-        key_old = _cache_key("Q1", "rerank", "record", "model/x", "aaa", "bbb")
+        key_old = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "bbb", "unfiltered"
+        )
         _save_cache(key_old, {"question_id": "Q1"})
 
-        key_new = _cache_key("Q1", "rerank", "record", "model/x", "aaa", "ccc")
+        key_new = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "ccc", "unfiltered"
+        )
         assert _load_cache(key_new) is None
+
+    def test_filter_on_off_different_keys(self, tmp_path, monkeypatch):
+        """Same inputs with filter on vs off produce different cache keys."""
+        monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
+        key_on = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "bbb", "filtered"
+        )
+        key_off = _cache_key(
+            "Q1", "rerank", "record", "model/x", "aaa", "bbb", "unfiltered"
+        )
+        assert key_on != key_off
+
+        _save_cache(key_on, {"question_id": "Q1", "filtered": True})
+        assert _load_cache(key_off) is None
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -163,6 +191,7 @@ class TestScriptHelp:
         assert result.returncode == 0
         assert "--mode" in result.stdout
         assert "--chunker" in result.stdout
+        assert "--filter" in result.stdout
         assert "--limit" in result.stdout
         assert "ModuleNotFoundError" not in result.stderr, result.stderr
         assert "ImportError" not in result.stderr, result.stderr
@@ -203,7 +232,7 @@ class TestCacheKeySanitisation:
         """A question_id containing '/' writes a flat file, not a subdirectory."""
         monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
         qid = "gen_x_A/B:C_2024"
-        key = _cache_key(qid, "rerank", "record", "model/x", "aaa", "bbb")
+        key = _cache_key(qid, "rerank", "record", "model/x", "aaa", "bbb", "unfiltered")
         row = {"question_id": qid, "status": "answered"}
         _save_cache(key, row)
 

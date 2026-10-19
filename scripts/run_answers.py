@@ -53,6 +53,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         choices=["record", "field"],
     )
     parser.add_argument(
+        "--filter",
+        required=True,
+        choices=["on", "off"],
+        help="Apply VehicleFilter when the row has a complete vehicle",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=0,
@@ -143,6 +149,7 @@ def _cache_key(
     model: str,
     p_hash: str,
     s_hash: str,
+    filter_state: str,
 ) -> str:
     """Deterministic filename for one cache entry."""
     parts = [
@@ -152,6 +159,7 @@ def _cache_key(
         _sanitise(model),
         _sanitise(p_hash),
         _sanitise(s_hash),
+        _sanitise(filter_state),
     ]
     return "__".join(parts) + ".json"
 
@@ -235,16 +243,18 @@ def _run_one(
     settings: Settings,
     p_hash: str,
     s_hash: str,
+    filter_on: bool,
 ) -> tuple[dict, bool]:
     """Run one golden question; return (row_dict, was_cached)."""
     chunker = retriever._chunker  # set at construction time
-    key = _cache_key(row.id, mode, chunker, model, p_hash, s_hash)
+    filt = "filtered" if filter_on else "unfiltered"
+    key = _cache_key(row.id, mode, chunker, model, p_hash, s_hash, filt)
     cached = _load_cache(key)
     if cached is not None:
         return cached, True
 
     vf = None
-    if has_complete_vehicle(row):
+    if filter_on and has_complete_vehicle(row):
         vf = VehicleFilter(make=row.make, model=row.model, year=row.year)
 
     result = answer(
@@ -294,6 +304,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     settings = Settings()
     model = settings.llm_model
+    filter_on = args.filter == "on"
 
     # ── dirty worktree guard ──
     dirty = _is_worktree_dirty()
@@ -376,6 +387,7 @@ def main(argv: list[str] | None = None) -> None:
             settings=settings,
             p_hash=p_hash,
             s_hash=s_hash,
+            filter_on=filter_on,
         )
         results.append(row_dict)
         if not was_cached:
@@ -398,7 +410,8 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     # ── write JSONL ──
-    label = f"{args.mode}_{args.chunker}"
+    filt_tag = "filtered" if filter_on else "unfiltered"
+    label = f"{args.mode}_{args.chunker}_{filt_tag}"
     command = "python " + " ".join(sys.argv)
     results_dir = PROJECT_ROOT / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -412,6 +425,7 @@ def main(argv: list[str] | None = None) -> None:
         "dirty_worktree": dirty,
         "mode": args.mode,
         "chunker": args.chunker,
+        "vehicle_filter": filter_on,
         "model": model,
         "prompt_hash": p_hash,
         "card_seal": seal,
