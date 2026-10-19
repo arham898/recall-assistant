@@ -1250,6 +1250,21 @@ Date:    2026-10-19
 |-----------------|---------|-----------------|
 | 19 | 0 | 1 |
 
+### Faithfulness (vectara/hallucination_evaluation_model)
+
+| n | mean | median | p25 | min | flagged (below 0.5) | seconds |
+|---|------|--------|-----|-----|---------------------|---------|
+| 101 | 0.824 | 0.955 | 0.819 | 0.068 | 14 | 462.79s |
+
+Lowest 5:
+- gen_count_FORD_E-350_2021: 0.068
+- hw_025: 0.075
+- gen_count_VOLKSWAGEN_ATLAS_CROSS_SPORT_2021: 0.091
+- gen_all_recalls_ORANGE_EV_E-TRIEVER_2025: 0.098
+- hw_024: 0.203
+
+Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
+
 ### Cost
 | total | per_question |
 |-------|-------------|
@@ -1259,7 +1274,6 @@ Date:    2026-10-19
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.54s | 1.07s | 0.84s | 1.45s |
-
 ## Answer evaluation: rerank_record_unfiltered (Module 2.3)
 
 ```
@@ -1287,6 +1301,21 @@ Date:    2026-10-19
 |-----------------|---------|-----------------|
 | 19 | 0 | 1 |
 
+### Faithfulness (vectara/hallucination_evaluation_model)
+
+| n | mean | median | p25 | min | flagged (below 0.5) | seconds |
+|---|------|--------|-----|-----|---------------------|---------|
+| 105 | 0.843 | 0.956 | 0.885 | 0.071 | 13 | 400.79s |
+
+Lowest 5:
+- hw_025: 0.071
+- gen_count_VOLKSWAGEN_ATLAS_CROSS_SPORT_2021: 0.103
+- hw_030: 0.124
+- gen_count_BMW_330I_2019: 0.148
+- gen_all_recalls_KENWORTH_K270_2025: 0.237
+
+Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
+
 ### Cost
 | total | per_question |
 |-------|-------------|
@@ -1296,7 +1325,6 @@ Date:    2026-10-19
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.54s | 1.00s | 1.86s | 2.48s |
-
 ## Answer evaluation: hybrid_record_filtered (Module 2.3)
 
 ```
@@ -1324,6 +1352,21 @@ Date:    2026-10-19
 |-----------------|---------|-----------------|
 | 20 | 0 | 0 |
 
+### Faithfulness (vectara/hallucination_evaluation_model)
+
+| n | mean | median | p25 | min | flagged (below 0.5) | seconds |
+|---|------|--------|-----|-----|---------------------|---------|
+| 112 | 0.925 | 0.965 | 0.939 | 0.109 | 2 | 189.36s |
+
+Lowest 5:
+- gen_count_WESTERN_STAR_4900_2020: 0.109
+- gen_count_TESLA_MODEL_3_2022: 0.411
+- gen_count_FCCC_XBR_2019: 0.512
+- gen_all_recalls_FLEETWOOD_BOUNDER_2019: 0.531
+- gen_count_JEEP_GRAND_CHEROKEE_L_2024: 0.554
+
+Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
+
 ### Cost
 | total | per_question |
 |-------|-------------|
@@ -1333,7 +1376,6 @@ Date:    2026-10-19
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.47s | 0.97s | 0.51s | 0.99s |
-
 ## Answer evaluation: rerank_record_filtered (Module 2.3)
 
 ```
@@ -1360,6 +1402,21 @@ Date:    2026-10-19
 | declined (pass) | invalid | answered (fail) |
 |-----------------|---------|-----------------|
 | 20 | 0 | 0 |
+
+### Faithfulness (vectara/hallucination_evaluation_model)
+
+| n | mean | median | p25 | min | flagged (below 0.5) | seconds |
+|---|------|--------|-----|-----|---------------------|---------|
+| 114 | 0.890 | 0.968 | 0.936 | 0.078 | 10 | 183.76s |
+
+Lowest 5:
+- hw_025: 0.078
+- gen_count_VOLKSWAGEN_ATLAS_CROSS_SPORT_2021: 0.098
+- gen_count_JEEP_GRAND_CHEROKEE_L_2024: 0.227
+- gen_count_TOYOTA_HIGHLANDER_2019: 0.230
+- gen_count_KIA_EV9_2025: 0.254
+
+Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
 
 ### Cost
 | total | per_question |
