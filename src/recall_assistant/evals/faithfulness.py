@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import re
-from typing import Protocol
 
 REVISION = "de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8"
 MODEL_NAME = "vectara/hallucination_evaluation_model"
@@ -30,17 +29,6 @@ def strip_citations(text: str) -> str:
 def build_premise(retrieved_texts: list[str]) -> str:
     """Join retrieved source texts with two newlines."""
     return "\n\n".join(retrieved_texts)
-
-
-# ---------------------------------------------------------------------------
-# Scorer protocol (for dependency injection in tests)
-# ---------------------------------------------------------------------------
-
-
-class FaithfulnessScorer(Protocol):
-    """Any callable (premise, hypothesis) -> float."""
-
-    def __call__(self, premise: str, hypothesis: str) -> float: ...
 
 
 # ---------------------------------------------------------------------------

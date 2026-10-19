@@ -17,58 +17,8 @@ from recall_assistant.evals.faithfulness import (
     build_premise,
     strip_citations,
 )
-from recall_assistant.evals.golden import GoldenRow
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _golden(
-    id: str,
-    source: str,
-    gold: list[str],
-    pass_rule: str,
-    template: str | None = None,
-) -> GoldenRow:
-    return GoldenRow(
-        id=id,
-        question=f"Question for {id}",
-        source=source,
-        gold_campaign_ids=gold,
-        reference_answer="ref",
-        pass_rule=pass_rule,
-        template=template,
-    )
-
-
-def _answer_row(
-    question_id: str,
-    source: str,
-    status: str,
-    cited_ids: list[str],
-    *,
-    answer_text: str = "Some answer text.",
-    retrieved_texts: list[str] | None = None,
-    retrieved_ids: list[str] | None = None,
-) -> dict:
-    return {
-        "question_id": question_id,
-        "source": source,
-        "status": status,
-        "answer_text": answer_text,
-        "cited_ids": cited_ids,
-        "invalid_ids": [],
-        "retrieved_ids": retrieved_ids or cited_ids,
-        "retrieved_texts": retrieved_texts or ["text"],
-        "prompt_tokens": 100,
-        "completion_tokens": 50,
-        "cost": 0.001,
-        "retrieval_latency_s": 0.05,
-        "generation_latency_s": 1.0,
-        "finish_reason": "stop",
-    }
-
+from tests.evals.conftest import make_answer_row as _answer_row
+from tests.evals.conftest import make_golden as _golden
 
 # ═══════════════════════════════════════════════════════════════════
 # 1. strip_citations

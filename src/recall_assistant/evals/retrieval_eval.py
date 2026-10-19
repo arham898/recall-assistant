@@ -8,7 +8,6 @@ the CLI, database, models, timing and file output around these functions.
 from __future__ import annotations
 
 import math
-import re
 import sys
 import time
 from collections import defaultdict
@@ -28,6 +27,7 @@ from recall_assistant.evals.retrieval_metrics import (
     recall_at_k,
     reciprocal_rank,
 )
+from recall_assistant.evals.run_metadata import update_results_section
 from recall_assistant.retrieval import Chunker, Hit, VehicleFilter
 
 # ---------------------------------------------------------------------------
@@ -375,29 +375,8 @@ def card_seal(conn: psycopg.Connection) -> dict[str, dict[str, Any]]:
 
 def update_results_md(label: str, content: str, *, path: Path | None = None) -> None:
     """Replace or append the section for *label* in docs/results.md."""
-    md_path = path or RESULTS_MD
     header = f"## Retrieval evaluation: {label} (Module 2.2)"
-
-    if md_path.exists():
-        text = md_path.read_text(encoding="utf-8")
-    else:
-        text = ""
-
-    section = f"{header}\n\n{content}\n"
-
-    pattern = re.compile(
-        r"^" + re.escape(header) + r"\n.*?(?=\n## |\Z)",
-        re.DOTALL | re.MULTILINE,
-    )
-
-    if pattern.search(text):
-        text = pattern.sub(section.rstrip(), text)
-    else:
-        if text and not text.endswith("\n"):
-            text += "\n"
-        text += "\n" + section
-
-    md_path.write_text(text, encoding="utf-8")
+    update_results_section(header, content, path=path)
 
 
 # ---------------------------------------------------------------------------

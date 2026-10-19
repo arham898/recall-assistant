@@ -1,7 +1,7 @@
 """Evaluate retrieval quality on the golden evaluation set.
 
 Usage:
-    uv run python scripts/eval_retrieval.py --label NAME [--limit N]
+    python scripts/eval_retrieval.py --label NAME [--limit N]
 
 Thin CLI wrapper.  Testable logic lives in
 ``recall_assistant.evals.retrieval_eval``.
@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 import time
 from collections import defaultdict
@@ -37,6 +36,7 @@ from recall_assistant.evals.retrieval_eval import (
     run_retrieval_loop,
     update_results_md,
 )
+from recall_assistant.evals.run_metadata import git_commit, is_worktree_dirty
 from recall_assistant.retrieval import VehicleFilter
 from recall_assistant.retrieval.retriever import Retriever
 
@@ -63,42 +63,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 # ---------------------------------------------------------------------------
-# Git metadata
-# ---------------------------------------------------------------------------
-
-
-def _git_commit() -> str:
-    try:
-        return (
-            subprocess.check_output(
-                ["git", "rev-parse", "--short", "HEAD"],
-                cwd=str(PROJECT_ROOT),
-                stderr=subprocess.DEVNULL,
-            )
-            .decode()
-            .strip()
-        )
-    except (OSError, subprocess.SubprocessError):
-        return "unknown"
-
-
-def _is_worktree_dirty() -> bool:
-    try:
-        out = (
-            subprocess.check_output(
-                ["git", "status", "--porcelain"],
-                cwd=str(PROJECT_ROOT),
-                stderr=subprocess.DEVNULL,
-            )
-            .decode()
-            .strip()
-        )
-        return bool(out)
-    except (OSError, subprocess.SubprocessError):
-        return True
-
-
-# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -108,7 +72,7 @@ def main(argv: list[str] | None = None) -> None:
     settings = Settings()
 
     # ── dirty worktree guard ──
-    dirty = _is_worktree_dirty()
+    dirty = is_worktree_dirty()
     if dirty and not args.limit and not args.allow_dirty:
         print(
             "ERROR: worktree is dirty.  Commit first so git_commit is "
@@ -361,7 +325,7 @@ def main(argv: list[str] | None = None) -> None:
         "metadata": {
             "label": args.label,
             "date": str(date.today()),
-            "git_commit": _git_commit(),
+            "git_commit": git_commit(),
             "dirty_worktree": dirty,
             "retrieval_settings": {
                 "k": settings.retrieval_k,

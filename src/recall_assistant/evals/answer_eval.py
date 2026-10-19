@@ -7,7 +7,6 @@ Pure library — no CLI, no model loading.  The script
 from __future__ import annotations
 
 import json
-import re
 import sys
 import time
 from collections.abc import Callable
@@ -15,7 +14,6 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from recall_assistant.config import PROJECT_ROOT
 from recall_assistant.evals.answer_checks import (
     cites_all_gold,
     cites_gold,
@@ -28,9 +26,7 @@ from recall_assistant.evals.answer_checks import (
 from recall_assistant.evals.faithfulness import build_premise, strip_citations
 from recall_assistant.evals.golden import GoldenRow
 from recall_assistant.evals.retrieval_eval import percentile
-
-RESULTS_MD = PROJECT_ROOT / "docs" / "results.md"
-
+from recall_assistant.evals.run_metadata import update_results_section
 
 # ---------------------------------------------------------------------------
 # JSONL I/O
@@ -171,15 +167,19 @@ def score_answers(
     row.  Progress is printed every 20 rows when a scorer is active.
     """
     checked: list[dict] = []
-    t0 = time.perf_counter()
+    faith_secs = 0.0
     for i, row in enumerate(rows, 1):
         golden = golden_by_id.get(row["question_id"])
         if golden is None:
             continue
-        checked.append(check_one_row(row, golden, scorer=scorer))
+        if scorer is not None and row["status"] == "answered":
+            t0 = time.perf_counter()
+            checked.append(check_one_row(row, golden, scorer=scorer))
+            faith_secs += time.perf_counter() - t0
+        else:
+            checked.append(check_one_row(row, golden, scorer=scorer))
         if scorer is not None and i % 20 == 0:
             print(f"  scored {i}/{len(rows)}...", file=sys.stderr)
-    faith_secs = time.perf_counter() - t0
 
     # Split by source.
     generated = [r for r in checked if r["source"] == "generated"]
@@ -410,26 +410,5 @@ def update_answer_results_md(
     label: str, content: str, *, path: Path | None = None
 ) -> None:
     """Replace or append the section for *label* in docs/results.md."""
-    md_path = path or RESULTS_MD
     header = f"## Answer evaluation: {label} (Module 2.3)"
-
-    if md_path.exists():
-        text = md_path.read_text(encoding="utf-8")
-    else:
-        text = ""
-
-    section = f"{header}\n\n{content}\n"
-
-    pattern = re.compile(
-        r"^" + re.escape(header) + r"\n.*?(?=\n## |\Z)",
-        re.DOTALL | re.MULTILINE,
-    )
-
-    if pattern.search(text):
-        text = pattern.sub(section.rstrip(), text)
-    else:
-        if text and not text.endswith("\n"):
-            text += "\n"
-        text += "\n" + section
-
-    md_path.write_text(text, encoding="utf-8")
+    update_results_section(header, content, path=path)

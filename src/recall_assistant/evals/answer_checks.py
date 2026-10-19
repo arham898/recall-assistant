@@ -1,7 +1,6 @@
 """Pure functions for classifying answer quality against golden expectations.
 
 Every function takes primitives (strings, lists) and returns a bool or str.
-No I/O, no imports beyond the standard library.
 
 Limitation: ``cite_any_gold`` and ``cite_all_gold`` pass rules also require
 "the answer states the reference fact" (see evals/README.md).  That is a
@@ -10,6 +9,8 @@ Faithfulness scoring addresses the semantic gap partially.
 """
 
 from __future__ import annotations
+
+from recall_assistant.rag import DECLINE_MARKER
 
 # ---------------------------------------------------------------------------
 # Status checks
@@ -55,8 +56,7 @@ def invalid_reason(
         return "cut_off"
 
     # Marker present but not the whole response (or marker + citations).
-    _MARKER = "NO_RELEVANT_RECALL_FOUND"
-    if _MARKER in answer_text:
+    if DECLINE_MARKER in answer_text:
         return "marker_with_text"
 
     # Bad citations present.

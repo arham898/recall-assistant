@@ -1,4 +1,4 @@
-"""Test fixtures for golden evaluation set tests.
+"""Test fixtures and shared helpers for evaluation tests.
 
 Built around campaign 24V123000 (2021 FORD RANGER, SERVICE BRAKES,
 HYDRAULIC: brake hose).  Inserts into recalls, recall_vehicles AND
@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import psycopg
 import pytest
+
+from recall_assistant.evals.golden import GoldenRow
 
 # ---------------------------------------------------------------------------
 # Seed data
@@ -254,3 +256,69 @@ def eval_seed_data(db_conn: psycopg.Connection):
                     {"cid": comp_cid, "comp": comp_str},
                 )
     db_conn.commit()
+
+
+# ---------------------------------------------------------------------------
+# Shared test helpers for answer-evaluation tests
+# ---------------------------------------------------------------------------
+
+
+def make_golden(
+    id: str,
+    source: str,
+    gold: list[str],
+    pass_rule: str,
+    template: str | None = None,
+) -> GoldenRow:
+    """Build a minimal GoldenRow for unit tests."""
+    return GoldenRow(
+        id=id,
+        question=f"Question for {id}",
+        source=source,
+        template=template,
+        component_group=None,
+        gold_campaign_ids=gold,
+        reference_answer="ref",
+        reference_facts=[],
+        make="TEST",
+        model="CAR",
+        year=2020,
+        pass_rule=pass_rule,
+        tags=[],
+        notes=None,
+    )
+
+
+def make_answer_row(
+    question_id: str,
+    source: str,
+    status: str,
+    cited_ids: list[str],
+    *,
+    invalid_ids: list[str] | None = None,
+    retrieved_ids: list[str] | None = None,
+    retrieved_texts: list[str] | None = None,
+    answer_text: str = "Some answer text.",
+    finish_reason: str = "stop",
+    cost: float = 0.001,
+    retrieval_latency_s: float = 0.05,
+    generation_latency_s: float = 1.0,
+) -> dict:
+    """Build an answer-row dict matching run_answers.py JSONL schema."""
+    rids = retrieved_ids or cited_ids
+    return {
+        "question_id": question_id,
+        "source": source,
+        "status": status,
+        "answer_text": answer_text,
+        "cited_ids": cited_ids,
+        "invalid_ids": invalid_ids or [],
+        "retrieved_ids": rids,
+        "retrieved_texts": retrieved_texts or [f"text for {cid}" for cid in rids],
+        "prompt_tokens": 1000,
+        "completion_tokens": 200,
+        "cost": cost,
+        "retrieval_latency_s": retrieval_latency_s,
+        "generation_latency_s": generation_latency_s,
+        "finish_reason": finish_reason,
+    }

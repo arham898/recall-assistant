@@ -1,10 +1,10 @@
 """Run golden questions through rag.answer() and save JSONL results.
 
 Usage:
-    python scripts/run_answers.py --mode MODE --chunker CHUNKER [--limit N]
+    python scripts/run_answers.py --mode MODE --chunker CHUNKER --filter {on,off} [--limit N]
 
 Thin CLI wrapper.  Caches each LLM response on disk keyed by
-(question_id, mode, chunker, model, prompt_hash, seal_hash).
+(question_id, mode, chunker, model, prompt_hash, seal_hash, filter_state).
 A re-run with nothing changed makes zero LLM calls.
 """
 
@@ -14,7 +14,6 @@ import argparse
 import hashlib
 import json
 import re
-import subprocess
 import sys
 from datetime import date
 from typing import Any
@@ -27,6 +26,7 @@ from recall_assistant.evals.retrieval_eval import (
     has_complete_vehicle,
     load_golden_rows,
 )
+from recall_assistant.evals.run_metadata import git_commit, is_worktree_dirty
 from recall_assistant.rag import _SYSTEM_PROMPT, answer
 from recall_assistant.retrieval import VehicleFilter
 
@@ -70,42 +70,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Allow running on a dirty worktree",
     )
     return parser.parse_args(argv)
-
-
-# ---------------------------------------------------------------------------
-# Git metadata
-# ---------------------------------------------------------------------------
-
-
-def _git_commit() -> str:
-    try:
-        return (
-            subprocess.check_output(
-                ["git", "rev-parse", "--short", "HEAD"],
-                cwd=str(PROJECT_ROOT),
-                stderr=subprocess.DEVNULL,
-            )
-            .decode()
-            .strip()
-        )
-    except (OSError, subprocess.SubprocessError):
-        return "unknown"
-
-
-def _is_worktree_dirty() -> bool:
-    try:
-        out = (
-            subprocess.check_output(
-                ["git", "status", "--porcelain"],
-                cwd=str(PROJECT_ROOT),
-                stderr=subprocess.DEVNULL,
-            )
-            .decode()
-            .strip()
-        )
-        return bool(out)
-    except (OSError, subprocess.SubprocessError):
-        return True
 
 
 # ---------------------------------------------------------------------------
@@ -307,7 +271,7 @@ def main(argv: list[str] | None = None) -> None:
     filter_on = args.filter == "on"
 
     # ── dirty worktree guard ──
-    dirty = _is_worktree_dirty()
+    dirty = is_worktree_dirty()
     if dirty and not args.limit and not args.allow_dirty:
         print(
             "ERROR: worktree is dirty.  Commit first so git_commit is "
@@ -371,7 +335,8 @@ def main(argv: list[str] | None = None) -> None:
 
     # ── run ──
     print(
-        f"Running {len(rows)} questions (mode={args.mode}, chunker={args.chunker})..."
+        f"Running {len(rows)} questions "
+        f"(mode={args.mode}, chunker={args.chunker}, filter={args.filter})..."
     )
     results: list[dict] = []
     fresh_count = 0
@@ -421,7 +386,7 @@ def main(argv: list[str] | None = None) -> None:
         "type": "metadata",
         "label": label,
         "date": str(date.today()),
-        "git_commit": _git_commit(),
+        "git_commit": git_commit(),
         "dirty_worktree": dirty,
         "mode": args.mode,
         "chunker": args.chunker,
