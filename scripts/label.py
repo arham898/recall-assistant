@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 
 from recall_assistant.config import PROJECT_ROOT
-from recall_assistant.evals.answer_eval import load_answers_jsonl
+from recall_assistant.evals.answer_eval import load_answers_jsonl, load_labels
 from recall_assistant.evals.golden import GoldenRow
 from recall_assistant.evals.retrieval_eval import load_golden_rows
 
@@ -83,20 +83,8 @@ def select_rows(
 # Labels I/O
 # ---------------------------------------------------------------------------
 
-
-def load_existing_labels(path: Path) -> dict[str, dict]:
-    """Load existing labels, keyed by question_id.  Empty dict if missing."""
-    if not path.exists():
-        return {}
-    labels: dict[str, dict] = {}
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            row = json.loads(line)
-            labels[row["question_id"]] = row
-    return labels
+# Thin alias so tests that import from scripts.label keep working.
+load_existing_labels = load_labels
 
 
 def append_label(path: Path, label_row: dict) -> None:
@@ -126,7 +114,7 @@ def display_row(
     retrieved_ids = row.get("retrieved_ids", [])
     retrieved_texts = row.get("retrieved_texts", [])
     print(f"\nRetrieved cards ({len(retrieved_ids)}):")
-    for i, (cid, text) in enumerate(zip(retrieved_ids, retrieved_texts)):
+    for cid, text in zip(retrieved_ids, retrieved_texts):
         print(f"  [{cid}] {text[:300]}")
 
     print(f"\nAnswer: {row['answer_text']}")

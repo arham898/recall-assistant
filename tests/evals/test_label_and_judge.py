@@ -130,6 +130,85 @@ class TestStratifiedSampling:
         }
         assert gen_a != gen_b
 
+    def test_refuses_n_below_fixed_count(self, tmp_path):
+        """label.py exits non-zero when --n < unanswerable + handwritten."""
+        metadata = {"type": "metadata", "label": "test", "date": "2026-01-01"}
+        # 1 unanswerable + 1 handwritten + 1 generated = fixed count is 2
+        rows = [
+            metadata,
+            {
+                "question_id": "hw_031",
+                "source": "unanswerable",
+                "status": "declined",
+                "answer_text": "NO_RELEVANT_RECALL_FOUND",
+                "cited_ids": [],
+                "invalid_ids": [],
+                "retrieved_ids": ["X"],
+                "retrieved_texts": ["t"],
+                "prompt_tokens": 1,
+                "completion_tokens": 1,
+                "cost": 0.0,
+                "retrieval_latency_s": 0.0,
+                "generation_latency_s": 0.0,
+                "finish_reason": "stop",
+            },
+            {
+                "question_id": "hw_001",
+                "source": "handwritten",
+                "status": "answered",
+                "answer_text": "a",
+                "cited_ids": [],
+                "invalid_ids": [],
+                "retrieved_ids": ["X"],
+                "retrieved_texts": ["t"],
+                "prompt_tokens": 1,
+                "completion_tokens": 1,
+                "cost": 0.0,
+                "retrieval_latency_s": 0.0,
+                "generation_latency_s": 0.0,
+                "finish_reason": "stop",
+            },
+            {
+                "question_id": "gen_remedy_WESTERN_STAR_47X_2021",
+                "source": "generated",
+                "status": "answered",
+                "answer_text": "a",
+                "cited_ids": [],
+                "invalid_ids": [],
+                "retrieved_ids": ["X"],
+                "retrieved_texts": ["t"],
+                "prompt_tokens": 1,
+                "completion_tokens": 1,
+                "cost": 0.0,
+                "retrieval_latency_s": 0.0,
+                "generation_latency_s": 0.0,
+                "finish_reason": "stop",
+            },
+        ]
+        answers_path = tmp_path / "answers.jsonl"
+        with open(answers_path, "w", encoding="utf-8") as f:
+            f.writelines(json.dumps(r) + "\n" for r in rows)
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "scripts/label.py",
+                "--answers",
+                str(answers_path),
+                "--n",
+                "1",
+                "--labels",
+                str(tmp_path / "labels.jsonl"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(PROJECT_ROOT),
+        )
+        assert result.returncode != 0
+        assert "below" in result.stderr.lower()
+        assert "2" in result.stderr  # the required minimum
+
 
 # ═══════════════════════════════════════════════════════════════════
 # 2. Resumability

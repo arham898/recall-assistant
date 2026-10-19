@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 import sys
 from datetime import date
 from typing import Any
@@ -26,7 +25,11 @@ from recall_assistant.evals.retrieval_eval import (
     has_complete_vehicle,
     load_golden_rows,
 )
-from recall_assistant.evals.run_metadata import git_commit, is_worktree_dirty
+from recall_assistant.evals.run_metadata import (
+    git_commit,
+    is_worktree_dirty,
+    sanitise_path_component,
+)
 from recall_assistant.rag import _SYSTEM_PROMPT, answer
 from recall_assistant.retrieval import VehicleFilter
 
@@ -98,12 +101,9 @@ def seal_hash(seal: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
-_UNSAFE_RE = re.compile(r"[^A-Za-z0-9_.\-]")
-
-
 def _sanitise(component: str) -> str:
-    """Replace characters outside ``[A-Za-z0-9_.-]`` with ``_``."""
-    return _UNSAFE_RE.sub("_", component)
+    """Delegate to the shared implementation in run_metadata."""
+    return sanitise_path_component(component)
 
 
 def _cache_key(

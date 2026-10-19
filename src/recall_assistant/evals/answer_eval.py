@@ -33,17 +33,30 @@ from recall_assistant.evals.run_metadata import update_results_section
 # ---------------------------------------------------------------------------
 
 
+def read_jsonl(path: Path) -> list[dict]:
+    """Read a JSONL file into a list of dicts."""
+    with open(path, encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+def load_labels(path: Path) -> dict[str, dict]:
+    """Load hand labels from a JSONL file, keyed by ``question_id``.
+
+    Returns an empty dict if *path* does not exist.
+    """
+    if not path.exists():
+        return {}
+    return {row["question_id"]: row for row in read_jsonl(path)}
+
+
 def load_answers_jsonl(path: Path) -> tuple[dict, list[dict]]:
     """Load an answers JSONL file.
 
     Returns ``(metadata, rows)`` where *metadata* is the first line
     (``type: "metadata"``) and *rows* are the remaining answer dicts.
     """
-    with open(path, encoding="utf-8") as f:
-        lines = [line.strip() for line in f if line.strip()]
-    metadata = json.loads(lines[0])
-    rows = [json.loads(line) for line in lines[1:]]
-    return metadata, rows
+    all_rows = read_jsonl(path)
+    return all_rows[0], all_rows[1:]
 
 
 # ---------------------------------------------------------------------------

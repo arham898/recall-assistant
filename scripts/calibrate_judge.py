@@ -13,14 +13,17 @@ from __future__ import annotations
 import argparse
 import json
 import random
-import re
 import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 from recall_assistant.config import PROJECT_ROOT, Settings
-from recall_assistant.evals.answer_eval import load_answers_jsonl
+from recall_assistant.evals.answer_eval import (
+    load_answers_jsonl,
+    load_labels,
+    read_jsonl,
+)
 from recall_assistant.evals.judge import (
     JUDGE_PROMPTS,
     JudgeResult,
@@ -33,16 +36,13 @@ from recall_assistant.evals.run_metadata import (
     is_worktree_dirty,
     update_results_section,
 )
+from recall_assistant.evals.run_metadata import (
+    sanitise_path_component as _sanitise,
+)
 
 JUDGE_CACHE_DIR = PROJECT_ROOT / ".cache" / "judge"
 CALIBRATION_JSONL = PROJECT_ROOT / "results" / "judge_calibration.jsonl"
-
-_UNSAFE_RE = re.compile(r"[^A-Za-z0-9_.\-]")
-
-
-def _sanitise(component: str) -> str:
-    """Replace characters outside ``[A-Za-z0-9_.-]`` with ``_``."""
-    return _UNSAFE_RE.sub("_", component)
+SPLIT_SEED = 42
 
 
 # ---------------------------------------------------------------------------
@@ -186,17 +186,6 @@ def _scored_path_from_answers(answers_path: Path) -> Path:
         raise ValueError(msg)
     scored_name = "scored_" + name[len("answers_") :]
     return answers_path.parent / scored_name
-
-
-def _load_scored(path: Path) -> list[dict]:
-    """Load scored JSONL (no metadata line)."""
-    rows = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                rows.append(json.loads(line))
-    return rows
 
 
 # ---------------------------------------------------------------------------
@@ -431,12 +420,8 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
 
     # ── load data ──
-    label_rows: list[dict] = []
-    with open(args.labels, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                label_rows.append(json.loads(line))
+    labels_by_qid_full = load_labels(args.labels)
+    label_rows = list(labels_by_qid_full.values())
 
     _metadata, answer_rows = load_answers_jsonl(args.answers)
     answers_by_qid = {r["question_id"]: r for r in answer_rows}
@@ -445,7 +430,7 @@ def main(argv: list[str] | None = None) -> None:
     golden_by_id = {g.id: g for g in golden_rows}
 
     scored_path = _scored_path_from_answers(args.answers)
-    scored_rows = _load_scored(scored_path)
+    scored_rows = read_jsonl(scored_path)
 
     answers_file = args.answers.name
 
@@ -478,7 +463,7 @@ def main(argv: list[str] | None = None) -> None:
     llm_client = build_openrouter_client(settings, temperature=0.0)
 
     # ── split dev/test ──
-    dev_labels, test_labels = split_dev_test(label_rows)
+    dev_labels, test_labels = split_dev_test(label_rows, seed=SPLIT_SEED)
 
     # ── run judge on all labels ──
     judge_verdicts: dict[str, JudgeResult] = {}
@@ -575,7 +560,7 @@ def main(argv: list[str] | None = None) -> None:
     cal_row = {
         "prompt_version": args.prompt_version,
         "model": model,
-        "split_seed": 42,
+        "split_seed": SPLIT_SEED,
         "dev": dev_metrics,
         "test": test_metrics,
         "code_vs_human": code_vs_human,

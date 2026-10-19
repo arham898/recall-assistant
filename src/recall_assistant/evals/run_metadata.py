@@ -8,6 +8,18 @@ from pathlib import Path
 
 from recall_assistant.config import PROJECT_ROOT
 
+# ---------------------------------------------------------------------------
+# Filename sanitisation (shared by cache-key builders in scripts)
+# ---------------------------------------------------------------------------
+
+_UNSAFE_RE = re.compile(r"[^A-Za-z0-9_.\-]")
+
+
+def sanitise_path_component(component: str) -> str:
+    """Replace characters outside ``[A-Za-z0-9_.-]`` with ``_``."""
+    return _UNSAFE_RE.sub("_", component)
+
+
 RESULTS_MD = PROJECT_ROOT / "docs" / "results.md"
 
 
