@@ -1,0 +1,339 @@
+"""Answer evaluation: scoring logic, scored-JSONL output, and results.md writer.
+
+Pure library — no CLI, no model loading.  The script
+``scripts/score_answers.py`` wires the CLI around these functions.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+from datetime import date
+from pathlib import Path
+from typing import Any
+
+from recall_assistant.config import PROJECT_ROOT
+from recall_assistant.evals.answer_checks import (
+    cites_all_gold,
+    cites_gold,
+    declined,
+    invalid,
+    invalid_reason,
+    pass_rule_check,
+    wrongly_declined,
+)
+from recall_assistant.evals.golden import GoldenRow
+from recall_assistant.evals.retrieval_eval import percentile
+
+RESULTS_MD = PROJECT_ROOT / "docs" / "results.md"
+
+
+# ---------------------------------------------------------------------------
+# JSONL I/O
+# ---------------------------------------------------------------------------
+
+
+def load_answers_jsonl(path: Path) -> tuple[dict, list[dict]]:
+    """Load an answers JSONL file.
+
+    Returns ``(metadata, rows)`` where *metadata* is the first line
+    (``type: "metadata"``) and *rows* are the remaining answer dicts.
+    """
+    with open(path, encoding="utf-8") as f:
+        lines = [line.strip() for line in f if line.strip()]
+    metadata = json.loads(lines[0])
+    rows = [json.loads(line) for line in lines[1:]]
+    return metadata, rows
+
+
+# ---------------------------------------------------------------------------
+# Per-row check results
+# ---------------------------------------------------------------------------
+
+
+def check_one_row(row: dict, golden: GoldenRow) -> dict:
+    """Apply all code checks to one answer row.
+
+    Returns a dict suitable for writing to the scored JSONL.
+    """
+    status = row["status"]
+    cited = row["cited_ids"]
+    invalid_ids = row.get("invalid_ids", [])
+    gold = golden.gold_campaign_ids
+    retrieved = row.get("retrieved_ids", [])
+
+    is_declined = declined(status)
+    is_invalid = invalid(status)
+
+    reason = ""
+    if is_invalid:
+        reason = invalid_reason(
+            row.get("answer_text", ""),
+            row.get("finish_reason", "stop"),
+            cited,
+            invalid_ids,
+        )
+
+    return {
+        "question_id": row["question_id"],
+        "source": row["source"],
+        "pass_rule": golden.pass_rule,
+        "template": golden.template,
+        "status": status,
+        "declined": is_declined,
+        "invalid": is_invalid,
+        "invalid_reason": reason,
+        "wrongly_declined": wrongly_declined(status, retrieved, gold),
+        "cites_gold": cites_gold(cited, gold),
+        "cites_all_gold": cites_all_gold(cited, gold),
+        "pass_rule_passed": pass_rule_check(golden.pass_rule, status, cited, gold),
+        "cited_ids": cited,
+        "invalid_ids": invalid_ids,
+        "gold_campaign_ids": gold,
+        "cost": row.get("cost"),
+        "generation_latency_s": row.get("generation_latency_s"),
+        "total_latency_s": _total_latency(row),
+    }
+
+
+def _total_latency(row: dict) -> float | None:
+    """Sum retrieval + generation latency, or None if either is missing."""
+    ret = row.get("retrieval_latency_s")
+    gen = row.get("generation_latency_s")
+    if ret is not None and gen is not None:
+        return ret + gen
+    return gen
+
+
+# ---------------------------------------------------------------------------
+# Aggregate scoring
+# ---------------------------------------------------------------------------
+
+
+def _group_stats(checked: list[dict]) -> dict[str, Any]:
+    """Compute pass/fail/invalid counts for a list of checked rows."""
+    n = len(checked)
+    passed = sum(1 for r in checked if r["pass_rule_passed"])
+    wd = sum(1 for r in checked if r["wrongly_declined"])
+    inv = sum(1 for r in checked if r["invalid"])
+    return {
+        "n": n,
+        "passed": passed,
+        "pass_rate": passed / n if n else 0.0,
+        "wrongly_declined": wd,
+        "invalid_count": inv,
+    }
+
+
+def score_answers(
+    rows: list[dict],
+    golden_by_id: dict[str, GoldenRow],
+) -> tuple[dict[str, Any], list[dict]]:
+    """Apply all code checks and aggregate.
+
+    Returns ``(scores_dict, checked_rows)`` where *checked_rows* is
+    the per-row scored list (for the scored JSONL) and *scores_dict*
+    contains the aggregated metrics.
+    """
+    checked: list[dict] = []
+    for row in rows:
+        golden = golden_by_id.get(row["question_id"])
+        if golden is None:
+            continue
+        checked.append(check_one_row(row, golden))
+
+    # Split by source.
+    generated = [r for r in checked if r["source"] == "generated"]
+    handwritten = [r for r in checked if r["source"] == "handwritten"]
+    unanswerable = [r for r in checked if r["source"] == "unanswerable"]
+
+    # By-template breakdown for generated rows.
+    templates = sorted({r["template"] for r in generated if r["template"]})
+    by_template: dict[str, dict] = {}
+    for tmpl in templates:
+        subset = [r for r in generated if r["template"] == tmpl]
+        by_template[tmpl] = _group_stats(subset)
+
+    # Unanswerable breakdown.
+    n_unans = len(unanswerable)
+    unans_declined = sum(1 for r in unanswerable if r["declined"])
+    unans_invalid = sum(1 for r in unanswerable if r["invalid"])
+    unans_answered = n_unans - unans_declined - unans_invalid
+
+    # Unanswerable invalid breakdown by reason.
+    unans_invalid_reasons: dict[str, int] = {}
+    for r in unanswerable:
+        if r["invalid"]:
+            reason = r.get("invalid_reason", "")
+            unans_invalid_reasons[reason] = unans_invalid_reasons.get(reason, 0) + 1
+
+    # Cost.
+    costs = [r["cost"] for r in checked if r["cost"] is not None]
+    total_cost = sum(costs)
+    cost_per_q = total_cost / len(costs) if costs else 0.0
+
+    # Latency.
+    gen_lats = sorted(
+        r["generation_latency_s"]
+        for r in checked
+        if r["generation_latency_s"] is not None
+    )
+    total_lats = sorted(
+        r["total_latency_s"] for r in checked if r["total_latency_s"] is not None
+    )
+
+    scores: dict[str, Any] = {
+        "generated": {**_group_stats(generated), "by_template": by_template},
+        "handwritten": _group_stats(handwritten),
+        "unanswerable": {
+            "n": n_unans,
+            "declined": unans_declined,
+            "invalid": unans_invalid,
+            "invalid_reasons": unans_invalid_reasons,
+            "answered": unans_answered,
+        },
+        "cost": {"total": total_cost, "per_question": cost_per_q},
+        "latency_generation": {
+            "p50": percentile(gen_lats, 0.5) if gen_lats else None,
+            "p95": percentile(gen_lats, 0.95) if gen_lats else None,
+        },
+        "latency_total": {
+            "p50": percentile(total_lats, 0.5) if total_lats else None,
+            "p95": percentile(total_lats, 0.95) if total_lats else None,
+        },
+    }
+
+    return scores, checked
+
+
+# ---------------------------------------------------------------------------
+# Markdown formatting
+# ---------------------------------------------------------------------------
+
+
+def _fmt_pct(v: float | None) -> str:
+    return f"{v:.3f}" if v is not None else "—"
+
+
+def _fmt_s(v: float | None) -> str:
+    return f"{v:.2f}s" if v is not None else "—"
+
+
+def _fmt_cost(v: float | None) -> str:
+    return f"${v:.5f}" if v is not None else "—"
+
+
+def format_answer_markdown(scores: dict[str, Any], metadata: dict, command: str) -> str:
+    """Build the markdown section body for docs/results.md."""
+    parts: list[str] = []
+
+    parts.append(f"```\nCommand: {command}\nDate:    {date.today()}\n```")
+    parts.append("")
+
+    # Code-check pass rates.
+    parts.append("### Code-check pass rates")
+    hdr = "| Source | n | passed | rate | wrongly_declined | invalid |"
+    sep = "|--------|---|--------|------|------------------|---------|"
+    parts.append(hdr)
+    parts.append(sep)
+    for src in ("generated", "handwritten"):
+        s = scores.get(src, {})
+        if not s or s.get("n", 0) == 0:
+            continue
+        parts.append(
+            f"| {src} | {s['n']} | {s['passed']} | {_fmt_pct(s['pass_rate'])} "
+            f"| {s['wrongly_declined']} | {s['invalid_count']} |"
+        )
+    parts.append("")
+
+    # By template (generated only).
+    by_tmpl = scores.get("generated", {}).get("by_template", {})
+    if by_tmpl:
+        parts.append("### By template (generated only)")
+        parts.append("| Template | n | passed | rate | wrongly_declined | invalid |")
+        parts.append("|----------|---|--------|------|------------------|---------|")
+        for tmpl in sorted(by_tmpl):
+            t = by_tmpl[tmpl]
+            parts.append(
+                f"| {tmpl} | {t['n']} | {t['passed']} "
+                f"| {_fmt_pct(t['pass_rate'])} | {t['wrongly_declined']} "
+                f"| {t['invalid_count']} |"
+            )
+        parts.append("")
+
+    # Unanswerable.
+    u = scores.get("unanswerable", {})
+    if u and u.get("n", 0) > 0:
+        parts.append(f"### Unanswerable (n={u['n']})")
+        parts.append("| declined (pass) | invalid | answered (fail) |")
+        parts.append("|-----------------|---------|-----------------|")
+        parts.append(f"| {u['declined']} | {u['invalid']} | {u['answered']} |")
+        inv_reasons = u.get("invalid_reasons", {})
+        if inv_reasons:
+            parts.append("")
+            parts.append(
+                "Invalid breakdown: "
+                + ", ".join(
+                    f"{reason}={count}" for reason, count in sorted(inv_reasons.items())
+                )
+            )
+        parts.append("")
+
+    # Cost.
+    c = scores.get("cost", {})
+    parts.append("### Cost")
+    parts.append("| total | per_question |")
+    parts.append("|-------|-------------|")
+    parts.append(
+        f"| {_fmt_cost(c.get('total'))} | {_fmt_cost(c.get('per_question'))} |"
+    )
+    parts.append("")
+
+    # Latency.
+    gen_lat = scores.get("latency_generation", {})
+    tot_lat = scores.get("latency_total", {})
+    parts.append("### Latency")
+    parts.append("| metric | generation p50 | generation p95 | total p50 | total p95 |")
+    parts.append("|--------|----------------|----------------|-----------|-----------|")
+    parts.append(
+        f"| value | {_fmt_s(gen_lat.get('p50'))} "
+        f"| {_fmt_s(gen_lat.get('p95'))} "
+        f"| {_fmt_s(tot_lat.get('p50'))} "
+        f"| {_fmt_s(tot_lat.get('p95'))} |"
+    )
+
+    return "\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# results.md writer
+# ---------------------------------------------------------------------------
+
+
+def update_answer_results_md(
+    label: str, content: str, *, path: Path | None = None
+) -> None:
+    """Replace or append the section for *label* in docs/results.md."""
+    md_path = path or RESULTS_MD
+    header = f"## Answer evaluation: {label} (Module 2.3)"
+
+    if md_path.exists():
+        text = md_path.read_text(encoding="utf-8")
+    else:
+        text = ""
+
+    section = f"{header}\n\n{content}\n"
+
+    pattern = re.compile(
+        r"^" + re.escape(header) + r"\n.*?(?=\n## |\Z)",
+        re.DOTALL | re.MULTILINE,
+    )
+
+    if pattern.search(text):
+        text = pattern.sub(section.rstrip(), text)
+    else:
+        if text and not text.endswith("\n"):
+            text += "\n"
+        text += "\n" + section
+
+    md_path.write_text(text, encoding="utf-8")
