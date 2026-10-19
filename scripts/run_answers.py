@@ -331,7 +331,9 @@ def main(argv: list[str] | None = None) -> None:
     getattr(retriever, args.mode)(question="warmup query", k=1)
 
     # ── build LLM client once ──
-    llm_client = _build_llm_client(settings)
+    from recall_assistant.llm.openrouter import build_openrouter_client
+
+    llm_client = build_openrouter_client(settings)
 
     # ── run ──
     print(
@@ -409,24 +411,6 @@ def main(argv: list[str] | None = None) -> None:
 
     print(f"\nJSONL written to {out_path}")
     pool.close()
-
-
-# ---------------------------------------------------------------------------
-# LLM client factory
-# ---------------------------------------------------------------------------
-
-
-def _build_llm_client(settings: Settings) -> Any:
-    """Build the OpenRouter LLM client from settings."""
-    from recall_assistant.llm.openrouter import OpenRouterClient
-
-    return OpenRouterClient(
-        api_key=settings.openrouter_api_key,
-        temperature=settings.llm_temperature,
-        request_timeout=settings.llm_request_timeout,
-        max_retries=settings.llm_max_retries,
-        max_retry_wait=settings.llm_max_retry_wait,
-    )
 
 
 if __name__ == "__main__":
