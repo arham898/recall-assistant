@@ -552,6 +552,23 @@ class TestDevTestSplit:
         dev, test = split_dev_test(rows, seed=42)
         assert abs(len(dev) - len(test)) <= 1
 
+    def test_shuffle_not_just_sorted_halves(self):
+        """Seed 42 must not put q01..q10 in dev (i.e. the split is shuffled)."""
+        rows = [{"question_id": f"q{i:02d}"} for i in range(1, 21)]
+        dev, _test = split_dev_test(rows, seed=42)
+        dev_ids = {r["question_id"] for r in dev}
+        first_half_sorted = {f"q{i:02d}" for i in range(1, 11)}
+        assert dev_ids != first_half_sorted
+
+    def test_different_seeds_different_dev_sets(self):
+        """Seed 42 and seed 43 produce different dev sets."""
+        rows = [{"question_id": f"q{i:02d}"} for i in range(1, 21)]
+        dev_42, _ = split_dev_test(rows, seed=42)
+        dev_43, _ = split_dev_test(rows, seed=43)
+        ids_42 = {r["question_id"] for r in dev_42}
+        ids_43 = {r["question_id"] for r in dev_43}
+        assert ids_42 != ids_43
+
 
 # ═══════════════════════════════════════════════════════════════════
 # 10. Code-check vs human
@@ -625,6 +642,44 @@ class TestEdgeCases:
             model="test-model",
         )
         assert r.verdict == "pass"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 12b. Display row (capsys)
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestDisplayRow:
+    def test_shows_expected_fields_hides_anchoring(self, capsys):
+        """display_row prints question, reference, answer, cards but not status/checks."""
+        from scripts.label import display_row
+
+        golden = make_golden(
+            "disp_test", "generated", ["22V817000"], "cite_all_gold", template="remedy"
+        )
+        row = make_answer_row(
+            "disp_test",
+            "generated",
+            "invalid",
+            ["22V817000"],
+            answer_text="DISTINCTIVE_ANSWER_XYZ_42",
+            retrieved_ids=["22V817000", "99V001000"],
+            retrieved_texts=["Brake modulator recall text", "Other recall text"],
+        )
+        display_row(row, golden, index=1, total=5)
+        out = capsys.readouterr().out
+
+        # Must contain these
+        assert golden.question in out
+        assert golden.reference_answer in out
+        assert "DISTINCTIVE_ANSWER_XYZ_42" in out
+        assert "22V817000" in out
+
+        # Must NOT contain anchoring fields
+        assert "invalid" not in out.lower()
+        assert "status" not in out.lower()
+        assert "pass_rule" not in out.lower()
+        assert "faithfulness" not in out.lower()
 
 
 # ═══════════════════════════════════════════════════════════════════
