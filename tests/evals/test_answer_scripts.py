@@ -206,6 +206,7 @@ class TestScriptHelp:
         )
         assert result.returncode == 0
         assert "--answers" in result.stdout
+        assert "--faithfulness" in result.stdout
         assert "ModuleNotFoundError" not in result.stderr, result.stderr
         assert "ImportError" not in result.stderr, result.stderr
 

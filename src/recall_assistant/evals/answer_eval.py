@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import json
 import re
+import sys
+import time
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -22,6 +25,7 @@ from recall_assistant.evals.answer_checks import (
     pass_rule_check,
     wrongly_declined,
 )
+from recall_assistant.evals.faithfulness import build_premise, strip_citations
 from recall_assistant.evals.golden import GoldenRow
 from recall_assistant.evals.retrieval_eval import percentile
 
@@ -51,13 +55,33 @@ def load_answers_jsonl(path: Path) -> tuple[dict, list[dict]]:
 # ---------------------------------------------------------------------------
 
 
-def check_one_row(row: dict, golden: GoldenRow) -> dict:
+def _dedup(ids: list[str]) -> list[str]:
+    """Remove duplicates from *ids*, preserving first-occurrence order."""
+    seen: set[str] = set()
+    result: list[str] = []
+    for x in ids:
+        if x not in seen:
+            seen.add(x)
+            result.append(x)
+    return result
+
+
+def check_one_row(
+    row: dict,
+    golden: GoldenRow,
+    scorer: Callable[[str, str], float] | None = None,
+) -> dict:
     """Apply all code checks to one answer row.
+
+    If *scorer* is provided and status is ``"answered"``, compute a
+    faithfulness score (premise = joined retrieved texts, hypothesis =
+    answer text with citations stripped).  Otherwise ``"faithfulness"``
+    is ``None``.
 
     Returns a dict suitable for writing to the scored JSONL.
     """
     status = row["status"]
-    cited = row["cited_ids"]
+    cited = _dedup(row["cited_ids"])
     invalid_ids = row.get("invalid_ids", [])
     gold = golden.gold_campaign_ids
     retrieved = row.get("retrieved_ids", [])
@@ -73,6 +97,12 @@ def check_one_row(row: dict, golden: GoldenRow) -> dict:
             cited,
             invalid_ids,
         )
+
+    faith: float | None = None
+    if scorer is not None and status == "answered":
+        premise = build_premise(row.get("retrieved_texts", []))
+        hypothesis = strip_citations(row.get("answer_text", ""))
+        faith = scorer(premise, hypothesis)
 
     return {
         "question_id": row["question_id"],
@@ -90,6 +120,7 @@ def check_one_row(row: dict, golden: GoldenRow) -> dict:
         "cited_ids": cited,
         "invalid_ids": invalid_ids,
         "gold_campaign_ids": gold,
+        "faithfulness": faith,
         "cost": row.get("cost"),
         "generation_latency_s": row.get("generation_latency_s"),
         "total_latency_s": _total_latency(row),
@@ -128,19 +159,27 @@ def _group_stats(checked: list[dict]) -> dict[str, Any]:
 def score_answers(
     rows: list[dict],
     golden_by_id: dict[str, GoldenRow],
+    scorer: Callable[[str, str], float] | None = None,
 ) -> tuple[dict[str, Any], list[dict]]:
     """Apply all code checks and aggregate.
 
     Returns ``(scores_dict, checked_rows)`` where *checked_rows* is
     the per-row scored list (for the scored JSONL) and *scores_dict*
     contains the aggregated metrics.
+
+    If *scorer* is provided it is called for every ``status == "answered"``
+    row.  Progress is printed every 20 rows when a scorer is active.
     """
     checked: list[dict] = []
-    for row in rows:
+    t0 = time.perf_counter()
+    for i, row in enumerate(rows, 1):
         golden = golden_by_id.get(row["question_id"])
         if golden is None:
             continue
-        checked.append(check_one_row(row, golden))
+        checked.append(check_one_row(row, golden, scorer=scorer))
+        if scorer is not None and i % 20 == 0:
+            print(f"  scored {i}/{len(rows)}...", file=sys.stderr)
+    faith_secs = time.perf_counter() - t0
 
     # Split by source.
     generated = [r for r in checked if r["source"] == "generated"]
@@ -182,6 +221,32 @@ def score_answers(
         r["total_latency_s"] for r in checked if r["total_latency_s"] is not None
     )
 
+    # Faithfulness.
+    faith_scores = sorted(
+        r["faithfulness"] for r in checked if r["faithfulness"] is not None
+    )
+    faith_dict: dict[str, Any] = {"n": 0}
+    if faith_scores:
+        n_f = len(faith_scores)
+        flagged = sum(1 for s in faith_scores if s < 0.5)
+        lowest_5 = sorted(
+            (
+                (r["faithfulness"], r["question_id"])
+                for r in checked
+                if r["faithfulness"] is not None
+            ),
+        )[:5]
+        faith_dict = {
+            "n": n_f,
+            "mean": sum(faith_scores) / n_f,
+            "median": percentile(faith_scores, 0.5),
+            "p25": percentile(faith_scores, 0.25),
+            "min": faith_scores[0],
+            "flagged_below_0_5": flagged,
+            "lowest_5": [(qid, score) for score, qid in lowest_5],
+            "seconds": faith_secs,
+        }
+
     scores: dict[str, Any] = {
         "generated": {**_group_stats(generated), "by_template": by_template},
         "handwritten": _group_stats(handwritten),
@@ -192,6 +257,7 @@ def score_answers(
             "invalid_reasons": unans_invalid_reasons,
             "answered": unans_answered,
         },
+        "faithfulness": faith_dict,
         "cost": {"total": total_cost, "per_question": cost_per_q},
         "latency_generation": {
             "p50": percentile(gen_lats, 0.5) if gen_lats else None,
@@ -277,6 +343,36 @@ def format_answer_markdown(scores: dict[str, Any], metadata: dict, command: str)
                     f"{reason}={count}" for reason, count in sorted(inv_reasons.items())
                 )
             )
+        parts.append("")
+
+    # Faithfulness.
+    f = scores.get("faithfulness", {})
+    if f and f.get("n", 0) > 0:
+        model_name = metadata.get("faithfulness_model", "HHEM-2.1-Open")
+        model_rev = metadata.get("faithfulness_revision", "")
+        parts.append(f"### Faithfulness ({model_name})")
+        parts.append("")
+        parts.append(
+            "| n | mean | median | p25 | min | flagged (below 0.5) | seconds |"
+        )
+        parts.append(
+            "|---|------|--------|-----|-----|---------------------|---------|"
+        )
+        parts.append(
+            f"| {f['n']} | {_fmt_pct(f.get('mean'))} "
+            f"| {_fmt_pct(f.get('median'))} | {_fmt_pct(f.get('p25'))} "
+            f"| {_fmt_pct(f.get('min'))} | {f.get('flagged_below_0_5', 0)} "
+            f"| {_fmt_s(f.get('seconds'))} |"
+        )
+        lowest = f.get("lowest_5", [])
+        if lowest:
+            parts.append("")
+            parts.append("Lowest 5:")
+            for qid, score in lowest:
+                parts.append(f"- {qid}: {score:.3f}")
+        if model_rev:
+            parts.append("")
+            parts.append(f"Model revision: `{model_rev}`")
         parts.append("")
 
     # Cost.

@@ -1,11 +1,12 @@
 """Score an answers JSONL file and update docs/results.md.
 
 Usage:
-    python scripts/score_answers.py --answers PATH
+    python scripts/score_answers.py --answers PATH [--faithfulness {hhem,none}]
 
 Reads the JSONL produced by ``run_answers.py``, applies code checks
-from ``answer_checks.py``, writes a scored JSONL to results/, and
-appends a labelled section to docs/results.md.
+from ``answer_checks.py``, optionally scores faithfulness with HHEM,
+writes a scored JSONL to results/, and appends a labelled section to
+docs/results.md.
 """
 
 from __future__ import annotations
@@ -38,6 +39,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=Path,
         help="Path to the answers JSONL from run_answers.py",
     )
+    parser.add_argument(
+        "--faithfulness",
+        choices=["hhem", "none"],
+        default="hhem",
+        help="Faithfulness scorer (default: hhem)",
+    )
     return parser.parse_args(argv)
 
 
@@ -58,8 +65,17 @@ def main(argv: list[str] | None = None) -> None:
     all_golden = load_golden_rows()
     golden_by_id = {g.id: g for g in all_golden}
 
+    # Build scorer.
+    scorer = None
+    if args.faithfulness == "hhem":
+        from recall_assistant.evals.faithfulness import MODEL_NAME, REVISION, HHEMScorer
+
+        scorer = HHEMScorer()
+        metadata["faithfulness_model"] = MODEL_NAME
+        metadata["faithfulness_revision"] = REVISION
+
     # Score.
-    scores, checked = score_answers(rows, golden_by_id)
+    scores, checked = score_answers(rows, golden_by_id, scorer=scorer)
 
     # Write scored JSONL.
     label = metadata.get("label", "unknown")
