@@ -16,12 +16,14 @@ from scripts.run_answers import (
     _project_cost,
     _save_cache,
     _upper_bound_cost,
+    check_unique_sanitised_ids,
     compute_cost,
     prompt_hash,
     seal_hash,
 )
 
 from recall_assistant.config import PROJECT_ROOT, Settings
+from recall_assistant.evals.golden import GoldenRow
 
 # ═══════════════════════════════════════════════════════════════════
 # 1. Cache key
@@ -177,3 +179,49 @@ class TestScriptHelp:
         assert "--answers" in result.stdout
         assert "ModuleNotFoundError" not in result.stderr, result.stderr
         assert "ImportError" not in result.stderr, result.stderr
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 6. Cache key sanitisation
+# ═══════════════════════════════════════════════════════════════════
+
+
+def _stub_row(id: str) -> GoldenRow:
+    """Minimal GoldenRow with just the id set."""
+    return GoldenRow(
+        id=id,
+        question="q",
+        source="generated",
+        gold_campaign_ids=[],
+        reference_answer="",
+        pass_rule="cite_any_gold",
+    )
+
+
+class TestCacheKeySanitisation:
+    def test_slash_in_question_id_round_trips(self, tmp_path, monkeypatch):
+        """A question_id containing '/' writes a flat file, not a subdirectory."""
+        monkeypatch.setattr("scripts.run_answers.CACHE_DIR", tmp_path)
+        qid = "gen_x_A/B:C_2024"
+        key = _cache_key(qid, "rerank", "record", "model/x", "aaa", "bbb")
+        row = {"question_id": qid, "status": "answered"}
+        _save_cache(key, row)
+
+        # The file must be directly in tmp_path, not in a subdirectory.
+        assert (tmp_path / key).is_file()
+        assert not any(p.is_dir() for p in tmp_path.iterdir())
+
+        # Round-trip: _load_cache returns the same data.
+        loaded = _load_cache(key)
+        assert loaded is not None
+        assert loaded["question_id"] == qid
+
+    def test_uniqueness_check_passes_for_distinct_ids(self):
+        rows = [_stub_row("gen_A_2024"), _stub_row("gen_B_2024")]
+        check_unique_sanitised_ids(rows)  # should not raise
+
+    def test_uniqueness_check_fails_on_collision(self):
+        """ZERO_DSR/X and ZERO_DSR_X both sanitise to ZERO_DSR_X."""
+        rows = [_stub_row("ZERO_DSR/X"), _stub_row("ZERO_DSR_X")]
+        with pytest.raises(SystemExit):
+            check_unique_sanitised_ids(rows)

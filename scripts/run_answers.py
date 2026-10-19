@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from datetime import date
@@ -127,6 +128,14 @@ def seal_hash(seal: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
+_UNSAFE_RE = re.compile(r"[^A-Za-z0-9_.\-]")
+
+
+def _sanitise(component: str) -> str:
+    """Replace characters outside ``[A-Za-z0-9_.-]`` with ``_``."""
+    return _UNSAFE_RE.sub("_", component)
+
+
 def _cache_key(
     question_id: str,
     mode: str,
@@ -136,8 +145,15 @@ def _cache_key(
     s_hash: str,
 ) -> str:
     """Deterministic filename for one cache entry."""
-    safe_model = model.replace("/", "_")
-    return f"{question_id}__{mode}__{chunker}__{safe_model}__{p_hash}__{s_hash}.json"
+    parts = [
+        _sanitise(question_id),
+        _sanitise(mode),
+        _sanitise(chunker),
+        _sanitise(model),
+        _sanitise(p_hash),
+        _sanitise(s_hash),
+    ]
+    return "__".join(parts) + ".json"
 
 
 def _load_cache(key: str) -> dict | None:
@@ -150,6 +166,21 @@ def _load_cache(key: str) -> dict | None:
 def _save_cache(key: str, row: dict) -> None:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     (CACHE_DIR / key).write_text(json.dumps(row, ensure_ascii=False), encoding="utf-8")
+
+
+def check_unique_sanitised_ids(rows: list[Any]) -> None:
+    """Exit if two question IDs collide after sanitisation."""
+    seen: dict[str, str] = {}
+    for row in rows:
+        safe = _sanitise(row.id)
+        if safe in seen:
+            print(
+                f"ERROR: sanitised question IDs collide: "
+                f"{row.id!r} and {seen[safe]!r} both become {safe!r}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        seen[safe] = row.id
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +307,7 @@ def main(argv: list[str] | None = None) -> None:
 
     # ── load golden rows ──
     all_rows = load_golden_rows()
+    check_unique_sanitised_ids(all_rows)
     generated = [r for r in all_rows if r.source == "generated"]
     handwritten = [r for r in all_rows if r.source == "handwritten"]
     unanswerable = [r for r in all_rows if r.source == "unanswerable"]
