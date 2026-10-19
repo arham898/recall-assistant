@@ -1222,3 +1222,151 @@ Rows with >5 gold IDs: 3
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.54s | 1.21s | 0.74s | 1.73s |
+
+## Answer evaluation: hybrid_record_unfiltered (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_hybrid_record_unfiltered_2026-10-19.jsonl
+Date:    2026-10-19
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 62 | 0.620 | 5 | 17 |
+| handwritten | 30 | 23 | 0.767 | 0 | 6 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 8 | 0.400 | 0 | 2 |
+| consequence | 20 | 16 | 0.800 | 0 | 2 |
+| count | 20 | 10 | 0.500 | 0 | 8 |
+| existence | 20 | 18 | 0.900 | 1 | 1 |
+| remedy | 20 | 10 | 0.500 | 4 | 4 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 19 | 0 | 1 |
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.05176 | $0.00035 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.54s | 1.07s | 0.84s | 1.45s |
+
+## Answer evaluation: rerank_record_unfiltered (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_rerank_record_unfiltered_2026-10-19.jsonl
+Date:    2026-10-19
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 63 | 0.630 | 5 | 18 |
+| handwritten | 30 | 25 | 0.833 | 2 | 0 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 9 | 0.450 | 0 | 3 |
+| consequence | 20 | 18 | 0.900 | 0 | 2 |
+| count | 20 | 6 | 0.300 | 1 | 12 |
+| existence | 20 | 16 | 0.800 | 1 | 1 |
+| remedy | 20 | 14 | 0.700 | 3 | 0 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 19 | 0 | 1 |
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.04828 | $0.00032 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.54s | 1.00s | 1.86s | 2.48s |
+
+## Answer evaluation: hybrid_record_filtered (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_hybrid_record_filtered_2026-10-19.jsonl
+Date:    2026-10-19
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 82 | 0.820 | 0 | 16 |
+| handwritten | 30 | 27 | 0.900 | 0 | 2 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 16 | 0.800 | 0 | 2 |
+| consequence | 20 | 20 | 1.000 | 0 | 0 |
+| count | 20 | 7 | 0.350 | 0 | 13 |
+| existence | 20 | 20 | 1.000 | 0 | 0 |
+| remedy | 20 | 19 | 0.950 | 0 | 1 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 20 | 0 | 0 |
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.02695 | $0.00018 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.47s | 0.97s | 0.51s | 0.99s |
+
+## Answer evaluation: rerank_record_filtered (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_rerank_record_filtered_2026-10-19.jsonl
+Date:    2026-10-19
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 83 | 0.830 | 0 | 14 |
+| handwritten | 30 | 28 | 0.933 | 0 | 1 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 14 | 0.700 | 0 | 3 |
+| consequence | 20 | 19 | 0.950 | 0 | 1 |
+| count | 20 | 11 | 0.550 | 0 | 9 |
+| existence | 20 | 20 | 1.000 | 0 | 0 |
+| remedy | 20 | 19 | 0.950 | 0 | 1 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 20 | 0 | 0 |
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.02641 | $0.00018 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.52s | 1.04s | 0.68s | 1.53s |
