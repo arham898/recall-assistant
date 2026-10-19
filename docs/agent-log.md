@@ -101,3 +101,15 @@ Record of AI agent actions during development — what the agent did, how I caug
 |R2 found the tests imported the script through a sys.path trick. The logic moved into src/ and the script only wires the command line.|
 
 |Recorded the command as " ".join(sys.argv), which drops "python". Caught by reading the code. Now prefixed.|
+
+|2.4 plan returned fail for any malformed judge reply, so a formatting hiccup would have been scored as a real fail and cached. Caught in plan review. Added an error verdict: excluded, listed, never cached.|
+
+|2.4 plan keyed the judge cache on the version name only, so editing JUDGE_PROMPT_V1 in place would have hit the cache and shown no change. Caught in plan review, same as the 2.3 prompt hash. Hash of the prompt text added to the key, with a cache-miss test.|
+
+|2.4 plan copied _build_llm_client from run_answers.py into calibrate_judge.py with the temperature changed. Caught in plan review. Moved to openrouter.py as build_openrouter_client; both scripts import it.|
+
+|2.4 plan listed a "refuse when n < 50" test and the summary said all tests passed, but the test was never written. Found by R2. Added it.|
+
+|The split and hidden-field tests checked things a broken version also does (deterministic, disjoint, labels written). Deleting the shuffle and printing the status both passed 41 of 41. Added a not-sorted-halves test, a two-seeds-differ test and a capsys test; each fails on its mutation.|
+
+|Asked three times for retrieved_texts, the source counts and an unanswerable reference from the files; each revised plan asserted them and showed nothing. Checked all three myself with one-line commands.|

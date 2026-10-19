@@ -140,3 +140,13 @@ gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by de
 - A duplicate campaign ID in a hit list stops the run instead of being dropped. One hit per recall is something retrieval promises, so dropping repeats quietly would hide a bug.
 - results/ is git-ignored and the baseline JSON is added with --force, so the per-question ranks are kept with the code.
 - Still open: 22 defect summaries contain a mis-decoded non-breaking space (Â). MERCEDES-BENZ is spelt two ways in the NHTSA file.
+
+## Layer 2, module 4: hand labels and a calibrated judge
+
+- Labelled the unfiltered hybrid record answers: the default configuration and the harder number, with 46 code-check fails and 104 passes, so the judge gets both classes. The filtered set had 2 faithfulness flags and too few fails to test a judge on.
+- 100 rows in three strata, not a random 100: all 20 unanswerable, all 30 handwritten, 50 generated at a fixed seed. A random draw would have given about 18 handwritten rows, and those are the hardest.
+- A hand label judges the content against the reference, not the format. Citations aren't required; a missing campaign ID fails only when the question asks which recalls. The judge sees the reference and the candidate, never the cards, so it can only judge content. Labelling format by hand would make the two disagree by construction, and the code checks already measure format. The label tool hides status, code checks and faithfulness, and a test checks they aren't printed.
+- A malformed judge reply is a third verdict, error: left out of every metric, listed in the report, never cached. Counting it as fail would move kappa for a formatting hiccup.
+- The judge cache key includes a hash of the prompt text as well as the version name, the same rule as the answers cache: everything that changes the output is in the key, so editing a prompt in place can't return a stale verdict.
+- Dev and test are a 50/50 split by seed after sorting by id. The prompt is tuned on dev only; test is reported, never tuned on. Each half has about 13 fails, so a kappa difference of a few hundredths between prompt versions is noise. I read the confusion matrix, not the third decimal.
+- Results: (fill in after the run: kappa and the matrix on dev and test, prompt version, the code-check vs hand-label four cells, mean faithfulness of my pass and fail rows.)
