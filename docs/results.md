@@ -1192,3 +1192,77 @@ Date:    2026-10-18
 - unanswerable (n=20): min=2.042, p25=4.767, median=6.075, p75=7.067, max=8.333
 
 Rows with >5 gold IDs: 3
+
+## Answer evaluation: hybrid_record (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_hybrid_record_2026-10-19.jsonl
+Date:    2026-10-19
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 82 | 0.820 | 0 | 16 |
+| handwritten | 30 | 27 | 0.900 | 0 | 2 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 16 | 0.800 | 0 | 2 |
+| consequence | 20 | 20 | 1.000 | 0 | 0 |
+| count | 20 | 7 | 0.350 | 0 | 13 |
+| existence | 20 | 20 | 1.000 | 0 | 0 |
+| remedy | 20 | 19 | 0.950 | 0 | 1 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 20 | 0 | 0 |
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.02695 | $0.00018 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.51s | 1.07s | 0.56s | 1.10s |
+
+## Answer evaluation: rerank_record (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_rerank_record_2026-10-19.jsonl
+Date:    2026-10-19
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 83 | 0.830 | 0 | 14 |
+| handwritten | 30 | 28 | 0.933 | 0 | 1 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 14 | 0.700 | 0 | 3 |
+| consequence | 20 | 19 | 0.950 | 0 | 1 |
+| count | 20 | 11 | 0.550 | 0 | 9 |
+| existence | 20 | 20 | 1.000 | 0 | 0 |
+| remedy | 20 | 19 | 0.950 | 0 | 1 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 20 | 0 | 0 |
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.02641 | $0.00018 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.54s | 1.21s | 0.74s | 1.73s |
