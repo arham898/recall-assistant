@@ -1427,3 +1427,65 @@ Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.52s | 1.04s | 0.68s | 1.53s |
+
+## Judge calibration (Module 2.4)
+
+```
+Command: python scripts/calibrate_judge.py --labels evals\labels.jsonl --answers results\answers_hybrid_record_unfiltered_2026-10-19.jsonl --prompt-version v1
+Date:    2026-10-20
+```
+
+Prompt version: v1  
+Model: google/gemini-2.5-flash-lite  
+
+### Dev split (n=50)
+
+| Metric | Value |
+|--------|-------|
+| Agreement | 0.680 |
+| TPR (sensitivity) | 0.649 |
+| TNR (specificity) | 0.769 |
+| Precision (fail) | 0.435 |
+| Recall (fail) | 0.769 |
+| Cohen's kappa | 0.334 |
+
+Confusion matrix (rows=judge, cols=human):
+
+| | Human pass | Human fail |
+|---|---|---|
+| Judge pass | 24 | 3 |
+| Judge fail | 13 | 10 |
+
+### Test split (n=50)
+
+| Metric | Value |
+|--------|-------|
+| Agreement | 0.660 |
+| TPR (sensitivity) | 0.541 |
+| TNR (specificity) | 1.000 |
+| Precision (fail) | 0.433 |
+| Recall (fail) | 1.000 |
+| Cohen's kappa | 0.380 |
+
+Confusion matrix (rows=judge, cols=human):
+
+| | Human pass | Human fail |
+|---|---|---|
+| Judge pass | 20 | 0 |
+| Judge fail | 17 | 13 |
+
+### Code checks vs human labels
+
+| | Human pass | Human fail |
+|---|---|---|
+| Code pass | 68 | 6 |
+| Code fail | 6 | 20 |
+
+Agreement: 0.880
+
+### Faithfulness by human label (answered rows)
+
+| Label | Mean faithfulness | n |
+|-------|-------------------|---|
+| Pass | 0.861 | 52 |
+| Fail | 0.599 | 15 |
