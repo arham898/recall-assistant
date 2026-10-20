@@ -821,7 +821,9 @@ class TestUpdateResultsSectionBackslash:
         assert content_v1 in md.read_text(encoding="utf-8")
 
         # Replace with content containing backslashes that would crash re.sub
-        content_v2 = r"Command: --labels evals\labels.jsonl --answers results\answers.jsonl"
+        content_v2 = (
+            r"Command: --labels evals\labels.jsonl --answers results\answers.jsonl"
+        )
         update_results_section(header, content_v2, path=md)
         text = md.read_text(encoding="utf-8")
         assert content_v2 in text
@@ -946,14 +948,26 @@ class TestFormatCalibrationMarkdown:
                 "labels_file": "evals/labels.jsonl",
                 "commit": "aaa",
                 "date": "2026-10-19",
-                "dev": {"kappa": 0.5, "agreement": 0.7, "n": 50,
-                        "tpr": 0.6, "tnr": 0.8, "precision_fail": 0.4,
-                        "recall_fail": 0.8,
-                        "confusion": {"tp": 20, "fp": 3, "fn": 10, "tn": 17}},
-                "test": {"kappa": 0.4, "agreement": 0.65, "n": 50,
-                         "tpr": 0.5, "tnr": 0.9, "precision_fail": 0.4,
-                         "recall_fail": 0.9,
-                         "confusion": {"tp": 18, "fp": 1, "fn": 14, "tn": 17}},
+                "dev": {
+                    "kappa": 0.5,
+                    "agreement": 0.7,
+                    "n": 50,
+                    "tpr": 0.6,
+                    "tnr": 0.8,
+                    "precision_fail": 0.4,
+                    "recall_fail": 0.8,
+                    "confusion": {"tp": 20, "fp": 3, "fn": 10, "tn": 17},
+                },
+                "test": {
+                    "kappa": 0.4,
+                    "agreement": 0.65,
+                    "n": 50,
+                    "tpr": 0.5,
+                    "tnr": 0.9,
+                    "precision_fail": 0.4,
+                    "recall_fail": 0.9,
+                    "confusion": {"tp": 18, "fp": 1, "fn": 14, "tn": 17},
+                },
             },
             {
                 "prompt_version": "v2",
@@ -961,24 +975,42 @@ class TestFormatCalibrationMarkdown:
                 "labels_file": "evals/labels.jsonl",
                 "commit": "bbb",
                 "date": "2026-10-20",
-                "dev": {"kappa": 0.7, "agreement": 0.85, "n": 50,
-                        "tpr": 0.8, "tnr": 0.9, "precision_fail": 0.6,
-                        "recall_fail": 0.9,
-                        "confusion": {"tp": 30, "fp": 1, "fn": 7, "tn": 12}},
-                "test": {"kappa": 0.65, "agreement": 0.82, "n": 50,
-                         "tpr": 0.75, "tnr": 0.92, "precision_fail": 0.55,
-                         "recall_fail": 0.92,
-                         "confusion": {"tp": 28, "fp": 1, "fn": 9, "tn": 12}},
+                "dev": {
+                    "kappa": 0.7,
+                    "agreement": 0.85,
+                    "n": 50,
+                    "tpr": 0.8,
+                    "tnr": 0.9,
+                    "precision_fail": 0.6,
+                    "recall_fail": 0.9,
+                    "confusion": {"tp": 30, "fp": 1, "fn": 7, "tn": 12},
+                },
+                "test": {
+                    "kappa": 0.65,
+                    "agreement": 0.82,
+                    "n": 50,
+                    "tpr": 0.75,
+                    "tnr": 0.92,
+                    "precision_fail": 0.55,
+                    "recall_fail": 0.92,
+                    "confusion": {"tp": 28, "fp": 1, "fn": 9, "tn": 12},
+                },
             },
         ]
         code_vs = {
-            "both_pass": 60, "code_pass_human_fail": 5,
-            "code_fail_human_pass": 5, "both_fail": 30, "agreement": 0.9,
+            "both_pass": 60,
+            "code_pass_human_fail": 5,
+            "code_fail_human_pass": 5,
+            "both_fail": 30,
+            "agreement": 0.9,
         }
         faith = {"pass_mean": 0.85, "pass_n": 50, "fail_mean": 0.6, "fail_n": 10}
 
         md = format_calibration_markdown(
-            code_vs, faith, 0, [],
+            code_vs,
+            faith,
+            0,
+            [],
             cal_rows=cal_rows,
             command="python scripts/calibrate_judge.py --prompt-version v2",
         )
@@ -1030,7 +1062,9 @@ class TestJudgePromptV2:
     def test_campaign_id_verification_in_v2_not_v1(self):
         """V2 has the 'judge cannot verify whether a campaign ID is real' rule."""
         assert "judge cannot verify whether a campaign ID is real" in JUDGE_PROMPT_V2
-        assert "judge cannot verify whether a campaign ID is real" not in JUDGE_PROMPT_V1
+        assert (
+            "judge cannot verify whether a campaign ID is real" not in JUDGE_PROMPT_V1
+        )
 
     def test_removed_bracketed_citation_bullet_absent_from_v2(self):
         """The old V1 citation bullet was removed from V2."""
