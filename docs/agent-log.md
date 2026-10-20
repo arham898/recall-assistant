@@ -113,3 +113,5 @@ Record of AI agent actions during development — what the agent did, how I caug
 |The split and hidden-field tests checked things a broken version also does (deterministic, disjoint, labels written). Deleting the shuffle and printing the status both passed 41 of 41. Added a not-sorted-halves test, a two-seeds-differ test and a capsys test; each fails on its mutation.|
 
 |Asked three times for retrieved_texts, the source counts and an unanswerable reference from the files; each revised plan asserted them and showed nothing. Checked all three myself with one-line commands.|
+
+|rag.py tells the model to cite “for example [24V123000]”. The model copied that example into 8 of 150 answers as if it were the recall it was describing (plus 1 copy of the second example, 25V456000). Found by hand labelling rows hw_004 and hw_018: content correct, cited ID not among the retrieved cards. Code checks passed these because the ID has a valid shape; the faithfulness score didn’t flag them because the sentence content was in the cards.|

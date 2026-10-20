@@ -72,3 +72,28 @@ Each row in the JSONL files is a JSON object with these fields:
   `"invalid"` is recorded separately so the malformed-decline rate is measured.
 
 Generated and handwritten results are always reported separately.
+
+### Hand labels (evals/labels.jsonl)
+
+A hand label is a judgement on the content of the answer against the reference answer, not on its format.
+
+- Pass: the answer gives what the question asks for and it matches the reference. A count question needs the right count; a defect or remedy question needs the right defect or remedy. Paraphrasing is fine.
+- Bracketed citations are not required for a pass. The code checks already measure those.
+- A missing or wrong campaign ID is a fail only when the question asks which recall(s).
+- Anything stated that the reference contradicts, or that is not in the recall data, is a fail, even if the rest is right.
+- Unanswerable questions: a decline is a pass; any answer is a fail.
+- The reference answer is the key. If the reference is wrong, fix the reference (and say so in the note), never pass the answer to match a wrong key.
+- A cited campaign ID that is not among the retrieved cards fails the answer regardless of question type. A real retrieved card cited for the wrong year or vehicle does not fail by itself.
+
+The note is one line and names the reason, so failures can be tallied later.
+
+Citation rules, set during labelling on 19 to 20 Oct 2026:
+
+A cited campaign ID that does not correspond to any retrieved card fails the answer, whatever the question asked. This covers fabricated IDs, IDs copied from the prompt’s own example, and one-digit typos. The test is “not among the cards the model was given”, not “not in NHTSA’s data”.
+A manufacturer’s internal recall code (for example Audi’s 90S9) used in place of the campaign ID for a card that was retrieved is noted, not failed.
+A real retrieved card cited for the wrong model year or wrong vehicle is noted, not failed, unless the question asked for the full list, in which case extras count against it.
+Count questions pass on the number alone. A right number from a wrong set is a pass with a note.
+A decline when the gold recall was not retrieved is still a fail; the note records that the cause is retrieval, not the answer.
+Notes are kept terse and carry the campaign IDs involved, so they can be grouped in failure analysis.
+
+Labels: 100 rows, 74 pass, 26 fail. By stratum: unanswerable 20 (1 fail), handwritten 30 (7 fail), generated 50 (18 fail).
