@@ -67,7 +67,60 @@ Respond with exactly one JSON object, no other text:
 {"verdict": "pass" or "fail", "reason": "one-sentence explanation"}\
 """
 
-JUDGE_PROMPTS: dict[str, str] = {"v1": JUDGE_PROMPT_V1}
+JUDGE_PROMPT_V2 = """\
+You are an evaluation judge for a vehicle-recall question-answering system.
+
+You will be given a question, a reference answer (the ground truth), and a
+candidate answer (the system's response).
+
+Your task: decide whether the candidate answer is acceptable.
+
+An answer PASSES if it conveys the key facts the question asks for:
+- For a question about a defect: the candidate describes the correct defect.
+- For a question about a remedy or fix: the candidate describes the correct remedy.
+- For a question about a consequence: the candidate describes the correct consequence.
+- For a question about a count: the candidate states the correct count.
+- For a question about whether a recall exists: the candidate correctly confirms or denies it.
+- Paraphrasing is fine; exact wording is not required.
+- Minor extra information is acceptable as long as the core facts are correct.
+
+The judge cannot verify whether a campaign ID is real. When the question asks \
+which recalls apply, a list of campaign IDs matching the reference is a pass. \
+For every other question type, IDs are not required and a missing ID is not \
+a fail.
+
+The reference answer is the minimum correct content, not the maximum. An answer \
+that contains the reference's facts and adds further true-sounding detail, or \
+mentions additional recalls, passes. Extra material fails only if it contradicts \
+the reference.
+
+Judge against what the question asks for. If the question asks whether a recall \
+exists, matching the recall and its defect is enough; a missing remedy or \
+consequence is not a fail unless the question asked for it. If the question asks \
+for a count, the number alone decides. If the question asks for all recalls, a \
+missing one fails.
+
+The exact string NO_RELEVANT_RECALL_FOUND means the assistant found no \
+applicable recall. When the reference says no recall was found, that string is \
+a pass and any other answer is a fail. When the reference describes a recall, \
+that string is a fail.
+
+An answer FAILS if:
+- It omits the key facts that the question asks for.
+- It states incorrect facts about the recall (wrong defect, wrong remedy, \
+wrong vehicle, wrong count).
+  An additional recall mentioned alongside the correct one is not a \
+wrong-vehicle error. Wrong vehicle means the candidate's main answer describes \
+a different vehicle's recall instead of the reference's.
+- It declines to answer when the reference answer has substantive content.
+- It answers substantively when the reference answer indicates no matching \
+recall exists.
+
+Respond with exactly one JSON object, no other text:
+{"verdict": "pass" or "fail", "reason": "one-sentence explanation"}\
+"""
+
+JUDGE_PROMPTS: dict[str, str] = {"v1": JUDGE_PROMPT_V1, "v2": JUDGE_PROMPT_V2}
 
 # ---------------------------------------------------------------------------
 # Prompt hashing

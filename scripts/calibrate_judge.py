@@ -582,12 +582,12 @@ def main(argv: list[str] | None = None) -> None:
             jr = judge_verdicts[eid]
             print(f"  {eid}: {jr.reason}")
 
-    print("\n── Dev split ──")
+    print("\n-- Dev split --")
     _print_metrics(dev_metrics)
-    print("\n── Test split ──")
+    print("\n-- Test split --")
     _print_metrics(test_metrics)
 
-    print("\n── Code checks vs human labels ──")
+    print("\n-- Code checks vs human labels --")
     cv = code_vs_human
     print(f"  Both pass:           {cv['both_pass']}")
     print(f"  Code pass/human fail: {cv['code_pass_human_fail']}")
@@ -595,7 +595,7 @@ def main(argv: list[str] | None = None) -> None:
     print(f"  Both fail:           {cv['both_fail']}")
     print(f"  Agreement:           {cv['agreement']:.3f}")
 
-    print("\n── Faithfulness by human label ──")
+    print("\n-- Faithfulness by human label --")
     fb = faith_by_label
     pm = f"{fb['pass_mean']:.3f}" if fb["pass_mean"] is not None else "n/a"
     fm = f"{fb['fail_mean']:.3f}" if fb["fail_mean"] is not None else "n/a"

@@ -24,6 +24,8 @@ from scripts.label import load_existing_labels, select_rows
 
 from recall_assistant.config import PROJECT_ROOT
 from recall_assistant.evals.judge import (
+    JUDGE_PROMPT_V1,
+    JUDGE_PROMPT_V2,
     JUDGE_PROMPTS,
     JudgeResult,
     _parse_judge_response,
@@ -902,3 +904,50 @@ class TestWriteJudgeRows:
             assert r["answers_file"] == "answers_test.jsonl"
             assert r["prompt_version"] == "v1"
             assert r["prompt_hash"] == "abc123"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 17. V2 prompt rules
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestJudgePromptV2:
+    def test_v2_registered(self):
+        assert "v2" in JUDGE_PROMPTS
+
+    def test_minimum_not_maximum_in_v2_not_v1(self):
+        """V2 has the 'minimum correct content, not the maximum' rule."""
+        assert "minimum correct content, not the maximum" in JUDGE_PROMPT_V2
+        assert "minimum correct content, not the maximum" not in JUDGE_PROMPT_V1
+
+    def test_judge_against_question_in_v2_not_v1(self):
+        """V2 has the 'Judge against what the question asks for' rule."""
+        assert "Judge against what the question asks for" in JUDGE_PROMPT_V2
+        assert "Judge against what the question asks for" not in JUDGE_PROMPT_V1
+
+    def test_no_relevant_recall_found_in_v2_not_v1(self):
+        """V2 has the explicit NO_RELEVANT_RECALL_FOUND rule."""
+        assert "NO_RELEVANT_RECALL_FOUND" in JUDGE_PROMPT_V2
+        assert "NO_RELEVANT_RECALL_FOUND" not in JUDGE_PROMPT_V1
+
+    def test_campaign_id_verification_in_v2_not_v1(self):
+        """V2 has the 'judge cannot verify whether a campaign ID is real' rule."""
+        assert "judge cannot verify whether a campaign ID is real" in JUDGE_PROMPT_V2
+        assert "judge cannot verify whether a campaign ID is real" not in JUDGE_PROMPT_V1
+
+    def test_removed_bracketed_citation_bullet_absent_from_v2(self):
+        """The old V1 citation bullet was removed from V2."""
+        assert "Bracketed citation IDs" not in JUDGE_PROMPT_V2
+        assert "Bracketed citation IDs" in JUDGE_PROMPT_V1
+
+    def test_removed_campaign_ids_standalone_absent_from_v2(self):
+        """The old standalone 'Campaign IDs are not required' paragraph is gone from V2."""
+        assert "Campaign IDs are not required" not in JUDGE_PROMPT_V2
+
+    def test_wrong_vehicle_clarification_in_v2_not_v1(self):
+        """V2 has the 'additional recall is not a wrong-vehicle error' clarification."""
+        assert "not a wrong-vehicle error" in JUDGE_PROMPT_V2
+        assert "not a wrong-vehicle error" not in JUDGE_PROMPT_V1
+
+    def test_v2_hashes_differently_from_v1(self):
+        assert judge_prompt_hash(JUDGE_PROMPT_V1) != judge_prompt_hash(JUDGE_PROMPT_V2)
