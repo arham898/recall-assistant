@@ -1460,32 +1460,32 @@ Confusion matrix (rows=judge, cols=human):
 
 | Metric | Value |
 |--------|-------|
-| Agreement | 0.840 |
-| TPR (sensitivity) | 0.811 |
-| TNR (specificity) | 0.923 |
-| Precision (fail) | 0.632 |
-| Recall (fail) | 0.923 |
-| Cohen's kappa | 0.638 |
+| Agreement | 0.880 |
+| TPR (sensitivity) | 0.838 |
+| TNR (specificity) | 1.000 |
+| Precision (fail) | 0.684 |
+| Recall (fail) | 1.000 |
+| Cohen's kappa | 0.729 |
 
 Confusion matrix (rows=judge, cols=human):
 
 | | Human pass | Human fail |
 |---|---|---|
-| Judge pass | 30 | 1 |
-| Judge fail | 7 | 12 |
+| Judge pass | 31 | 0 |
+| Judge fail | 6 | 13 |
 
 ### Code checks vs human labels
 
 | | Human pass | Human fail |
 |---|---|---|
-| Code pass | 68 | 6 |
-| Code fail | 6 | 20 |
+| Code pass | 69 | 5 |
+| Code fail | 5 | 21 |
 
-Agreement: 0.880
+Agreement: 0.900
 
 ### Faithfulness by human label (answered rows)
 
 | Label | Mean faithfulness | n |
 |-------|-------------------|---|
-| Pass | 0.861 | 52 |
-| Fail | 0.599 | 15 |
+| Pass | 0.859 | 51 |
+| Fail | 0.620 | 16 |
