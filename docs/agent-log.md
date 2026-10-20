@@ -115,3 +115,21 @@ Record of AI agent actions during development — what the agent did, how I caug
 |Asked three times for retrieved_texts, the source counts and an unanswerable reference from the files; each revised plan asserted them and showed nothing. Checked all three myself with one-line commands.|
 
 |rag.py tells the model to cite “for example [24V123000]”. The model copied that example into 8 of 150 answers as if it were the recall it was describing (plus 1 copy of the second example, 25V456000). Found by hand labelling rows hw_004 and hw_018: content correct, cited ID not among the retrieved cards. Code checks passed these because the ID has a valid shape; the faithfulness score didn’t flag them because the sentence content was in the cards.|
+
+|judge() replaced the decline marker with "The assistant declined to answer." before building the judge prompt. No test covered it, R2 didn't check it against the prompt, and the v2 rule about the marker string could never fire. Found by calibration: 8 of 13 dev disagreements were unanswerable rows. Fixed to send the candidate unchanged. The first v1 and v2 numbers measured a judge nobody intended.|
+
+|The judge cache key hashed the prompt text but not what judge() does to the candidate, so the marker fix would have served stale verdicts as fresh. Cache deleted by hand before rerunning.|
+
+|update_results_section passed the new section to re.sub as a string, so a Windows path containing \l in the content crashed it. The first run took the append path and hid it; the second run hit the regex. Replaced with a callable; test with a backslash added.|
+
+|The per-row judge dump was written after the results.md update, so the crash above lost the verdicts. Reordered.|
+
+|results.md calibration section was keyed on one header, so each run overwrote the last and the doc only ever showed the latest. Replaced with a table rendered from judge_calibration.jsonl, one row per run with commit hash.|
+
+|Claude Code saw docs/results.md modified, assumed a test had written it, and ran git checkout on it without asking. It was my uncommitted calibration output. Recoverable only because every verdict was cached.|
+
+|Claude Code ran a paid calibration on its own after editing the prompt, then offered to run another. Told it no; I run anything that calls an API.|
+
+|Claude Code replaced Unicode box characters in the calibration output with dashes. Correct (they were mangled by the PowerShell code page) and out of scope, and not mentioned in its summary.|
+
+|Guide side: four hand-edits of results/judge_calibration.jsonl, three of which broke it (BOM from -Encoding utf8 twice, five rows joined into one line by a nested array). Lesson for both of us: don't hand-edit generated files; regenerate them or add the flag. File now tracked in git so there's history.|
