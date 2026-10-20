@@ -13,8 +13,6 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from recall_assistant.rag import DECLINE_MARKER
-
 if TYPE_CHECKING:
     from recall_assistant.llm import LLMClient
 
@@ -189,10 +187,6 @@ def judge(
         )
     prompt_text = JUDGE_PROMPTS[prompt_version]
 
-    display_candidate = candidate_answer
-    if candidate_answer == DECLINE_MARKER:
-        display_candidate = "The assistant declined to answer."
-
     messages = [
         {"role": "system", "content": prompt_text},
         {
@@ -200,7 +194,7 @@ def judge(
             "content": (
                 f"Question: {question}\n\n"
                 f"Reference answer: {reference_answer}\n\n"
-                f"Candidate answer: {display_candidate}"
+                f"Candidate answer: {candidate_answer}"
             ),
         },
     ]

@@ -621,6 +621,18 @@ def main(argv: list[str] | None = None) -> None:
         f.write(json.dumps(cal_row, ensure_ascii=False) + "\n")
     print(f"\nCalibration row appended to {CALIBRATION_JSONL}")
 
+    # ── per-row dump (before results.md so verdicts survive a formatting failure) ──
+    dump_path = write_judge_rows(
+        dev_labels,
+        test_labels,
+        judge_verdicts,
+        labels_by_qid_full,
+        answers_file=answers_file,
+        prompt_version=args.prompt_version,
+        p_hash=p_hash,
+    )
+    print(f"Per-row dump written to {dump_path}")
+
     # ── update docs/results.md ──
     command = (
         f"python scripts/calibrate_judge.py "
@@ -640,18 +652,6 @@ def main(argv: list[str] | None = None) -> None:
     )
     update_calibration_results_md(md)
     print("docs/results.md updated.")
-
-    # ── per-row dump ──
-    dump_path = write_judge_rows(
-        dev_labels,
-        test_labels,
-        judge_verdicts,
-        labels_by_qid_full,
-        answers_file=answers_file,
-        prompt_version=args.prompt_version,
-        p_hash=p_hash,
-    )
-    print(f"Per-row dump written to {dump_path}")
 
 
 def _print_metrics(m: dict) -> None:

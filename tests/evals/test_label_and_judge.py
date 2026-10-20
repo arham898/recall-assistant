@@ -490,7 +490,8 @@ class TestJudgeFunction:
         assert r.verdict == "pass"
         assert len(fake.calls) == 1
 
-    def test_decline_marker_replaced(self):
+    def test_decline_marker_sent_raw(self):
+        """The raw DECLINE_MARKER string is sent to the judge without substitution."""
         fake = FakeLLMClient(
             text='{"verdict": "pass", "reason": "Correctly declined."}'
         )
@@ -503,8 +504,7 @@ class TestJudgeFunction:
         )
         messages = fake.calls[0][0]
         user_msg = messages[1]["content"]
-        assert "The assistant declined to answer." in user_msg
-        assert DECLINE_MARKER not in user_msg
+        assert DECLINE_MARKER in user_msg
 
     def test_malformed_response_gives_error(self):
         fake = FakeLLMClient(text="I think it passes")
@@ -801,6 +801,30 @@ class TestScriptHelp:
         assert "--prompt-version" in result.stdout
         assert "ModuleNotFoundError" not in result.stderr
         assert "ImportError" not in result.stderr
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 13b. update_results_section backslash safety
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestUpdateResultsSectionBackslash:
+    def test_backslash_in_content_survives_replacement(self, tmp_path):
+        """Content with backslashes like evals\\labels.jsonl and \\l must not crash."""
+        from recall_assistant.evals.run_metadata import update_results_section
+
+        md = tmp_path / "results.md"
+        header = "## Test section"
+        content_v1 = "First version."
+        update_results_section(header, content_v1, path=md)
+        assert content_v1 in md.read_text(encoding="utf-8")
+
+        # Replace with content containing backslashes that would crash re.sub
+        content_v2 = r"Command: --labels evals\labels.jsonl --answers results\answers.jsonl"
+        update_results_section(header, content_v2, path=md)
+        text = md.read_text(encoding="utf-8")
+        assert content_v2 in text
+        assert content_v1 not in text
 
 
 # ═══════════════════════════════════════════════════════════════════
