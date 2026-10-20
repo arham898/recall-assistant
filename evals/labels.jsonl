@@ -4,14 +4,12 @@
 {"question_id": "hw_034", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:04:47.251052"}
 {"question_id": "hw_035", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:05:26.819205"}
 {"question_id": "hw_036", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:05:57.990185"}
-{"question_id": "hw_037", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "fail", "note": "check 26V332000 and 24V064000 vehicle lists", "labelled_at": "2026-10-19T15:07:03.440498"}
 {"question_id": "hw_038", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:07:57.127503"}
 {"question_id": "hw_039", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:08:54.597772"}
 {"question_id": "hw_040", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:09:48.784683"}
 {"question_id": "hw_041", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:11:06.276223"}
 {"question_id": "hw_042", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "check 22V617000 tail", "labelled_at": "2026-10-19T15:12:25.283415"}
 {"question_id": "hw_043", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:14:40.343745"}
-{"question_id": "hw_044", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:15:31.527438"}
 {"question_id": "hw_045", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:16:07.208610"}
 {"question_id": "hw_046", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:17:13.772196"}
 {"question_id": "hw_047", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-19T15:18:00.789338"}
@@ -98,3 +96,5 @@
 {"question_id": "gen_consequence_APRILIA_RSV4_RR_2019", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-20T12:22:08.221085"}
 {"question_id": "gen_consequence_LAKOTA_BIGHORN_2018", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "", "labelled_at": "2026-10-20T12:22:16.794261"}
 {"question_id": "gen_all_recalls_MERCEDES_BENZ_C_300_4MATIC_2018", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "fail", "note": "0/3; 18V838000 given 18V906000's defect; 26V216000 is E-class; 18V608000, 18V906000 retrieved but missed; 18V725000 extra may be valid", "labelled_at": "2026-10-20T12:22:37.044621"}
+{"question_id": "hw_037", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "pass", "note": "check 26V332000 and 24V064000 tails", "labelled_at": "2026-10-20T13:08:03.830691"}
+{"question_id": "hw_044", "answers_file": "answers_hybrid_record_unfiltered_2026-10-19.jsonl", "label": "fail", "note": "answers 2023 Forte for 2021 question. Corrected after flagged by judge", "labelled_at": "2026-10-20T13:08:31.189407"}
