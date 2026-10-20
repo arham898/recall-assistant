@@ -1431,48 +1431,48 @@ Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
 ## Judge calibration (Module 2.4)
 
 ```
-Command: python scripts/calibrate_judge.py --labels evals\labels.jsonl --answers results\answers_hybrid_record_unfiltered_2026-10-19.jsonl --prompt-version v1
+Command: python scripts/calibrate_judge.py --labels evals\labels.jsonl --answers results\answers_hybrid_record_unfiltered_2026-10-19.jsonl --prompt-version v2
 Date:    2026-10-20
 ```
 
-Prompt version: v1  
+Prompt version: v2  
 Model: google/gemini-2.5-flash-lite  
 
 ### Dev split (n=50)
 
 | Metric | Value |
 |--------|-------|
-| Agreement | 0.840 |
-| TPR (sensitivity) | 0.865 |
-| TNR (specificity) | 0.769 |
-| Precision (fail) | 0.667 |
-| Recall (fail) | 0.769 |
-| Cohen's kappa | 0.604 |
+| Agreement | 0.940 |
+| TPR (sensitivity) | 0.946 |
+| TNR (specificity) | 0.923 |
+| Precision (fail) | 0.857 |
+| Recall (fail) | 0.923 |
+| Cohen's kappa | 0.848 |
 
 Confusion matrix (rows=judge, cols=human):
 
 | | Human pass | Human fail |
 |---|---|---|
-| Judge pass | 32 | 3 |
-| Judge fail | 5 | 10 |
+| Judge pass | 35 | 1 |
+| Judge fail | 2 | 12 |
 
 ### Test split (n=50)
 
 | Metric | Value |
 |--------|-------|
-| Agreement | 0.880 |
-| TPR (sensitivity) | 0.838 |
-| TNR (specificity) | 1.000 |
-| Precision (fail) | 0.684 |
-| Recall (fail) | 1.000 |
-| Cohen's kappa | 0.729 |
+| Agreement | 0.900 |
+| TPR (sensitivity) | 0.892 |
+| TNR (specificity) | 0.923 |
+| Precision (fail) | 0.750 |
+| Recall (fail) | 0.923 |
+| Cohen's kappa | 0.758 |
 
 Confusion matrix (rows=judge, cols=human):
 
 | | Human pass | Human fail |
 |---|---|---|
-| Judge pass | 31 | 0 |
-| Judge fail | 6 | 13 |
+| Judge pass | 33 | 1 |
+| Judge fail | 4 | 12 |
 
 ### Code checks vs human labels
 
