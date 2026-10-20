@@ -96,11 +96,16 @@ def _load_cache(key: str) -> dict | None:
     return None
 
 
-def _save_cache(key: str, result: JudgeResult) -> None:
+def _save_cache(key: str, result: JudgeResult, question_id: str) -> None:
     JUDGE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
     (JUDGE_CACHE_DIR / key).write_text(
         json.dumps(
-            {"verdict": result.verdict, "reason": result.reason}, ensure_ascii=False
+            {
+                "question_id": question_id,
+                "verdict": result.verdict,
+                "reason": result.reason,
+            },
+            ensure_ascii=False,
         ),
         encoding="utf-8",
     )
@@ -389,6 +394,47 @@ def update_calibration_results_md(content: str, *, path: Path | None = None) -> 
     update_results_section(header, content, path=path)
 
 
+def write_judge_rows(
+    dev_labels: list[dict],
+    test_labels: list[dict],
+    judge_verdicts: dict[str, JudgeResult],
+    labels_by_qid_full: dict[str, dict],
+    *,
+    answers_file: str,
+    prompt_version: str,
+    p_hash: str,
+    results_dir: Path | None = None,
+) -> Path:
+    """Write per-row judge dump to results/judge_rows_{version}_{date}.jsonl."""
+    out_dir = results_dir or (PROJECT_ROOT / "results")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"judge_rows_{prompt_version}_{date.today()}.jsonl"
+
+    dev_ids = {lab["question_id"] for lab in dev_labels}
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        for lab in dev_labels + test_labels:
+            qid = lab["question_id"]
+            jr = judge_verdicts.get(qid)
+            if jr is None:
+                continue
+            full_lab = labels_by_qid_full.get(qid, {})
+            row = {
+                "question_id": qid,
+                "split": "dev" if qid in dev_ids else "test",
+                "human_label": lab["label"],
+                "judge_verdict": jr.verdict,
+                "judge_reason": jr.reason,
+                "human_note": full_lab.get("note", ""),
+                "answers_file": answers_file,
+                "prompt_version": prompt_version,
+                "prompt_hash": p_hash,
+            }
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    return out_path
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -500,7 +546,7 @@ def main(argv: list[str] | None = None) -> None:
 
         # cache only pass/fail, not error
         if result.verdict != "error":
-            _save_cache(key, result)
+            _save_cache(key, result, qid)
         else:
             error_ids.append(qid)
 
@@ -594,6 +640,18 @@ def main(argv: list[str] | None = None) -> None:
     )
     update_calibration_results_md(md)
     print("docs/results.md updated.")
+
+    # ── per-row dump ──
+    dump_path = write_judge_rows(
+        dev_labels,
+        test_labels,
+        judge_verdicts,
+        labels_by_qid_full,
+        answers_file=answers_file,
+        prompt_version=args.prompt_version,
+        p_hash=p_hash,
+    )
+    print(f"Per-row dump written to {dump_path}")
 
 
 def _print_metrics(m: dict) -> None:

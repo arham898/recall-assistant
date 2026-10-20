@@ -18,12 +18,14 @@ from scripts.calibrate_judge import (
     compute_faithfulness_by_label,
     compute_metrics,
     split_dev_test,
+    write_judge_rows,
 )
 from scripts.label import load_existing_labels, select_rows
 
 from recall_assistant.config import PROJECT_ROOT
 from recall_assistant.evals.judge import (
     JUDGE_PROMPTS,
+    JudgeResult,
     _parse_judge_response,
     judge,
     judge_prompt_hash,
@@ -835,3 +837,68 @@ class TestFaithfulnessByLabel:
         assert result["pass_n"] == 2
         assert result["fail_mean"] == pytest.approx(0.3)
         assert result["fail_n"] == 1
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 16. Per-row judge dump
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestWriteJudgeRows:
+    def test_dump_has_one_row_per_label_with_split_and_verdict(self, tmp_path):
+        """write_judge_rows writes one JSONL row per label with correct split/verdict."""
+        dev_labels = [
+            {"question_id": "Q1", "label": "pass"},
+            {"question_id": "Q2", "label": "fail"},
+        ]
+        test_labels = [
+            {"question_id": "Q3", "label": "pass"},
+            {"question_id": "Q4", "label": "fail"},
+        ]
+        judge_verdicts = {
+            "Q1": JudgeResult(verdict="pass", reason="ok"),
+            "Q2": JudgeResult(verdict="fail", reason="wrong"),
+            "Q3": JudgeResult(verdict="error", reason="parse fail"),
+            "Q4": JudgeResult(verdict="pass", reason="ok"),
+        }
+        labels_full = {
+            "Q1": {"question_id": "Q1", "label": "pass", "note": ""},
+            "Q2": {"question_id": "Q2", "label": "fail", "note": "bad remedy"},
+            "Q3": {"question_id": "Q3", "label": "pass", "note": ""},
+            "Q4": {"question_id": "Q4", "label": "fail", "note": ""},
+        }
+
+        out = write_judge_rows(
+            dev_labels,
+            test_labels,
+            judge_verdicts,
+            labels_full,
+            answers_file="answers_test.jsonl",
+            prompt_version="v1",
+            p_hash="abc123",
+            results_dir=tmp_path,
+        )
+
+        rows = [
+            json.loads(line)
+            for line in out.read_text(encoding="utf-8").strip().split("\n")
+        ]
+        assert len(rows) == 4
+
+        by_qid = {r["question_id"]: r for r in rows}
+        assert by_qid["Q1"]["split"] == "dev"
+        assert by_qid["Q1"]["judge_verdict"] == "pass"
+        assert by_qid["Q2"]["split"] == "dev"
+        assert by_qid["Q2"]["judge_verdict"] == "fail"
+        assert by_qid["Q2"]["human_note"] == "bad remedy"
+        assert by_qid["Q3"]["split"] == "test"
+        assert by_qid["Q3"]["judge_verdict"] == "error"
+        assert by_qid["Q4"]["split"] == "test"
+        assert by_qid["Q4"]["judge_verdict"] == "pass"
+        assert by_qid["Q4"]["human_label"] == "fail"
+
+        # All rows have the metadata fields
+        for r in rows:
+            assert r["answers_file"] == "answers_test.jsonl"
+            assert r["prompt_version"] == "v1"
+            assert r["prompt_hash"] == "abc123"
