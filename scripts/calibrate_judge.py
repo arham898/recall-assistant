@@ -307,16 +307,41 @@ def _estimate_cost(
 # ---------------------------------------------------------------------------
 
 
+def _format_history_table(cal_rows: list[dict]) -> list[str]:
+    """Render every calibration JSONL row as a markdown table."""
+    lines = [
+        "### Run history",
+        "",
+        "| Date | Prompt | Commit | Labels | Dev kappa | Dev agree | Test kappa | Test agree | Test TP/FP/FN/TN |",
+        "|------|--------|--------|--------|-----------|-----------|------------|------------|------------------|",
+    ]
+    for row in cal_rows:
+        d = row.get("dev", {})
+        t = row.get("test", {})
+        tc = t.get("confusion", {})
+        labels = Path(row.get("labels_file", "")).name or "n/a"
+        lines.append(
+            f"| {row.get('date', 'n/a')}"
+            f" | {row.get('prompt_version', 'n/a')}"
+            f" | {row.get('commit', 'n/a')}"
+            f" | {labels}"
+            f" | {d.get('kappa', 0):.3f}"
+            f" | {d.get('agreement', 0):.3f}"
+            f" | {t.get('kappa', 0):.3f}"
+            f" | {t.get('agreement', 0):.3f}"
+            f" | {tc.get('tp', 0)}/{tc.get('fp', 0)}/{tc.get('fn', 0)}/{tc.get('tn', 0)} |"
+        )
+    lines.append("")
+    return lines
+
+
 def format_calibration_markdown(
-    dev_metrics: dict,
-    test_metrics: dict,
     code_vs_human: dict,
     faith_by_label: dict,
     error_count: int,
     error_ids: list[str],
     *,
-    prompt_version: str,
-    model: str,
+    cal_rows: list[dict],
     command: str,
 ) -> str:
     """Build the markdown section body for docs/results.md."""
@@ -328,41 +353,14 @@ def format_calibration_markdown(
         "",
     ]
 
-    lines.append(f"Prompt version: {prompt_version}  ")
-    lines.append(f"Model: {model}  ")
-    lines.append("")
+    # History table from all calibration JSONL rows
+    lines.extend(_format_history_table(cal_rows))
 
+    # Latest-run detail blocks
     if error_count:
         lines.append(f"**Judge errors**: {error_count} rows excluded from metrics:")
         for eid in error_ids:
             lines.append(f"- `{eid}`")
-        lines.append("")
-
-    for label, m in [("Dev", dev_metrics), ("Test", test_metrics)]:
-        c = m["confusion"]
-        lines.append(f"### {label} split (n={m['n']})")
-        lines.append("")
-        lines.append("| Metric | Value |")
-        lines.append("|--------|-------|")
-        lines.append(f"| Agreement | {m['agreement']:.3f} |")
-        tpr_str = f"{m['tpr']:.3f}" if m["tpr"] is not None else "n/a"
-        tnr_str = f"{m['tnr']:.3f}" if m["tnr"] is not None else "n/a"
-        pf_str = (
-            f"{m['precision_fail']:.3f}" if m["precision_fail"] is not None else "n/a"
-        )
-        rf_str = f"{m['recall_fail']:.3f}" if m["recall_fail"] is not None else "n/a"
-        lines.append(f"| TPR (sensitivity) | {tpr_str} |")
-        lines.append(f"| TNR (specificity) | {tnr_str} |")
-        lines.append(f"| Precision (fail) | {pf_str} |")
-        lines.append(f"| Recall (fail) | {rf_str} |")
-        lines.append(f"| Cohen's kappa | {m['kappa']:.3f} |")
-        lines.append("")
-        lines.append("Confusion matrix (rows=judge, cols=human):")
-        lines.append("")
-        lines.append("| | Human pass | Human fail |")
-        lines.append("|---|---|---|")
-        lines.append(f"| Judge pass | {c['tp']} | {c['fp']} |")
-        lines.append(f"| Judge fail | {c['fn']} | {c['tn']} |")
         lines.append("")
 
     cv = code_vs_human
@@ -606,6 +604,7 @@ def main(argv: list[str] | None = None) -> None:
     cal_row = {
         "prompt_version": args.prompt_version,
         "model": model,
+        "labels_file": str(args.labels),
         "split_seed": SPLIT_SEED,
         "dev": dev_metrics,
         "test": test_metrics,
@@ -634,20 +633,18 @@ def main(argv: list[str] | None = None) -> None:
     print(f"Per-row dump written to {dump_path}")
 
     # ── update docs/results.md ──
+    all_cal_rows = read_jsonl(CALIBRATION_JSONL)
     command = (
         f"python scripts/calibrate_judge.py "
         f"--labels {args.labels} --answers {args.answers} "
         f"--prompt-version {args.prompt_version}"
     )
     md = format_calibration_markdown(
-        dev_metrics,
-        test_metrics,
         code_vs_human,
         faith_by_label,
         error_count,
         error_ids,
-        prompt_version=args.prompt_version,
-        model=model,
+        cal_rows=all_cal_rows,
         command=command,
     )
     update_calibration_results_md(md)

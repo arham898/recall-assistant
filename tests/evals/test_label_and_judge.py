@@ -17,6 +17,7 @@ from scripts.calibrate_judge import (
     compute_code_vs_human,
     compute_faithfulness_by_label,
     compute_metrics,
+    format_calibration_markdown,
     split_dev_test,
     write_judge_rows,
 )
@@ -928,6 +929,78 @@ class TestWriteJudgeRows:
             assert r["answers_file"] == "answers_test.jsonl"
             assert r["prompt_version"] == "v1"
             assert r["prompt_hash"] == "abc123"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 16b. Calibration markdown history table
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestFormatCalibrationMarkdown:
+    def test_two_jsonl_rows_produce_two_table_rows(self):
+        """History table has one row per calibration JSONL entry."""
+        cal_rows = [
+            {
+                "prompt_version": "v1",
+                "model": "m",
+                "labels_file": "evals/labels.jsonl",
+                "commit": "aaa",
+                "date": "2026-10-19",
+                "dev": {"kappa": 0.5, "agreement": 0.7, "n": 50,
+                        "tpr": 0.6, "tnr": 0.8, "precision_fail": 0.4,
+                        "recall_fail": 0.8,
+                        "confusion": {"tp": 20, "fp": 3, "fn": 10, "tn": 17}},
+                "test": {"kappa": 0.4, "agreement": 0.65, "n": 50,
+                         "tpr": 0.5, "tnr": 0.9, "precision_fail": 0.4,
+                         "recall_fail": 0.9,
+                         "confusion": {"tp": 18, "fp": 1, "fn": 14, "tn": 17}},
+            },
+            {
+                "prompt_version": "v2",
+                "model": "m",
+                "labels_file": "evals/labels.jsonl",
+                "commit": "bbb",
+                "date": "2026-10-20",
+                "dev": {"kappa": 0.7, "agreement": 0.85, "n": 50,
+                        "tpr": 0.8, "tnr": 0.9, "precision_fail": 0.6,
+                        "recall_fail": 0.9,
+                        "confusion": {"tp": 30, "fp": 1, "fn": 7, "tn": 12}},
+                "test": {"kappa": 0.65, "agreement": 0.82, "n": 50,
+                         "tpr": 0.75, "tnr": 0.92, "precision_fail": 0.55,
+                         "recall_fail": 0.92,
+                         "confusion": {"tp": 28, "fp": 1, "fn": 9, "tn": 12}},
+            },
+        ]
+        code_vs = {
+            "both_pass": 60, "code_pass_human_fail": 5,
+            "code_fail_human_pass": 5, "both_fail": 30, "agreement": 0.9,
+        }
+        faith = {"pass_mean": 0.85, "pass_n": 50, "fail_mean": 0.6, "fail_n": 10}
+
+        md = format_calibration_markdown(
+            code_vs, faith, 0, [],
+            cal_rows=cal_rows,
+            command="python scripts/calibrate_judge.py --prompt-version v2",
+        )
+
+        # Two data rows in the table (header + separator + 2 data rows)
+        table_rows = [line for line in md.split("\n") if line.startswith("| 2026")]
+        assert len(table_rows) == 2
+        assert "v1" in table_rows[0]
+        assert "aaa" in table_rows[0]
+        assert "v2" in table_rows[1]
+        assert "bbb" in table_rows[1]
+
+        # Kappa values appear
+        assert "0.500" in table_rows[0]  # dev kappa row 1
+        assert "0.700" in table_rows[1]  # dev kappa row 2
+
+        # Test confusion TP/FP/FN/TN for row 2
+        assert "28/1/9/12" in table_rows[1]
+
+        # Code-check and faithfulness blocks still present
+        assert "Code checks vs human labels" in md
+        assert "Faithfulness by human label" in md
 
 
 # ═══════════════════════════════════════════════════════════════════
