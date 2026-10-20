@@ -1435,44 +1435,17 @@ Command: python scripts/calibrate_judge.py --labels evals\labels.jsonl --answers
 Date:    2026-10-20
 ```
 
-Prompt version: v2  
-Model: google/gemini-2.5-flash-lite  
+### Run history
 
-### Dev split (n=50)
-
-| Metric | Value |
-|--------|-------|
-| Agreement | 0.940 |
-| TPR (sensitivity) | 0.946 |
-| TNR (specificity) | 0.923 |
-| Precision (fail) | 0.857 |
-| Recall (fail) | 0.923 |
-| Cohen's kappa | 0.848 |
-
-Confusion matrix (rows=judge, cols=human):
-
-| | Human pass | Human fail |
-|---|---|---|
-| Judge pass | 35 | 1 |
-| Judge fail | 2 | 12 |
-
-### Test split (n=50)
-
-| Metric | Value |
-|--------|-------|
-| Agreement | 0.900 |
-| TPR (sensitivity) | 0.892 |
-| TNR (specificity) | 0.923 |
-| Precision (fail) | 0.750 |
-| Recall (fail) | 0.923 |
-| Cohen's kappa | 0.758 |
-
-Confusion matrix (rows=judge, cols=human):
-
-| | Human pass | Human fail |
-|---|---|---|
-| Judge pass | 33 | 1 |
-| Judge fail | 4 | 12 |
+| Date | Prompt | Commit | Labels | Dev kappa | Dev agree | Test kappa | Test agree | Test TP/FP/FN/TN |
+|------|--------|--------|--------|-----------|-----------|------------|------------|------------------|
+| 2026-10-20 | v1 | c0341f2 | n/a | 0.334 | 0.680 | 0.380 | 0.660 | 20/0/17/13 |
+| 2026-10-20 | v2 | 0933b0c | n/a | 0.448 | 0.740 | 0.411 | 0.700 | 23/1/14/12 |
+| 2026-10-20 | v2 | 95c89b5 | n/a | 0.848 | 0.940 | 0.662 | 0.860 | 32/2/5/11 |
+| 2026-10-20 | v1 | 9bc5831 | n/a | 0.604 | 0.840 | 0.638 | 0.840 | 30/1/7/12 |
+| 2026-10-20 | v1 | 9abe38b | n/a | 0.604 | 0.840 | 0.729 | 0.880 | 31/0/6/13 |
+| 2026-10-20 | v2 | 0ee3c78 | n/a | 0.848 | 0.940 | 0.758 | 0.900 | 33/1/4/12 |
+| 2026-10-20 | v2 | b50b500 | labels.jsonl | 0.848 | 0.940 | 0.758 | 0.900 | 33/1/4/12 |
 
 ### Code checks vs human labels
 
