@@ -11,7 +11,7 @@ Rows: 57
 | 1 | Retrieval miss: declined correctly |
 | 1b | Retrieval miss: answered from neighbours |
 | 2 | Missed but retrieved |
-| 3 | Wrong year admitted |
+| 3 | Wrong year or vehicle admitted |
 | 4 | Wrong component admitted on a count |
 | 5 | Cited ID not in retrieved set |
 | 6 | Right ID, wrong description |
@@ -19,6 +19,7 @@ Rows: 57
 | 8 | Format leak |
 | 9 | Safety advice omitted |
 | 10 | Reference problem, not answer problem |
+| 11 | Judge false fail: answer correct |
 
 ## Failures
 
@@ -40,11 +41,11 @@ Rows: 57
 
 **Answer:** [24V543000, 23V425000]
 
-**Human note:** 
+**Human note:**
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 1b; 8 (4 of 6 gold not retrieved; bare ID list)
 
 ---
 
@@ -68,7 +69,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 5;2;8 (24V123000 stands in for retrieved 22V467000; bare list)
 
 ---
 
@@ -92,7 +93,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer incorrectly states that the recall is related to electrical system wiring and provides an incorrect campaign ID for that recall.
 
-**Category:** 
+**Category:** 1b; 3 (20V194000 not retrieved; extra 20V037000 is 2020)
 
 ---
 
@@ -116,7 +117,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer lists campaign IDs that are not present in the reference answer and omits the campaign IDs that are present in the reference answer.
 
-**Category:** 
+**Category:** 2;1b;3;8 (19V860000 retrieved and skipped; 21V395000 not retrieved; 4 wrong-year extras; bare list)
 
 ---
 
@@ -143,7 +144,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer omits two recalls that affect the 2020 Holiday Rambler Admiral, specifically recalls 24V607000 and 24V610000.
 
-**Category:** 
+**Category:** 2 (4/4 retrieved, 2 left out)
 
 ---
 
@@ -167,7 +168,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer only provides one of the two applicable recall campaign IDs, omitting the second recall that affects the specified vehicle.
 
-**Category:** 
+**Category:** 1b;8 (25V182000 not retrieved; bare ID)
 
 ---
 
@@ -195,7 +196,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer incorrectly lists the defects and campaign IDs for the recalled vehicles, with only one of the three defects matching the reference answer.
 
-**Category:** 
+**Category:** 2;6;3;10 (2 retrieved golds missed; 18V838000 given 18V906000’s defect; E-class extra; reference missing 18V725000)
 
 ---
 
@@ -223,7 +224,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 1b;8;3 (21V543000 not retrieved; bold field headers leaked; 20V367000 is 2020-2021)
 
 ---
 
@@ -252,7 +253,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer is missing recall [26V102000], which affects the 2025 Orange EV E-Triever.
 
-**Category:** 
+**Category:** 1b;8 (26V102000 not retrieved; bare list)
 
 ---
 
@@ -284,7 +285,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 8;5;3 (bold unbracketed IDs; 24V123000 duplicate; 21V125000 is 2020-2021)
 
 ---
 
@@ -308,7 +309,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer only provides one of the two applicable recalls, omitting the recall related to tire bubbling and separation.
 
-**Category:** 
+**Category:** 2;8 (23V857000 retrieved and missed; bare ID)
 
 ---
 
@@ -332,7 +333,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 1b;8;3 (2 of 3 not retrieved; bare list; 22V855000 covers Catalyst 2020-2021 only)
 
 ---
 
@@ -356,7 +357,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer incorrectly states that the brake pads may corrode, which is not mentioned in the reference answer as the cause of the defect.
 
-**Category:** 
+**Category:** 11 (correct answer; judge failed the extra cause)
 
 ---
 
@@ -380,7 +381,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 5;2 (	21V952000’s content cited as 24V123000)
 
 ---
 
@@ -404,7 +405,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer incorrectly states that no recall was found, while the reference answer describes a specific recall related to the collision avoidance system on the 2023 Entegra Aspire.
 
-**Category:** 
+**Category:** 1 (gold not retrieved, declined)
 
 ---
 
@@ -428,7 +429,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer describes a different recall than the one referenced in the question, as indicated by the different campaign ID and the specific defect described.
 
-**Category:** 
+**Category:** 5 (content right, prompt example ID)
 
 ---
 
@@ -452,7 +453,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer incorrectly states that the 2019 International HV is not mentioned in any recalls, when the reference answer clearly describes a recall for this vehicle and model year.
 
-**Category:** 
+**Category:** 2;3 (gold at rank 2, model said not present, answered with the 2024 recall)
 
 ---
 
@@ -476,7 +477,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer correctly states the number of engine recalls that apply to the 2018 Alfa Romeo Stelvio.
 
-**Category:** 
+**Category:** 8 (bare "2" correct)
 
 ---
 
@@ -500,7 +501,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer correctly states the number of suspension recalls that apply to the 2018 Cargo Express Cargo Trailer.
 
-**Category:** 
+**Category:** 8 (bare)
 
 ---
 
@@ -524,7 +525,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 8;4 (bare "3" vs 2; uncited so inferred: 19V428000 is 2018 but not a tire recall; 26V127000 is 2025-26)
 
 ---
 
@@ -548,7 +549,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer correctly states the number of recalls that apply to the 2022 Chrysler Pacifica.
 
-**Category:** 
+**Category:** 3;1b (25V573000 is 2025; 24V793000 not retrieved; right number by accident)
 
 ---
 
@@ -572,7 +573,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer correctly states the number of brake recalls that apply to the 2024 Fisker Ocean.
 
-**Category:** 
+**Category:** 8 (bare "2" correct)
 
 ---
 
@@ -596,7 +597,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer states there are 3 recalls, but the reference answer indicates there are only 2.
 
-**Category:** 
+**Category:** 4 (20V175000 not steering)
 
 ---
 
@@ -620,7 +621,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 8 (bare "2" correct)
 
 ---
 
@@ -644,7 +645,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer states there are 3 recalls, but the reference answer indicates there are only 2.
 
-**Category:** 
+**Category:** 4;3 (24V926000 not airbag; 24V199000 not 2024 L)
 
 ---
 
@@ -668,7 +669,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 8 (bare "2" correct)
 
 ---
 
@@ -692,7 +693,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 2;8 (3 retrieved, counted 2; bare number)
 
 ---
 
@@ -716,7 +717,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer states there are 3 recalls, but the reference answer indicates there are only 2.
 
-**Category:** 
+**Category:** 4 (22V642000 is ECM)
 
 ---
 
@@ -740,7 +741,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 2 (both retrieved. counted 1)
 
 ---
 
@@ -764,7 +765,7 @@ Rows: 57
 
 **Judge reason:** The candidate answer states there are 3 recalls, but the reference answer indicates there are only 2.
 
-**Category:** 
+**Category:** 3 (25V835000 is 2026)
 
 ---
 
@@ -788,7 +789,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 8 (bare "3", correct)
 
 ---
 
@@ -812,7 +813,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 2;10 (gold retrieved, declined; “wheel recall” is a placard label, so the component tag is loose)
 
 ---
 
@@ -839,7 +840,7 @@ Rows: 57
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 8;3 (bold unbracketed IDs; 24V328000 is 2022-2023)
 
 ---
 
@@ -853,7 +854,7 @@ Rows: 57
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
-**Question:** Iâ€™ve been hearing a metallic scraping noise from the front wheels of my 2020 Tesla Model 3. Could it be a recall issue?
+**Question:** I've been hearing a metallic scraping noise from the front wheels of my 2020 Tesla Model 3. Could it be a recall issue?
 
 **Reference:** Yes, 21V387000: brake caliper bolts may be loose, allowing the caliper to separate and contact the wheel rim. Tesla Service will inspect and tighten or replace the caliper bolts free of charge.
 
@@ -867,7 +868,7 @@ Another recall involves the front suspension lateral link fasteners potentially 
 
 **Judge reason:** The candidate answer includes information about a second recall that was not mentioned in the reference answer and is not relevant to the question asked.
 
-**Category:** 
+**Category:** 3 (23V235000 is 2018-2019)
 
 ---
 
@@ -895,7 +896,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 
 **Judge reason:** The candidate answer correctly identifies that the 2020 Honda CR-V is affected by a recall related to the rear subframe and accurately describes the defect and potential consequence, mirroring the reference answer's core information.
 
-**Category:** 
+**Category:** 5;3 (prompt example ID; 26V365000 not a CR-V recall)
 
 ---
 
@@ -924,7 +925,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 
 **Judge reason:** The candidate answer includes a recall (20V543000) that is not applicable to the 2022 Hyundai Tucson, and it incorrectly describes the remedy for recall 23V038000.
 
-**Category:** 
+**Category:** 3;6;8 (20V543000 is 2018-2021; 23V038000 given 23V526000’s defect; “Source N” labels, no brackets)
 
 ---
 
@@ -948,7 +949,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 
 **Judge reason:** The candidate answer correctly identifies that the 2020 Chevy Bolt EV is part of a battery fire recall and accurately describes the defect and the remedy, while also providing additional relevant information about interim steps and other recall campaign IDs.
 
-**Category:** 
+**Category:** 5 (20V911000 invented)
 
 ---
 
@@ -976,7 +977,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 
 **Judge reason:** The candidate answer includes a recall (24V772000) that is not mentioned in the reference answer and omits a recall (20V164000) that is mentioned in the reference answer.
 
-**Category:** 
+**Category:** 2;3 (20V164000 retrieved and missed; two extras wrong year)
 
 ---
 
@@ -1006,7 +1007,7 @@ Additionally, there is a recall for a defect where the upper control arm ball jo
 
 **Judge reason:** The candidate answer includes a recall (22V154000) that is not mentioned in the reference answer and is not relevant to the user's described issue.
 
-**Category:** 
+**Category:** 3 (22V154000 not a Grand Cherokee L recall)
 
 ---
 
@@ -1036,7 +1037,7 @@ Additionally, there is a recall for 2025 Honda Civic and Civic Hybrid vehicles w
 
 **Judge reason:** The candidate answer includes information about two unrelated recalls and incorrectly suggests one of them might be related to the steering issue, while the reference answer clearly identifies the correct recall and its specific defect and remedy.
 
-**Category:** 
+**Category:** 3 (24V763000 is 2025)
 
 ---
 
@@ -1050,7 +1051,7 @@ Additionally, there is a recall for 2025 Honda Civic and Civic Hybrid vehicles w
 - **Gold in retrieved:** 3/3
 - **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
-**Question:** Thereâ€™s a strong fuel smell coming from under the hood of my 2021 Ford Escape with the 1.5L engine. Iâ€™m afraid of a fire. Any recalls?
+**Question:** There's a strong fuel smell coming from under the hood of my 2021 Ford Escape with the 1.5L engine. I'm afraid of a fire. Any recalls?
 
 **Reference:** Yes. 22V859000: a fuel injector may crack and leak fuel inside the engine compartment, increasing fire risk; the fix was an engine software update and a drain tube. 25V165000 re-repaired vehicles fixed incorrectly. 25V467000 expands and replaces both: dealers update the engine control software and will replace the high-pressure fuel rail assembly and injectors, free of charge; vehicles repaired under the earlier recalls need the new remedy.
 
@@ -1066,7 +1067,7 @@ Another recall involved a potential fuel leak inside the fuel tank from the fuel
 
 **Judge reason:** The candidate answer includes information about recalls that are not relevant to the user's question, such as a recall for a fuel leak inside the fuel tank and a recall for a PCM software update that does not address the fuel injector issue.
 
-**Category:** 
+**Category:** 3 (24V187000 is 2022 only; supersession omitted is a note)
 
 ---
 
@@ -1090,7 +1091,7 @@ Another recall involved a potential fuel leak inside the fuel tank from the fuel
 
 **Judge reason:** The candidate answer includes additional information about a remedy that is not present in the reference answer, specifically regarding adding higher viscosity oil, installing a new oil fill cap, replacing the oil filter, and updating the owner's manual.
 
-**Category:** 
+**Category:** 11 (correct answer with extra remedy detail)
 
 ---
 
@@ -1120,7 +1121,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer correctly identifies the two recalls related to the rear suspension and accurately describes the defects and remedies for each.
 
-**Category:** 
+**Category:** 8;3 (manufacturer code cited as an ID; off-topic extra)
 
 ---
 
@@ -1151,7 +1152,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer lists several recalls that are not for the 2021 Volvo XC60, and it also misses some of the correct recall campaign IDs mentioned in the reference answer.
 
-**Category:** 
+**Category:** 1b;3 (2 of 5 not retrieved; 4 wrong-year extras)
 
 ---
 
@@ -1165,7 +1166,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
-**Question:** My 2022 Honda Accordâ€™s brake pedal feels spongy and the braking seems weaker than normal. Is there a recall?
+**Question:** My 2022 Honda Accord's brake pedal feels spongy and the braking seems weaker than normal. Is there a recall?
 
 **Reference:** Yes, 23V430000: a ball valve in the vehicle stability assist modulator may leak brake fluid, reducing brake performance. Dealers will replace the VSA modulator free of charge.
 
@@ -1175,7 +1176,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer describes a different recall than the reference answer, specifically mentioning unintended vehicle movement when the brake hold feature is engaged and an unexpected increase in brake pedal travel, which are not mentioned in the reference answer.
 
-**Category:** 
+**Category:** 5 (prompt example ID)
 
 ---
 
@@ -1199,7 +1200,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer states there are 2 recalls, but the reference answer indicates there are 5 recalls for the 2022 Honda Pilot.
 
-**Category:** 
+**Category:** 1b;8 (2 of 5 retrieved, counted what it had; bare number) 
 
 ---
 
@@ -1223,7 +1224,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 5 (prompt example ID)
 
 ---
 
@@ -1247,7 +1248,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 5 (24V477000 for 20V477000, a typo)
 
 ---
 
@@ -1271,7 +1272,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer describes recalls related to fuel leaks from the fuel rail assembly and air compressor discharge lines, which are not mentioned in the reference answer. The reference answer describes recalls related to a fuel heater issue.
 
-**Category:** 
+**Category:** 1b;10 (gold not retrieved, answered from neighbours; golden ambiguity already noted)
 
 ---
 
@@ -1295,7 +1296,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 2;10 (gold retrieved, declined; “tire recall” is a label)
 
 ---
 
@@ -1319,7 +1320,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 5;2 (two golds replaced by both prompt example IDs)
 
 ---
 
@@ -1343,7 +1344,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer incorrectly states that no relevant recall was found, when the reference answer provides details about a specific recall for the vehicle in question.
 
-**Category:** 
+**Category:** 2 (gold at rabk 1, declined)
 
 ---
 
@@ -1367,7 +1368,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 2 (gold retrieved, declined)
 
 ---
 
@@ -1391,7 +1392,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** 
 
-**Category:** 
+**Category:** 2;10 (gold retrieved, declined; “suspension recall” is brake lines)
 
 ---
 
@@ -1415,7 +1416,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer incorrectly states that no relevant recall was found, while the reference answer provides details about a specific recall for the 2024 VM Toyota Sienna's suspension.
 
-**Category:** 
+**Category:** 1 (gold not retrieved (converter make), declined)
 
 ---
 
@@ -1445,7 +1446,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer describes multiple recalls related to brakes, but the question specifically asks for the fix for the brake recalls, implying a singular fix or a set of fixes for a specific set of recalls. The candidate answer provides fixes for three different recalls, two of which are not mentioned in the reference answer.
 
-**Category:** 
+**Category:** 5;3 (22V073000 typo; 22V299000 is 2023, 21V018000 is the 4700)
 
 ---
 
@@ -1469,6 +1470,6 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 
 **Judge reason:** The candidate answer incorrectly states that there is a suspension recall for the 2021 Kia Forte when the reference answer indicates there are no such recalls for that model year.
 
-**Category:** 
+**Category:** 7;3 (answered the 2023 Forte for a 2021 question)
 
 ---
