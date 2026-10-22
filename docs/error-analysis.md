@@ -1,6 +1,6 @@
 # Failure analysis worksheet
 
-Commit: 5e05031
+Commit: a3376aa
 Date: 2026-10-22
 Rows: 57
 
@@ -53,7 +53,7 @@ Rows: 57
 - **Template:** all_recalls
 - **Failed signals:** code
 - **Gold IDs:** 21V876000, 22V476000
-- **Cited IDs:** 21V876000
+- **Cited IDs:** 21V876000, 24V123000 (not retrieved)
 - **Retrieved IDs:** 22V476000, 21V876000, 20V317000, 18V201000, 19V619000, 17V756000, 21V775000, 21V294000, 22V783000, 22V028000
 - **Gold in retrieved:** 2/2
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
@@ -365,7 +365,7 @@ Rows: 57
 - **Template:** consequence
 - **Failed signals:** code
 - **Gold IDs:** 21V332000, 21V952000
-- **Cited IDs:** 21V332000
+- **Cited IDs:** 21V332000, 24V123000 (not retrieved)
 - **Retrieved IDs:** 21V952000, 21V332000, 19V730000, 24V006000, 20V752000, 22V538000, 26V652000, 22V372000, 19V598000, 23V459000
 - **Gold in retrieved:** 2/2
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
@@ -413,7 +413,7 @@ Rows: 57
 - **Template:** consequence
 - **Failed signals:** code, human, judge
 - **Gold IDs:** 23V343000
-- **Cited IDs:** 
+- **Cited IDs:** 24V123000 (not retrieved)
 - **Retrieved IDs:** 23V343000, 22V771000, 19V888000, 21V650000, 24V812000, 19V805000, 25V272000, 22V193000, 26V091000, 23V060000
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
@@ -876,7 +876,7 @@ Another recall involves the front suspension lateral link fasteners potentially 
 - **Template:** handwritten
 - **Failed signals:** code, human
 - **Gold IDs:** 19V865000
-- **Cited IDs:** 26V365000
+- **Cited IDs:** 26V365000, 24V123000 (not retrieved)
 - **Retrieved IDs:** 19V865000, 26V365000, 21V900000, 20V798000, 22V380000, 18V663000, 26V366000, 23V844000, 23V524000, 21V382000
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
@@ -933,7 +933,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 - **Template:** handwritten
 - **Failed signals:** code, human
 - **Gold IDs:** 21V650000, 24V481000, 24V812000
-- **Cited IDs:** 21V650000, 24V812000, 24V481000
+- **Cited IDs:** 21V650000, 24V812000, 24V481000, 20V911000 (not retrieved)
 - **Retrieved IDs:** 21V650000, 24V812000, 24V481000, 20V701000, 21V560000, 24V720000, 23V845000, 25V741000, 20V811000, 20V107000
 - **Gold in retrieved:** 3/3
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
@@ -1099,7 +1099,7 @@ Another recall involved a potential fuel leak inside the fuel tank from the fuel
 - **Template:** handwritten
 - **Failed signals:** code
 - **Gold IDs:** 21V295000, 22V034000
-- **Cited IDs:** 21V295000, 22V034000
+- **Cited IDs:** 21V295000, 22V034000, 90S9 (not retrieved)
 - **Retrieved IDs:** 21V295000, 22V034000, 19V737000, 21V825000, 22V742000, 21V947000, 21V606000, 20V737000, 19V114000, 26V266000
 - **Gold in retrieved:** 2/2
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
@@ -1160,7 +1160,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Template:** handwritten
 - **Failed signals:** code, human, judge
 - **Gold IDs:** 23V430000
-- **Cited IDs:** 
+- **Cited IDs:** 24V123000 (not retrieved)
 - **Retrieved IDs:** 23V430000, 25V391000, 18V777000, 25V859000, 20V771000, 23V458000, 26V054000, 18V629000, 21V690000, 24V943000
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
@@ -1208,7 +1208,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Template:** remedy
 - **Failed signals:** code
 - **Gold IDs:** 26V541000
-- **Cited IDs:** 
+- **Cited IDs:** 24V123000 (not retrieved)
 - **Retrieved IDs:** 26V541000, 25V650000, 26V637000, 26V310000, 19V409000, 19V573000, 19V779000, 25V400000, 26V243000, 25V288000
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
@@ -1232,7 +1232,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Template:** remedy
 - **Failed signals:** code
 - **Gold IDs:** 20V477000
-- **Cited IDs:** 
+- **Cited IDs:** 24V477000 (not retrieved)
 - **Retrieved IDs:** 20V477000, 18V357000, 17V513000, 19V736000, 20V363000, 19V150000, 18V799000, 23V286000, 26V646000, 24V351000
 - **Gold in retrieved:** 1/1
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
@@ -1304,7 +1304,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Template:** remedy
 - **Failed signals:** code
 - **Gold IDs:** 23V520000, 25V670000, 26V017000
-- **Cited IDs:** 26V017000
+- **Cited IDs:** 26V017000, 24V123000 (not retrieved), 25V456000 (not retrieved)
 - **Retrieved IDs:** 23V520000, 25V670000, 23V708000, 23V523000, 24V076000, 26V017000, 24V495000, 26V309000, 26V540000, 25V855000
 - **Gold in retrieved:** 3/3
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
@@ -1424,7 +1424,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Template:** remedy
 - **Failed signals:** code, human, judge
 - **Gold IDs:** 22V817000, 23V073000
-- **Cited IDs:** 22V817000, 22V299000, 21V018000
+- **Cited IDs:** 22V817000, 22V299000, 21V018000, 22V073000 (not retrieved)
 - **Retrieved IDs:** 22V817000, 23V073000, 22V227000, 21V018000, 25V326000, 22V299000, 26V079000, 21V965000, 18V351000, 24V668000
 - **Gold in retrieved:** 2/2
 - **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
