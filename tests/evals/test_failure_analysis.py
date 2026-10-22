@@ -77,7 +77,7 @@ ANSWERS: list[dict] = [
         "hw_90S9",
         "handwritten",
         "answered",
-        ["90S9"],
+        [],
         retrieved_ids=["90S9"],
     ),
 ]
@@ -114,7 +114,7 @@ SCORED: list[dict] = [
         "cites_gold": False,
         "cites_all_gold": False,
         "wrongly_declined": False,
-        "cited_ids": ["X2", "BAD1"],
+        "cited_ids": ["X2"],
         "invalid_ids": ["BAD1"],
         "gold_campaign_ids": ["C2"],
     },
@@ -194,7 +194,7 @@ SCORED: list[dict] = [
         "cites_gold": False,
         "cites_all_gold": False,
         "wrongly_declined": False,
-        "cited_ids": ["90S9"],
+        "cited_ids": [],
         "invalid_ids": ["90S9"],
         "gold_campaign_ids": ["90S9"],
     },
@@ -326,10 +326,10 @@ class TestBuildFailureRows:
         assert slash["template"] == "existence"
 
     def test_90s9_citation(self):
-        """hw_90S9 has 90S9 in cited_ids and in invalid_ids."""
+        """hw_90S9 has 90S9 in invalid_ids (disjoint from cited_ids)."""
         rows = _build()
         s9 = next(r for r in rows if r["question_id"] == "hw_90S9")
-        assert "90S9" in s9["cited_ids"]
+        assert "90S9" not in s9["cited_ids"]
         assert "90S9" in s9["invalid_ids"]
         assert "90S9" in s9["gold_campaign_ids"]
         assert s9["failed_signals"] == ["human"]
@@ -633,21 +633,13 @@ class TestValidation:
 
     def test_parenthetical_note_ignored(self):
         """Tokens inside '(...)' are not parsed as categories."""
-        row = {
-            "question_id": "test",
-            "template": "remedy",
-            "category_raw": (
-                "2;1b;3;8 (19V860000 retrieved and skipped;"
-                " 21V395000 not retrieved; 4 wrong-year extras; bare list)"
-            ),
-            "category_numbers": parse_worksheet(
-                "### test\n"
-                "- **Template:** remedy\n"
-                "**Category:** 2;1b;3;8 (19V860000 retrieved and skipped;"
-                " 21V395000 not retrieved; 4 wrong-year extras; bare list)\n"
-            )[0]["category_numbers"],
-        }
-        assert row["category_numbers"] == ["2", "1b", "3", "8"]
+        parsed = parse_worksheet(
+            "### test\n"
+            "- **Template:** remedy\n"
+            "**Category:** 2;1b;3;8 (19V860000 retrieved and skipped;"
+            " 21V395000 not retrieved; 4 wrong-year extras; bare list)\n"
+        )
+        assert parsed[0]["category_numbers"] == ["2", "1b", "3", "8"]
 
     def test_bare_token_refused_as_unknown(self):
         """A semicolon-separated token that is not a legend key is refused."""
@@ -659,12 +651,7 @@ class TestValidation:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# 4. Subprocess tests
-# ═══════════════════════════════════════════════════════════════════
-
-
-# ═══════════════════════════════════════════════════════════════════
-# 5. Encoding round-trip
+# 4. Encoding round-trip
 # ═══════════════════════════════════════════════════════════════════
 
 
@@ -726,11 +713,12 @@ class TestEncodingRoundTrip:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# 6. Subprocess tests
+# 5. Subprocess tests
 # ═══════════════════════════════════════════════════════════════════
 
 
 class TestScriptSubprocess:
+    # Export logic is covered by build_failure_rows tests; this only checks imports and argparse.
     def test_export_failures_help(self):
         result = subprocess.run(
             [sys.executable, "scripts/export_failures.py", "--help"],
