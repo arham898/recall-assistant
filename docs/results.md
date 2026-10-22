@@ -1462,3 +1462,42 @@ Agreement: 0.900
 |-------|-------------------|---|
 | Pass | 0.859 | 51 |
 | Fail | 0.620 | 16 |
+
+## Failure analysis (Module 2.5)
+
+```
+Command: python scripts/tally_failures.py --worksheet docs/error-analysis.md
+Date:    2026-10-22
+Commit:  89eb605
+```
+
+57 failure rows, 31 with more than one category.
+
+### By category
+
+| # | Category | Count |
+|---|----------|-------|
+| 1 | Retrieval miss: declined correctly | 2 |
+| 1b | Retrieval miss: answered from neighbours | 11 |
+| 2 | Missed but retrieved | 16 |
+| 3 | Wrong year or vehicle admitted | 22 |
+| 4 | Wrong component admitted on a count | 4 |
+| 5 | Cited ID not in retrieved set | 11 |
+| 6 | Right ID, wrong description | 2 |
+| 7 | Unanswerable answered | 1 |
+| 8 | Format leak | 21 |
+| 9 | Safety advice omitted | 0 |
+| 10 | Reference problem, not answer problem | 5 |
+| 11 | Judge false fail: answer correct | 2 |
+
+### By template
+
+| Template | 1 | 1b | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | Total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| all_recalls | 0 | 7 | 5 | 6 | 0 | 2 | 1 | 0 | 9 | 0 | 1 | 0 | 31 |
+| consequence | 1 | 0 | 2 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 1 | 7 |
+| count | 0 | 1 | 2 | 3 | 4 | 0 | 0 | 0 | 8 | 0 | 0 | 0 | 18 |
+| existence | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 4 |
+| handwritten | 0 | 2 | 1 | 9 | 0 | 3 | 1 | 0 | 3 | 0 | 0 | 1 | 20 |
+| remedy | 1 | 1 | 5 | 1 | 0 | 4 | 0 | 0 | 0 | 0 | 3 | 0 | 15 |
+| unanswerable | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 2 |
