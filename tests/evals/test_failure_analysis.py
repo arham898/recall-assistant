@@ -631,6 +631,32 @@ class TestValidation:
             assert empty == []
             assert unknown == []
 
+    def test_parenthetical_note_ignored(self):
+        """Tokens inside '(...)' are not parsed as categories."""
+        row = {
+            "question_id": "test",
+            "template": "remedy",
+            "category_raw": (
+                "2;1b;3;8 (19V860000 retrieved and skipped;"
+                " 21V395000 not retrieved; 4 wrong-year extras; bare list)"
+            ),
+            "category_numbers": parse_worksheet(
+                "### test\n"
+                "- **Template:** remedy\n"
+                "**Category:** 2;1b;3;8 (19V860000 retrieved and skipped;"
+                " 21V395000 not retrieved; 4 wrong-year extras; bare list)\n"
+            )[0]["category_numbers"],
+        }
+        assert row["category_numbers"] == ["2", "1b", "3", "8"]
+
+    def test_bare_token_refused_as_unknown(self):
+        """A semicolon-separated token that is not a legend key is refused."""
+        parsed = parse_worksheet(
+            "### test\n- **Template:** remedy\n**Category:** 5; bare list\n"
+        )
+        _empty_ids, unknown_ids = validate_categories(parsed)
+        assert "test" in unknown_ids
+
 
 # ═══════════════════════════════════════════════════════════════════
 # 4. Subprocess tests

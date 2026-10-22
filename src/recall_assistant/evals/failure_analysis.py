@@ -299,15 +299,20 @@ def parse_worksheet(text: str) -> list[dict]:
         category_raw = cat_match.group(1).strip() if cat_match else ""
 
         # Parse category numbers from semicolon-separated string.
+        # Strip any parenthetical note: "2;1b;3 (some note)" -> "2;1b;3".
+        cat_text = category_raw.split("(")[0].strip() if category_raw else ""
         category_numbers: list[str] = []
-        if category_raw:
-            for part in category_raw.split(";"):
+        if cat_text:
+            for part in cat_text.split(";"):
                 part = part.strip()
                 if not part:
                     continue
                 num_match = _CAT_NUM_RE.match(part)
                 if num_match:
                     category_numbers.append(num_match.group(1))
+                else:
+                    # Keep the raw token so validate_categories rejects it.
+                    category_numbers.append(part)
 
         parsed.append(
             {
