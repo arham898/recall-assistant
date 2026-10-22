@@ -169,7 +169,12 @@ def build_failure_rows(
 
 
 def _format_cited_ids(row: dict) -> str:
-    """Format cited IDs, marking invalid ones with '(not retrieved)'."""
+    """Format cited IDs, marking invalid ones with '(not retrieved)'.
+
+    Invalid IDs may be absent from ``cited_ids`` (the scored file splits
+    them into a separate ``invalid_ids`` list), so they are appended at
+    the end if not already seen.
+    """
     invalid_set = set(row.get("invalid_ids", []))
     parts: list[str] = []
     seen: set[str] = set()
@@ -181,6 +186,12 @@ def _format_cited_ids(row: dict) -> str:
             parts.append(f"{cid} (not retrieved)")
         else:
             parts.append(cid)
+    # Append invalid IDs that were not in cited_ids.
+    for cid in row.get("invalid_ids", []):
+        if cid in seen:
+            continue
+        seen.add(cid)
+        parts.append(f"{cid} (not retrieved)")
     return ", ".join(parts)
 
 

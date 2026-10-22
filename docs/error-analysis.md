@@ -1,6 +1,6 @@
 # Failure analysis worksheet
 
-Commit: 05fdcca
+Commit: 5e05031
 Date: 2026-10-22
 Rows: 57
 
@@ -32,6 +32,7 @@ Rows: 57
 - **Cited IDs:** 24V543000, 23V425000
 - **Retrieved IDs:** 20V125000, 19V707000, 18V846000, 23V276000, 18V566000, 22V505000, 21V253000, 19V526000, 23V425000, 24V543000
 - **Gold in retrieved:** 2/6
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2023 Blue Bird All American School Bus?
 
@@ -55,6 +56,7 @@ Rows: 57
 - **Cited IDs:** 21V876000
 - **Retrieved IDs:** 22V476000, 21V876000, 20V317000, 18V201000, 19V619000, 17V756000, 21V775000, 21V294000, 22V783000, 22V028000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2022 Continental Cargo Cargo Trailer?
 
@@ -78,6 +80,7 @@ Rows: 57
 - **Cited IDs:** 17V755000, 20V037000
 - **Retrieved IDs:** 17V755000, 18V202000, 20V037000, 17V667000, 18V121000, 17V505000, 17V829000, 17V802000, 18V217000, 18V183000
 - **Gold in retrieved:** 1/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2018 Crossroads Hampton?
 
@@ -101,6 +104,7 @@ Rows: 57
 - **Cited IDs:** 22V655000, 18V202000, 17V802000, 24V607000
 - **Retrieved IDs:** 22V655000, 18V202000, 25V121000, 17V477000, 24V607000, 20V706000, 17V802000, 22V949000, 20V615000, 19V860000
 - **Gold in retrieved:** 1/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2019 Fleetwood Bounder?
 
@@ -124,6 +128,7 @@ Rows: 57
 - **Cited IDs:** 20V615000, 22V655000
 - **Retrieved IDs:** 24V607000, 20V615000, 24V610000, 22V655000, 18V202000, 19V861000, 23V351000, 26V264000, 19V224000, 19V306000
 - **Gold in retrieved:** 4/4
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2020 Holiday Rambler Admiral?
 
@@ -150,6 +155,7 @@ Rows: 57
 - **Cited IDs:** 24V433000
 - **Retrieved IDs:** 25V823000, 26V165000, 26V122000, 25V363000, 24V145000, 23V381000, 24V433000, 23V632000, 25V436000, 25V794000
 - **Gold in retrieved:** 1/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2025 Kenworth K270?
 
@@ -173,6 +179,7 @@ Rows: 57
 - **Cited IDs:** 26V216000, 18V838000, 18V725000
 - **Retrieved IDs:** 26V216000, 18V608000, 18V761000, 20V068000, 19V130000, 18V725000, 18V207000, 18V906000, 18V838000, 19V788000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2018 Mercedes Benz C 300 4MATIC?
 
@@ -200,6 +207,7 @@ Rows: 57
 - **Cited IDs:** 20V367000, 17V728000, 19V379000
 - **Retrieved IDs:** 20V367000, 17V728000, 18V524000, 19V379000, 18V332000, 18V191000, 18V100000, 20V012000, 18V280000, 20V682000
 - **Gold in retrieved:** 2/3
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2018 Newell P50?
 
@@ -227,6 +235,7 @@ Rows: 57
 - **Cited IDs:** 25V612000, 25V360000, 24V965000, 25V328000, 26V153000
 - **Retrieved IDs:** 25V612000, 25V360000, 26V453000, 24V965000, 25V328000, 24V964000, 24V963000, 24V800000, 26V153000, 22V592000
 - **Gold in retrieved:** 5/6
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2025 Orange EV E-Triever?
 
@@ -255,6 +264,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 19V486000, 22V378000, 19V485000, 19V092000, 22V009000, 21V482000, 20V499000, 25V224000, 22V008000, 21V125000
 - **Gold in retrieved:** 6/6
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2019 Oshkosh S-Series?
 
@@ -286,6 +296,7 @@ Rows: 57
 - **Cited IDs:** 23V319000
 - **Retrieved IDs:** 23V857000, 21V061000, 23V319000, 24V837000, 20V522000, 25V496000, 26V059000, 19V661000, 21V710000, 22V028000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2024 PJ Trailers DD?
 
@@ -309,6 +320,7 @@ Rows: 57
 - **Cited IDs:** 22V855000, 22V114000
 - **Retrieved IDs:** 20V621000, 19V460000, 19V062000, 19V061000, 20V664000, 19V034000, 22V855000, 19V871000, 19V283000, 22V114000
 - **Gold in retrieved:** 1/3
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls affect the 2022 Proterra Catalyst?
 
@@ -332,6 +344,7 @@ Rows: 57
 - **Cited IDs:** 20V245000
 - **Retrieved IDs:** 20V245000, 18V597000, 22V325000, 19V235000, 19V561000, 25V591000, 24V621000, 18V598000, 19V373000, 24V943000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** What's the risk from the brake recall on the 2019 Aprilia RSV4 RR?
 
@@ -355,6 +368,7 @@ Rows: 57
 - **Cited IDs:** 21V332000
 - **Retrieved IDs:** 21V952000, 21V332000, 19V730000, 24V006000, 20V752000, 22V538000, 26V652000, 22V372000, 19V598000, 23V459000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the risk from the fuel system recalls on the 2019 E-ONE Cyclone II?
 
@@ -378,6 +392,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 18V450000, 18V688000, 21V591000, 17V695000, 19V626000, 18V687000, 17V187000, 24V641000, 22V665000, 21V846000
 - **Gold in retrieved:** 0/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the risk from the collision avoidance recall on the 2023 Entegra Aspire?
 
@@ -401,6 +416,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 23V343000, 22V771000, 19V888000, 21V650000, 24V812000, 19V805000, 25V272000, 22V193000, 26V091000, 23V060000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the risk from the electrical system recall on the 2022 Fox Factory GM Pickup?
 
@@ -424,6 +440,7 @@ Rows: 57
 - **Cited IDs:** 24V026000
 - **Retrieved IDs:** 20V578000, 18V293000, 24V026000, 26V344000, 19V207000, 26V579000, 20V242000, 19V185000, 25V093000, 25V817000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the risk from the seat belt recall on the 2019 International HV?
 
@@ -447,6 +464,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 18V636000, 17V823000, 19V551000, 19V148000, 18V635000, 25V586000, 23V382000, 24V510000, 18V205000, 18V203000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many engine recalls apply to the 2018 Alfa Romeo Stelvio?
 
@@ -470,6 +488,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 18V201000, 19V619000, 20V317000, 21V294000, 22V476000, 21V876000, 18V184000, 22V028000, 17V756000, 21V061000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many suspension recalls apply to the 2018 Cargo Express Cargo Trailer?
 
@@ -493,6 +512,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 18V509000, 24V366000, 26V530000, 20V295000, 21V578000, 21V155000, 21V115000, 26V127000, 18V576000, 19V428000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many tire recalls apply to the 2018 Chevrolet Express?
 
@@ -516,6 +536,7 @@ Rows: 57
 - **Cited IDs:** 26V189000, 25V302000, 25V573000
 - **Retrieved IDs:** 26V189000, 25V302000, 25V573000, 19V143000, 17V542000, 18V332000, 18V524000, 18V493000, 26V531000, 18V395000
 - **Gold in retrieved:** 2/3
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many airbag recalls apply to the 2022 Chrysler Pacifica?
 
@@ -539,6 +560,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 24V623000, 24V405000, 24V769000, 25V353000, 24V865000, 24V404000, 24V499000, 24V466000, 20V313000, 19V505000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many brake recalls apply to the 2024 Fisker Ocean?
 
@@ -562,6 +584,7 @@ Rows: 57
 - **Cited IDs:** 24V097000, 22V089000, 20V175000
 - **Retrieved IDs:** 24V097000, 22V089000, 20V175000, 20V099000, 20V795000, 25V793000, 21V407000, 22V384000, 25V626000, 22V925000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** How many steering recalls apply to the 2021 Ford E-350?
 
@@ -585,6 +608,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 26V500000, 26V146000, 19V412000, 24V744000, 24V184000, 18V663000, 25V582000, 23V735000, 24V114000, 19V070000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many steering recalls apply to the 2025 Honda CMX300?
 
@@ -608,6 +632,7 @@ Rows: 57
 - **Cited IDs:** 24V897000, 24V926000, 26V328000, 24V199000
 - **Retrieved IDs:** 26V559000, 26V562000, 24V897000, 26V413000, 24V926000, 24V199000, 26V328000, 24V944000, 26V051000, 24V720000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** How many airbag recalls apply to the 2024 Jeep Grand Cherokee L?
 
@@ -631,6 +656,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 26V431000, 25V115000, 26V046000, 24V867000, 24V757000, 25V874000, 23V298000, 22V836000, 25V006000, 23V531000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many electrical system recalls apply to the 2025 Kia EV9?
 
@@ -654,6 +680,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 23V176000, 23V840000, 24V215000, 21V608000, 22V100000, 24V217000, 23V615000, 21V157000, 21V190000, 22V921000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many seat belt recalls apply to the 2021 Porsche Taycan?
 
@@ -677,6 +704,7 @@ Rows: 57
 - **Cited IDs:** 24V415000, 22V140000, 22V642000
 - **Retrieved IDs:** 24V415000, 24V896000, 22V140000, 26V225000, 22V642000, 25V882000, 21V880000, 24V653000, 19V347000, 26V244000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** How many stability control recalls apply to the 2022 RAM 3500?
 
@@ -700,6 +728,7 @@ Rows: 57
 - **Cited IDs:** 20V682000
 - **Retrieved IDs:** 19V097000, 17V831000, 21V179000, 20V012000, 19V244000, 20V162000, 20V633000, 18V211000, 18V108000, 20V682000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many fuel system recalls apply to the 2019 Toyota Highlander?
 
@@ -723,6 +752,7 @@ Rows: 57
 - **Cited IDs:** 21V132000, 25V835000, 21V812000
 - **Retrieved IDs:** 21V132000, 20V702000, 21V812000, 21V026000, 20V712000, 25V835000, 21V616000, 20V716000, 25V434000, 20V504000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** How many wheel recalls apply to the 2021 Volkswagen Atlas Cross Sport?
 
@@ -746,6 +776,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 21V896000, 20V634000, 22V919000, 21V882000, 21V965000, 20V211000, 18V191000, 22V338000, 22V227000, 25V760000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many tire recalls apply to the 2020 Western Star 4900?
 
@@ -769,6 +800,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 18V527000, 18V475000, 20V767000, 18V134000, 17V612000, 17V282000, 20V562000, 17V708000, 22V486000, 17V635000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=True
 
 **Question:** Are there any wheel recalls for the 2021 Forest River XLR Toyhauler?
 
@@ -792,6 +824,7 @@ Rows: 57
 - **Cited IDs:** 
 - **Retrieved IDs:** 22V416000, 21V351000, 23V482000, 26V573000, 24V657000, 25V184000, 26V275000, 24V873000, 24V328000, 25V822000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** Are there any fuel system recalls for the 2019 Nova Bus LFS?
 
@@ -818,6 +851,7 @@ Rows: 57
 - **Cited IDs:** 21V387000, 21V835000, 23V235000
 - **Retrieved IDs:** 21V846000, 22V235000, 21V835000, 22V063000, 23V235000, 21V387000, 24V153000, 23V838000, 22V317000, 22V045000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** Iâ€™ve been hearing a metallic scraping noise from the front wheels of my 2020 Tesla Model 3. Could it be a recall issue?
 
@@ -845,6 +879,7 @@ Another recall involves the front suspension lateral link fasteners potentially 
 - **Cited IDs:** 26V365000
 - **Retrieved IDs:** 19V865000, 26V365000, 21V900000, 20V798000, 22V380000, 18V663000, 26V366000, 23V844000, 23V524000, 21V382000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** I read online that some Honda CR-Vs had a problem where the rear of the car could basically fall apart. Is my 2020 CR-V affected?
 
@@ -872,6 +907,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 - **Cited IDs:** 
 - **Retrieved IDs:** 20V543000, 26V316000, 26V400000, 26V254000, 23V038000, 26V047000, 23V526000, 22V746000, 21V938000, 25V893000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** I just bought a used 2022 Hyundai Tucson. Are there any recalls I should know about?
 
@@ -900,6 +936,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 - **Cited IDs:** 21V650000, 24V812000, 24V481000
 - **Retrieved IDs:** 21V650000, 24V812000, 24V481000, 20V701000, 21V560000, 24V720000, 23V845000, 25V741000, 20V811000, 20V107000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** I heard the Chevy Bolt had a huge battery fire recall. Is my 2020 Bolt EV part of that?
 
@@ -923,6 +960,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 - **Cited IDs:** 20V152000, 24V772000, 21V521000
 - **Retrieved IDs:** 20V164000, 20V152000, 19V291000, 20V283000, 24V576000, 24V772000, 19V352000, 21V521000, 19V678000, 23V622000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** Are there any airbag recalls on the 2020 BMW X3? I want to make sure my passenger side is safe.
 
@@ -950,6 +988,7 @@ Another recall, for vehicles sold in specific northern and eastern states, addre
 - **Cited IDs:** 23V352000, 22V154000, 24V132000
 - **Retrieved IDs:** 23V352000, 22V284000, 26V559000, 26V413000, 22V154000, 26V051000, 26V562000, 24V132000, 23V413000, 25V083000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** The steering in my 2021 Jeep Grand Cherokee L makes a clunking sound and feels like it could disconnect. Has Jeep issued a recall?
 
@@ -979,6 +1018,7 @@ Additionally, there is a recall for a defect where the upper control arm ball jo
 - **Cited IDs:** 24V744000, 23V704000, 24V763000
 - **Retrieved IDs:** 18V663000, 24V744000, 23V704000, 24V184000, 22V367000, 26V500000, 24V763000, 26V146000, 23V735000, 22V369000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** Steering my 2022 Honda Civic has gotten noticeably harder lately, especially at low speeds in parking lots. Could this be a recall?
 
@@ -1008,6 +1048,7 @@ Additionally, there is a recall for 2025 Honda Civic and Civic Hybrid vehicles w
 - **Cited IDs:** 25V467000, 22V859000, 24V187000, 25V165000, 21V625000
 - **Retrieved IDs:** 25V467000, 21V625000, 22V859000, 24V187000, 23V380000, 25V345000, 22V484000, 25V165000, 22V109000, 24V598000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** Thereâ€™s a strong fuel smell coming from under the hood of my 2021 Ford Escape with the 1.5L engine. Iâ€™m afraid of a fire. Any recalls?
 
@@ -1037,6 +1078,7 @@ Another recall involved a potential fuel leak inside the fuel tank from the fuel
 - **Cited IDs:** 25V274000
 - **Retrieved IDs:** 19V814000, 25V274000, 26V083000, 21V496000, 19V761000, 21V758000, 23V597000, 20V511000, 26V325000, 22V191000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** My 2021 GMC Sierra 1500 with the 6.2 is burning through oil way too fast. Is there a recall for engine problems?
 
@@ -1060,6 +1102,7 @@ Another recall involved a potential fuel leak inside the fuel tank from the fuel
 - **Cited IDs:** 21V295000, 22V034000
 - **Retrieved IDs:** 21V295000, 22V034000, 19V737000, 21V825000, 22V742000, 21V947000, 21V606000, 20V737000, 19V114000, 26V266000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=True, cites_all_gold=True, wrongly_declined=False
 
 **Question:** I feel a wobble from the rear end of my 2021 Audi Q5 at highway speed. Has Audi recalled anything for the rear suspension?
 
@@ -1089,6 +1132,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 21V682000, 21V001000, 25V908000, 21V716000, 20V144000, 23V188000, 23V012000
 - **Retrieved IDs:** 21V682000, 21V001000, 22V793000, 25V908000, 21V716000, 20V378000, 20V144000, 18V589000, 23V188000, 23V012000
 - **Gold in retrieved:** 3/5
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What recalls have been issued for the 2021 Volvo XC60?
 
@@ -1119,6 +1163,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 23V430000, 25V391000, 18V777000, 25V859000, 20V771000, 23V458000, 26V054000, 18V629000, 21V690000, 24V943000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_any_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** My 2022 Honda Accordâ€™s brake pedal feels spongy and the braking seems weaker than normal. Is there a recall?
 
@@ -1142,6 +1187,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 20V440000, 20V439000, 18V221000, 26V054000, 26V365000, 26V332000, 25V031000, 20V067000, 23V174000, 21V165000
 - **Gold in retrieved:** 2/5
+- **Code checks:** status=invalid, invalid_reason=uncited, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** How many recalls does the 2022 Honda Pilot have?
 
@@ -1165,6 +1211,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 26V541000, 25V650000, 26V637000, 26V310000, 19V409000, 19V573000, 19V779000, 25V400000, 26V243000, 25V288000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the fix for the collision avoidance recall on the 2023 Altec AA Series Aerial Device?
 
@@ -1188,6 +1235,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 20V477000, 18V357000, 17V513000, 19V736000, 20V363000, 19V150000, 18V799000, 23V286000, 26V646000, 24V351000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the fix for the seat recall on the 2021 Forest River Sunseeker?
 
@@ -1211,6 +1259,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 21V366000, 18V412000
 - **Retrieved IDs:** 25V817000, 21V366000, 18V588000, 22V691000, 21V364000, 18V412000, 24V818000, 18V826000, 20V170000, 18V392000
 - **Gold in retrieved:** 0/2
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the fix for the fuel system recalls on the 2018 International HV?
 
@@ -1234,6 +1283,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 19V134000, 21V155000, 18V107000, 22V615000, 22V384000, 25V048000, 21V390000, 19V544000, 19V903000, 22V239000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=True
 
 **Question:** What's the fix for the tire recall on the 2021 Lexus RC F?
 
@@ -1257,6 +1307,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 26V017000
 - **Retrieved IDs:** 23V520000, 25V670000, 23V708000, 23V523000, 24V076000, 26V017000, 24V495000, 26V309000, 26V540000, 25V855000
 - **Gold in retrieved:** 3/3
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the fix for the backup camera recalls on the 2023 Lucid Air?
 
@@ -1280,6 +1331,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 21V501000, 18V567000, 21V238000, 21V269000, 21V463000, 21V655000, 19V896000, 21V602000, 18V182000, 22V028000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=True
 
 **Question:** What's the fix for the steering recall on the 2020 MAC Trailers Dump Trailer?
 
@@ -1303,6 +1355,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 26V080000, 26V081000, 25V437000, 21V839000, 21V068000, 19V807000, 22V527000, 22V772000, 21V186000, 19V654000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=True
 
 **Question:** What's the fix for the engine recall on the 2019 Nissan Rogue?
 
@@ -1326,6 +1379,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 18V602000, 17V727000, 20V291000, 20V284000, 20V072000, 18V274000, 21V097000, 20V616000, 19V250000, 20V012000
 - **Gold in retrieved:** 1/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=True
 
 **Question:** What's the fix for the suspension recall on the 2018 Road Rescue Type I?
 
@@ -1349,6 +1403,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 
 - **Retrieved IDs:** 20V286000, 17V831000, 25V595000, 18V130000, 19V503000, 19V318000, 18V211000, 26V571000, 21V889000, 26V514000
 - **Gold in retrieved:** 0/1
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=cite_all_gold, cites_gold=False, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the fix for the suspension recall on the 2024 VM Toyota Sienna?
 
@@ -1372,6 +1427,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 22V817000, 22V299000, 21V018000
 - **Retrieved IDs:** 22V817000, 23V073000, 22V227000, 21V018000, 25V326000, 22V299000, 26V079000, 21V965000, 18V351000, 24V668000
 - **Gold in retrieved:** 2/2
+- **Code checks:** status=invalid, invalid_reason=bad_citation, pass_rule=cite_all_gold, cites_gold=True, cites_all_gold=False, wrongly_declined=False
 
 **Question:** What's the fix for the brake recalls on the 2021 Western Star 47X?
 
@@ -1401,6 +1457,7 @@ There is also a recall for certain Q5 and SQ5 models (including 2021-2022 Q5 Spo
 - **Cited IDs:** 24V244000
 - **Retrieved IDs:** 21V164000, 22V304000, 22V703000, 22V031000, 24V244000, 20V459000, 18V771000, 21V519000, 22V447000, 21V622000
 - **Gold in retrieved:** 0/0
+- **Code checks:** status=valid, invalid_reason=none, pass_rule=decline, cites_gold=False, cites_all_gold=True, wrongly_declined=False
 
 **Question:** Is there a suspension recall for the 2021 Kia Forte?
 

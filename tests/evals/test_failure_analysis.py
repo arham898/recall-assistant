@@ -335,20 +335,75 @@ class TestBuildFailureRows:
         assert s9["failed_signals"] == ["human"]
 
     def test_invalid_id_marked_in_worksheet(self):
-        """Invalid IDs appear as 'BAD1 (not retrieved)' in the worksheet."""
-        rows = _build()
+        """An invalid_id absent from cited_ids appears marked in the worksheet."""
+        golden = {"Z": make_golden("Z", "handwritten", ["26V365000"], "cite_any_gold")}
+        answers = [
+            make_answer_row(
+                "Z",
+                "handwritten",
+                "answered",
+                ["26V365000"],
+                retrieved_ids=["26V365000"],
+            )
+        ]
+        scored = [
+            {
+                "question_id": "Z",
+                "template": None,
+                "source": "handwritten",
+                "status": "invalid",
+                "invalid": True,
+                "invalid_reason": "bad_citation",
+                "pass_rule": "cite_any_gold",
+                "pass_rule_passed": False,
+                "cites_gold": True,
+                "cites_all_gold": True,
+                "wrongly_declined": False,
+                "cited_ids": ["26V365000"],
+                "invalid_ids": ["24V123000"],
+                "gold_campaign_ids": ["26V365000"],
+            }
+        ]
+        rows = build_failure_rows(answers, scored, {}, [], golden)
+        assert len(rows) == 1
+        assert rows[0]["invalid_ids"] == ["24V123000"]
+
         worksheet = format_worksheet(rows, "abc")
-        assert "BAD1 (not retrieved)" in worksheet
-        # 90S9 is also invalid for hw_90S9
-        assert "90S9 (not retrieved)" in worksheet
+        assert "24V123000 (not retrieved)" in worksheet
+        assert "26V365000" in worksheet
 
     def test_invalid_ids_in_jsonl(self):
-        """The JSONL row keeps invalid_ids as a separate list."""
-        rows = _build()
-        qb = next(r for r in rows if r["question_id"] == "QB")
-        assert qb["invalid_ids"] == ["BAD1"]
-        s9 = next(r for r in rows if r["question_id"] == "hw_90S9")
-        assert s9["invalid_ids"] == ["90S9"]
+        """The JSONL row keeps invalid_ids even when disjoint from cited_ids."""
+        golden = {
+            "Z": make_golden(
+                "Z", "generated", ["G1"], "cite_all_gold", template="remedy"
+            )
+        }
+        answers = [
+            make_answer_row("Z", "generated", "answered", ["G1"], retrieved_ids=["G1"])
+        ]
+        scored = [
+            {
+                "question_id": "Z",
+                "template": "remedy",
+                "source": "generated",
+                "status": "invalid",
+                "invalid": True,
+                "invalid_reason": "bad_citation",
+                "pass_rule": "cite_all_gold",
+                "pass_rule_passed": False,
+                "cites_gold": True,
+                "cites_all_gold": True,
+                "wrongly_declined": False,
+                "cited_ids": ["G1"],
+                "invalid_ids": ["FAKE999"],
+                "gold_campaign_ids": ["G1"],
+            }
+        ]
+        rows = build_failure_rows(answers, scored, {}, [], golden)
+        assert len(rows) == 1
+        assert rows[0]["invalid_ids"] == ["FAKE999"]
+        assert "FAKE999" not in rows[0]["cited_ids"]
 
     def test_code_checks_line_in_worksheet(self):
         """The Code checks bullet appears with the scored row's fields."""
