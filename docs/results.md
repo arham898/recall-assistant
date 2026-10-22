@@ -1501,3 +1501,55 @@ Commit:  89eb605
 | handwritten | 0 | 2 | 1 | 9 | 0 | 3 | 1 | 0 | 3 | 0 | 0 | 1 | 20 |
 | remedy | 1 | 1 | 5 | 1 | 0 | 4 | 0 | 0 | 0 | 0 | 3 | 0 | 15 |
 | unanswerable | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 2 |
+
+## Prompt-fix comparison (Module 2.5b)
+
+```
+Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_2026-10-19.jsonl --old-scored results/scored_hybrid_record_unfiltered_2026-10-19.jsonl --new-answers results/answers_hybrid_record_unfiltered_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_2026-10-23.jsonl
+Date:    2026-10-23
+Commit:  4ebb361
+```
+
+### Pass rate by template
+
+| Template | old n | old passed | old rate | new n | new passed | new rate |
+|----------|-------|------------|----------|-------|------------|----------|
+| (none) | 50 | 42 | 0.840 | 50 | 37 | 0.740 |
+| all_recalls | 20 | 8 | 0.400 | 20 | 5 | 0.250 |
+| consequence | 20 | 16 | 0.800 | 20 | 16 | 0.800 |
+| count | 20 | 10 | 0.500 | 20 | 6 | 0.300 |
+| existence | 20 | 18 | 0.900 | 20 | 11 | 0.550 |
+| remedy | 20 | 10 | 0.500 | 20 | 14 | 0.700 |
+
+### Invalid reasons
+
+| Reason | old | new |
+|--------|-----|-----|
+| bad_citation | 11 | 7 |
+| cut_off | 0 | 1 |
+| uncited | 12 | 34 |
+
+### Example-ID and placeholder contamination
+
+| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" |
+|-----|--------------------------------------|-------------------------------------|
+| old | 8 | 0 |
+| new | 0 | 0 |
+
+### Faithfulness
+
+| Metric | old | new |
+|--------|-----|-----|
+| n | 101 | 81 |
+| mean | 0.824 | 0.882 |
+| median | 0.955 | 0.961 |
+| min | 0.068 | 0.022 |
+| flagged_below_0_5 | 14 | 7 |
+
+### Caveats
+
+- Labels and judge rows are scored against the 19 Oct answers; they have
+  not been re-run against the new answers.
+- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
+  19 Oct and correctly on this run, so those three rows are not a
+  like-for-like comparison.
