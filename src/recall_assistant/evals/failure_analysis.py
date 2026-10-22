@@ -128,6 +128,17 @@ def build_failure_rows(
         if qid in judge_by_qid:
             judge_reason = judge_by_qid[qid].get("judge_reason", "")
 
+        # Code-check fields from the scored row.
+        invalid_reason_raw = row.get("invalid_reason", "")
+        code_checks = {
+            "status": row["status"] if row.get("invalid") else "valid",
+            "invalid_reason": invalid_reason_raw if invalid_reason_raw else "none",
+            "pass_rule": row["pass_rule"],
+            "cites_gold": row["cites_gold"],
+            "cites_all_gold": row["cites_all_gold"],
+            "wrongly_declined": row["wrongly_declined"],
+        }
+
         failures.append(
             {
                 "question_id": qid,
@@ -136,9 +147,11 @@ def build_failure_rows(
                 "reference_answer": golden.reference_answer,
                 "answer_text": answer["answer_text"],
                 "cited_ids": row["cited_ids"],
+                "invalid_ids": row.get("invalid_ids", []),
                 "retrieved_ids": retrieved_ids,
                 "gold_campaign_ids": gold_ids,
                 "gold_in_retrieved": gold_in_retrieved,
+                "code_checks": code_checks,
                 "human_note": human_note,
                 "judge_reason": judge_reason,
                 "failed_signals": failed_signals,
@@ -153,6 +166,22 @@ def build_failure_rows(
 # ---------------------------------------------------------------------------
 # Worksheet formatting
 # ---------------------------------------------------------------------------
+
+
+def _format_cited_ids(row: dict) -> str:
+    """Format cited IDs, marking invalid ones with '(not retrieved)'."""
+    invalid_set = set(row.get("invalid_ids", []))
+    parts: list[str] = []
+    seen: set[str] = set()
+    for cid in row["cited_ids"]:
+        if cid in seen:
+            continue
+        seen.add(cid)
+        if cid in invalid_set:
+            parts.append(f"{cid} (not retrieved)")
+        else:
+            parts.append(cid)
+    return ", ".join(parts)
 
 
 def format_worksheet(rows: list[dict], commit: str) -> str:
@@ -182,11 +211,20 @@ def format_worksheet(rows: list[dict], commit: str) -> str:
         lines.append(f"- **Template:** {row['template']}")
         lines.append(f"- **Failed signals:** {', '.join(row['failed_signals'])}")
         lines.append(f"- **Gold IDs:** {', '.join(row['gold_campaign_ids'])}")
-        lines.append(f"- **Cited IDs:** {', '.join(row['cited_ids'])}")
+        lines.append(f"- **Cited IDs:** {_format_cited_ids(row)}")
         lines.append(f"- **Retrieved IDs:** {', '.join(row['retrieved_ids'])}")
         lines.append(
             f"- **Gold in retrieved:** "
             f"{row['gold_in_retrieved']}/{len(row['gold_campaign_ids'])}"
+        )
+        cc = row["code_checks"]
+        lines.append(
+            f"- **Code checks:** status={cc['status']}, "
+            f"invalid_reason={cc['invalid_reason']}, "
+            f"pass_rule={cc['pass_rule']}, "
+            f"cites_gold={cc['cites_gold']}, "
+            f"cites_all_gold={cc['cites_all_gold']}, "
+            f"wrongly_declined={cc['wrongly_declined']}"
         )
         lines.append("")
         lines.append(f"**Question:** {row['question']}")

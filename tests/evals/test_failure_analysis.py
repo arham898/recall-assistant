@@ -83,63 +83,119 @@ ANSWERS: list[dict] = [
 ]
 
 # Scored rows.  source is needed for effective template when template=None.
-#   QA: code pass   QB: code fail   QC: code fail   QD: code fail
+#   QA: code pass   QB: code fail (bad_citation)   QC: code fail   QD: code fail
 #   QE: code pass   gen/sub/Q1: code fail   hw_90S9: code pass
 SCORED: list[dict] = [
     {
         "question_id": "QA",
         "template": "remedy",
         "source": "generated",
+        "status": "answered",
+        "invalid": False,
+        "invalid_reason": "",
+        "pass_rule": "cite_all_gold",
         "pass_rule_passed": True,
+        "cites_gold": True,
+        "cites_all_gold": True,
+        "wrongly_declined": False,
         "cited_ids": ["C1"],
+        "invalid_ids": [],
         "gold_campaign_ids": ["C1"],
     },
     {
         "question_id": "QB",
         "template": "consequence",
         "source": "generated",
+        "status": "invalid",
+        "invalid": True,
+        "invalid_reason": "bad_citation",
+        "pass_rule": "cite_all_gold",
         "pass_rule_passed": False,
-        "cited_ids": ["X2"],
+        "cites_gold": False,
+        "cites_all_gold": False,
+        "wrongly_declined": False,
+        "cited_ids": ["X2", "BAD1"],
+        "invalid_ids": ["BAD1"],
         "gold_campaign_ids": ["C2"],
     },
     {
         "question_id": "QC",
         "template": "remedy",
         "source": "generated",
+        "status": "answered",
+        "invalid": False,
+        "invalid_reason": "",
+        "pass_rule": "cite_all_gold",
         "pass_rule_passed": False,
+        "cites_gold": False,
+        "cites_all_gold": False,
+        "wrongly_declined": False,
         "cited_ids": [],
+        "invalid_ids": [],
         "gold_campaign_ids": ["C3"],
     },
     {
         "question_id": "QD",
         "template": None,
         "source": "handwritten",
+        "status": "answered",
+        "invalid": False,
+        "invalid_reason": "",
+        "pass_rule": "cite_any_gold",
         "pass_rule_passed": False,
+        "cites_gold": False,
+        "cites_all_gold": False,
+        "wrongly_declined": False,
         "cited_ids": ["X4"],
+        "invalid_ids": [],
         "gold_campaign_ids": ["C4"],
     },
     {
         "question_id": "QE",
         "template": "existence",
         "source": "generated",
+        "status": "answered",
+        "invalid": False,
+        "invalid_reason": "",
+        "pass_rule": "cite_all_gold",
         "pass_rule_passed": True,
+        "cites_gold": True,
+        "cites_all_gold": True,
+        "wrongly_declined": False,
         "cited_ids": ["C5"],
+        "invalid_ids": [],
         "gold_campaign_ids": ["C5"],
     },
     {
         "question_id": "gen/sub/Q1",
         "template": "existence",
         "source": "generated",
+        "status": "answered",
+        "invalid": False,
+        "invalid_reason": "",
+        "pass_rule": "cite_all_gold",
         "pass_rule_passed": False,
+        "cites_gold": False,
+        "cites_all_gold": False,
+        "wrongly_declined": False,
         "cited_ids": ["X6"],
+        "invalid_ids": [],
         "gold_campaign_ids": ["C6"],
     },
     {
         "question_id": "hw_90S9",
         "template": None,
         "source": "handwritten",
+        "status": "invalid",
+        "invalid": True,
+        "invalid_reason": "bad_citation",
+        "pass_rule": "cite_any_gold",
         "pass_rule_passed": True,
+        "cites_gold": False,
+        "cites_all_gold": False,
+        "wrongly_declined": False,
         "cited_ids": ["90S9"],
+        "invalid_ids": ["90S9"],
         "gold_campaign_ids": ["90S9"],
     },
 ]
@@ -215,8 +271,16 @@ class TestBuildFailureRows:
                 "question_id": "X",
                 "template": "remedy",
                 "source": "generated",
+                "status": "answered",
+                "invalid": False,
+                "invalid_reason": "",
+                "pass_rule": "cite_all_gold",
                 "pass_rule_passed": True,
+                "cites_gold": True,
+                "cites_all_gold": True,
+                "wrongly_declined": False,
                 "cited_ids": ["C1"],
+                "invalid_ids": [],
                 "gold_campaign_ids": ["C1"],
             }
         ]
@@ -262,12 +326,38 @@ class TestBuildFailureRows:
         assert slash["template"] == "existence"
 
     def test_90s9_citation(self):
-        """hw_90S9 has 90S9 in cited_ids and gold_campaign_ids."""
+        """hw_90S9 has 90S9 in cited_ids and in invalid_ids."""
         rows = _build()
         s9 = next(r for r in rows if r["question_id"] == "hw_90S9")
         assert "90S9" in s9["cited_ids"]
+        assert "90S9" in s9["invalid_ids"]
         assert "90S9" in s9["gold_campaign_ids"]
         assert s9["failed_signals"] == ["human"]
+
+    def test_invalid_id_marked_in_worksheet(self):
+        """Invalid IDs appear as 'BAD1 (not retrieved)' in the worksheet."""
+        rows = _build()
+        worksheet = format_worksheet(rows, "abc")
+        assert "BAD1 (not retrieved)" in worksheet
+        # 90S9 is also invalid for hw_90S9
+        assert "90S9 (not retrieved)" in worksheet
+
+    def test_invalid_ids_in_jsonl(self):
+        """The JSONL row keeps invalid_ids as a separate list."""
+        rows = _build()
+        qb = next(r for r in rows if r["question_id"] == "QB")
+        assert qb["invalid_ids"] == ["BAD1"]
+        s9 = next(r for r in rows if r["question_id"] == "hw_90S9")
+        assert s9["invalid_ids"] == ["90S9"]
+
+    def test_code_checks_line_in_worksheet(self):
+        """The Code checks bullet appears with the scored row's fields."""
+        rows = _build()
+        worksheet = format_worksheet(rows, "abc")
+        # QB is invalid with bad_citation
+        assert "status=invalid, invalid_reason=bad_citation" in worksheet
+        # QC is valid (not invalid), so status=valid, invalid_reason=none
+        assert "status=valid, invalid_reason=none" in worksheet
 
     def test_effective_template_from_source(self):
         """QD has template=None in scored, so effective template is 'handwritten'."""
@@ -288,8 +378,16 @@ class TestBuildFailureRows:
                 "question_id": "MISSING",
                 "template": "remedy",
                 "source": "generated",
+                "status": "answered",
+                "invalid": False,
+                "invalid_reason": "",
+                "pass_rule": "cite_all_gold",
                 "pass_rule_passed": False,
+                "cites_gold": False,
+                "cites_all_gold": False,
+                "wrongly_declined": False,
                 "cited_ids": [],
+                "invalid_ids": [],
                 "gold_campaign_ids": ["C1"],
             }
         ]
@@ -304,8 +402,16 @@ class TestBuildFailureRows:
                 "question_id": "QA",
                 "template": "remedy",
                 "source": "generated",
+                "status": "answered",
+                "invalid": False,
+                "invalid_reason": "",
+                "pass_rule": "cite_all_gold",
                 "pass_rule_passed": False,
+                "cites_gold": False,
+                "cites_all_gold": False,
+                "wrongly_declined": False,
                 "cited_ids": [],
+                "invalid_ids": [],
                 "gold_campaign_ids": ["C1"],
             }
         ]
@@ -380,8 +486,16 @@ class TestWorksheetRoundTrip:
                 "question_id": "X",
                 "template": "remedy",
                 "source": "generated",
+                "status": "answered",
+                "invalid": False,
+                "invalid_reason": "",
+                "pass_rule": "cite_all_gold",
                 "pass_rule_passed": False,
+                "cites_gold": True,
+                "cites_all_gold": True,
+                "wrongly_declined": False,
                 "cited_ids": ["C1"],
+                "invalid_ids": [],
                 "gold_campaign_ids": ["C1"],
             }
         ]
