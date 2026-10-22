@@ -252,3 +252,27 @@ class TestPartialMarkerClassification:
         assert status == "invalid"
         assert valid == []
         assert invalid_ids == []
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 9. _classify: one-digit-off cited ID
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestClassifyOneDigitOff:
+    def test_one_digit_off_lands_in_invalid_ids(self):
+        """24V477000 is one digit off from retrieved 20V477000.
+
+        _classify must partition it into invalid_ids, not valid.
+        Real-world failure: gen_remedy_FOREST_RIVER_SUNSEEKER_2021
+        cited 24V477000 instead of 20V477000 (docs/error-analysis.md).
+        """
+        status, valid, invalid_ids = _classify(
+            "Forest River will repair the wiring [24V477000].",
+            ["24V477000"],
+            {"20V477000", "21V096000"},
+            "stop",
+        )
+        assert status == "invalid"
+        assert valid == []
+        assert invalid_ids == ["24V477000"]
