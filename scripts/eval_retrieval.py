@@ -358,7 +358,7 @@ def main(argv: list[str] | None = None) -> None:
     results_dir = PROJECT_ROOT / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
     out_path = results_dir / f"retrieval_{args.label}_{date.today()}.json"
-    with open(out_path, "w") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print(f"\nJSON written to {out_path}")
 

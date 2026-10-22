@@ -637,6 +637,73 @@ class TestValidation:
 # ═══════════════════════════════════════════════════════════════════
 
 
+# ═══════════════════════════════════════════════════════════════════
+# 5. Encoding round-trip
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestEncodingRoundTrip:
+    def test_curly_quote_survives_golden_load_and_worksheet_write(self, tmp_path):
+        """A \u2019 in a golden JSONL question survives through to the worksheet file."""
+        from recall_assistant.evals.retrieval_eval import _load_jsonl
+
+        # Write a golden JSONL with a literal UTF-8 curly right single quote
+        # (not a JSON \u escape — the real golden files have literal UTF-8).
+        golden_path = tmp_path / "golden.jsonl"
+        golden_path.write_bytes(
+            '{"id":"Q_CURLY","question":"I\u2019ve heard about a recall",'
+            '"source":"handwritten","template":null,"component_group":null,'
+            '"gold_campaign_ids":["C1"],"reference_answer":"ref",'
+            '"reference_facts":[],"make":"TEST","model":"CAR","year":2020,'
+            '"pass_rule":"cite_any_gold","tags":[],"notes":null}\n'.encode("utf-8")
+        )
+
+        golden_rows = _load_jsonl(golden_path)
+        golden_by_id = {g.id: g for g in golden_rows}
+
+        answers = [
+            make_answer_row(
+                "Q_CURLY", "handwritten", "answered", ["C1"], retrieved_ids=["C1"]
+            )
+        ]
+        scored = [
+            {
+                "question_id": "Q_CURLY",
+                "template": None,
+                "source": "handwritten",
+                "status": "answered",
+                "invalid": False,
+                "invalid_reason": "",
+                "pass_rule": "cite_any_gold",
+                "pass_rule_passed": False,
+                "cites_gold": True,
+                "cites_all_gold": True,
+                "wrongly_declined": False,
+                "cited_ids": ["C1"],
+                "invalid_ids": [],
+                "gold_campaign_ids": ["C1"],
+            }
+        ]
+
+        rows = build_failure_rows(answers, scored, {}, [], golden_by_id)
+        worksheet_text = format_worksheet(rows, "abc")
+
+        out_path = tmp_path / "error-analysis.md"
+        out_path.write_text(worksheet_text, encoding="utf-8")
+
+        read_back = out_path.read_text(encoding="utf-8")
+        assert "\u2019" in read_back, (
+            f"Expected curly quote U+2019 but got: "
+            f"{[hex(ord(c)) for c in read_back if ord(c) > 127][:10]}"
+        )
+        assert "I\u2019ve" in read_back
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 6. Subprocess tests
+# ═══════════════════════════════════════════════════════════════════
+
+
 class TestScriptSubprocess:
     def test_export_failures_help(self):
         result = subprocess.run(
