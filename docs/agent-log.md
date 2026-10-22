@@ -114,7 +114,7 @@ Record of AI agent actions during development — what the agent did, how I caug
 
 |Asked three times for retrieved_texts, the source counts and an unanswerable reference from the files; each revised plan asserted them and showed nothing. Checked all three myself with one-line commands.|
 
-|rag.py tells the model to cite “for example [24V123000]”. The model copied that example into 8 of 150 answers as if it were the recall it was describing (plus 1 copy of the second example, 25V456000). Found by hand labelling rows hw_004 and hw_018: content correct, cited ID not among the retrieved cards. Code checks passed these because the ID has a valid shape; the faithfulness score didn’t flag them because the sentence content was in the cards.|
+|rag.py tells the model to cite "for example [24V123000]". The model copied that example into 8 of 150 answers as if it were the recall it was describing (one of them, Lucid Air, also copied the second example, 25V456000). Found by hand labelling hw_004 and hw_028: content correct, cited ID not among the retrieved cards. I originally recorded that the code checks and faithfulness passed these. The scored file says otherwise: all 8 are invalid (7 bad_citation with the example ID in invalid_ids, Oshkosh uncited because its IDs were bold with no brackets), and invalid rows get no faithfulness score. Corrected in 2.5a. The code flagged the symptom; reading found the cause.|
 
 |judge() replaced the decline marker with "The assistant declined to answer." before building the judge prompt. No test covered it, R2 didn't check it against the prompt, and the v2 rule about the marker string could never fire. Found by calibration: 8 of 13 dev disagreements were unanswerable rows. Fixed to send the candidate unchanged. The first v1 and v2 numbers measured a judge nobody intended.|
 
@@ -133,3 +133,21 @@ Record of AI agent actions during development — what the agent did, how I caug
 |Claude Code replaced Unicode box characters in the calibration output with dashes. Correct (they were mangled by the PowerShell code page) and out of scope, and not mentioned in its summary.|
 
 |Guide side: four hand-edits of results/judge_calibration.jsonl, three of which broke it (BOM from -Encoding utf8 twice, five rows joined into one line by a nested array). Lesson for both of us: don't hand-edit generated files; regenerate them or add the flag. File now tracked in git so there's history.|
+
+|2.5a plan put an --allow-dirty flag on both scripts that nobody asked for. Removed in plan review.|
+
+|2.5a plan's subprocess tests were --help only. Replaced the tally one with a real run on a temp worksheet with an empty Category line, exit 1 and the row id in stderr. Validation now runs before the dirty-tree guard so the test works on a dirty tree.|
+
+|test_three_way_union had no row that passed all three signals, so it couldn't test exclusion. Caught in plan review. QE row added.|
+
+|The Category and Template regexes used \s*, which ate the blank line and the "---" after an empty Category line, so every empty line looked filled. Claude Code found it in its own test run. Mutation back to \s* fails two tests.|
+
+|test_invalid_id_marked_in_worksheet passed while the real worksheet showed no invalid IDs. The fixture had BAD1 in both cited_ids and invalid_ids; the scored file keeps them disjoint; the formatter only looped over cited_ids. Caught by reading the hw_004 block after export. Test rewritten from a real-shaped scored row through build_failure_rows; mutation gives one FAILED. R2 then found the shared QB and hw_90S9 fixtures had the same overlap. Made disjoint.|
+
+|The tally read "4 wrong-year extras" inside a note as category 4 and reported 6 where the file had 4. No error. Caught only by counting category 4 in the file myself. Parser now reads the text before "(" and refuses any token without a legend key.|
+
+|_load_jsonl in retrieval_eval.py opened the golden files with open(path), which is cp1252 on Windows, so hw_002, hw_019 and hw_028 reached the model as "Iâ€™ve" in every eval and answer run since 2.1. Found through mojibake in the worksheet; the golden file itself was clean. Fixed with a round-trip test. A sweep of src/ and scripts/ found one more open() without an encoding (eval_retrieval.py results writer), fixed.|
+
+|Guide side: carried the wrong 2.4 claim about code checks into the 2.5 plan without checking the scored file; the hw_004 row showed invalid_ids and ended it. Also gave me an ignored-files command that listed the whole .venv, a progress-check regex that didn't match in VS Code's find box, and a category count command that split on ";" and would have reproduced the tally bug.|
+
+|My side: commit message "faliure", amended before push.|
