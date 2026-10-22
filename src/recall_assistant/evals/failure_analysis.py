@@ -22,7 +22,7 @@ CATEGORY_LEGEND: dict[str, str] = {
     "1": "Retrieval miss: declined correctly",
     "1b": "Retrieval miss: answered from neighbours",
     "2": "Missed but retrieved",
-    "3": "Wrong year admitted",
+    "3": "Wrong year or vehicle admitted",
     "4": "Wrong component admitted on a count",
     "5": "Cited ID not in retrieved set",
     "6": "Right ID, wrong description",
@@ -30,6 +30,7 @@ CATEGORY_LEGEND: dict[str, str] = {
     "8": "Format leak",
     "9": "Safety advice omitted",
     "10": "Reference problem, not answer problem",
+    "11": "Judge false fail: answer correct",
 }
 
 VALID_CATEGORY_KEYS: set[str] = set(CATEGORY_LEGEND)
@@ -47,6 +48,7 @@ _LEGEND_ORDER: list[str] = [
     "8",
     "9",
     "10",
+    "11",
 ]
 
 # ---------------------------------------------------------------------------
