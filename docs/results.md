@@ -1553,3 +1553,55 @@ Commit:  4ebb361
 - hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
   19 Oct and correctly on this run, so those three rows are not a
   like-for-like comparison.
+
+## Answer evaluation: hybrid_record_unfiltered_v2 (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_hybrid_record_unfiltered_v2_2026-10-23.jsonl
+Date:    2026-10-23
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 68 | 0.680 | 7 | 4 |
+| handwritten | 30 | 24 | 0.800 | 2 | 2 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 8 | 0.400 | 0 | 0 |
+| consequence | 20 | 18 | 0.900 | 0 | 0 |
+| count | 20 | 12 | 0.600 | 0 | 3 |
+| existence | 20 | 19 | 0.950 | 1 | 0 |
+| remedy | 20 | 11 | 0.550 | 6 | 1 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 19 | 0 | 1 |
+
+### Faithfulness (vectara/hallucination_evaluation_model)
+
+| n | mean | median | p25 | min | flagged (below 0.5) | seconds |
+|---|------|--------|-----|-----|---------------------|---------|
+| 114 | 0.610 | 0.534 | 0.392 | 0.229 | 51 | 539.33s |
+
+Lowest 5:
+- gen_all_recalls_LOTUS_EVORA_2018: 0.229
+- gen_all_recalls_ELKHART_ECE4_2018: 0.232
+- hw_024: 0.243
+- hw_028: 0.278
+- gen_all_recalls_ORANGE_EV_E-TRIEVER_2025: 0.284
+
+Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.04962 | $0.00033 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.52s | 1.71s | 0.70s | 1.85s |
