@@ -6,6 +6,7 @@ wires the CLI around these functions.
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -84,6 +85,14 @@ def count_placeholder_leak(texts: dict[str, str]) -> int:
     return sum(1 for t in texts.values() if any(p in t for p in _LEAK_PATTERNS))
 
 
+_BARE_BRACKET_RE = re.compile(r"^\[[^\]]*\]$")
+
+
+def count_bare_bracket_answers(texts: dict[str, str]) -> int:
+    """Count answer_text values that are entirely a bracket of IDs."""
+    return sum(1 for t in texts.values() if _BARE_BRACKET_RE.match(t.strip()))
+
+
 def faithfulness_summary(scored: list[dict]) -> dict[str, Any]:
     """Summarise faithfulness scores, excluding rows with no value."""
     vals = sorted(r["faithfulness"] for r in scored if r["faithfulness"] is not None)
@@ -120,6 +129,8 @@ def format_comparison(
     new_texts: dict[str, str],
     command: str,
     commit: str,
+    *,
+    show_apostrophe_caveat: bool = False,
 ) -> str:
     """Build the full markdown body for docs/results.md."""
     parts: list[str] = []
@@ -174,18 +185,22 @@ def format_comparison(
     new_ex = count_example_ids(new_texts)
     old_pl = count_placeholder_leak(old_texts)
     new_pl = count_placeholder_leak(new_texts)
+    old_bb = count_bare_bracket_answers(old_texts)
+    new_bb = count_bare_bracket_answers(new_texts)
 
     parts.append("### Example-ID and placeholder contamination")
     parts.append("")
     parts.append(
         "| Run | answers with 24V123000 or 25V456000 "
-        '| answers with "campaign_id" or "<" |'
+        '| answers with "campaign_id" or "<" '
+        "| bare-bracket answers |"
     )
     parts.append(
-        "|-----|--------------------------------------|-------------------------------------|"
+        "|-----|--------------------------------------"
+        "|-------------------------------------|----------------------|"
     )
-    parts.append(f"| old | {old_ex} | {old_pl} |")
-    parts.append(f"| new | {new_ex} | {new_pl} |")
+    parts.append(f"| old | {old_ex} | {old_pl} | {old_bb} |")
+    parts.append(f"| new | {new_ex} | {new_pl} | {new_bb} |")
     parts.append("")
 
     # --- Table 4: faithfulness ---
@@ -223,8 +238,13 @@ def format_comparison(
         "- Labels and judge rows are scored against the 19 Oct answers; they have"
     )
     parts.append("  not been re-run against the new answers.")
-    parts.append("- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on")
-    parts.append("  19 Oct and correctly on this run, so those three rows are not a")
-    parts.append("  like-for-like comparison.")
+    if show_apostrophe_caveat:
+        parts.append(
+            "- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on"
+        )
+        parts.append(
+            "  19 Oct and correctly on this run, so those three rows are not a"
+        )
+        parts.append("  like-for-like comparison.")
 
     return "\n".join(parts)

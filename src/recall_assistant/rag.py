@@ -32,6 +32,9 @@ else inside the brackets.  Cite the campaign ID, never the source \
 number.  When citing more than one recall, put all the IDs in one \
 bracket, separated by commas.
 
+Write the answer as one or more sentences, with the citations inside \
+those sentences.  A bracket of IDs on its own is not an answer.
+
 If the sources do not contain information that answers the question, \
 respond with exactly:
 NO_RELEVANT_RECALL_FOUND

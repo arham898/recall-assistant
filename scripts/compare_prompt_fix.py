@@ -76,6 +76,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Optional tag included in the results.md section header",
     )
+    parser.add_argument(
+        "--apostrophe-caveat",
+        action="store_true",
+        help="Include the hw_002/hw_019/hw_028 mojibake apostrophe caveat",
+    )
     return parser.parse_args(argv)
 
 
@@ -118,7 +123,13 @@ def main(argv: list[str] | None = None) -> None:
 
     # Format and write.
     content = format_comparison(
-        old_scored, new_scored, old_texts, new_texts, command, commit
+        old_scored,
+        new_scored,
+        old_texts,
+        new_texts,
+        command,
+        commit,
+        show_apostrophe_caveat=args.apostrophe_caveat,
     )
     header = section_header(args.tag)
     update_results_section(header, content, path=args.results_md)

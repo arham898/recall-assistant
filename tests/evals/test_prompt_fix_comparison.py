@@ -16,6 +16,7 @@ from scripts.compare_prompt_fix import SECTION_HEADER, section_header
 from recall_assistant.config import PROJECT_ROOT
 from recall_assistant.evals.answer_eval import load_answers_jsonl
 from recall_assistant.evals.prompt_fix_comparison import (
+    count_bare_bracket_answers,
     count_example_ids,
     count_placeholder_leak,
     faithfulness_summary,
@@ -181,6 +182,7 @@ class TestSubprocessComparison:
                 "--results-md",
                 str(results_md),
                 "--allow-dirty",
+                "--apostrophe-caveat",
             ],
             capture_output=True,
             text=True,
@@ -243,6 +245,7 @@ class TestSubprocessComparison:
                 "--allow-dirty",
                 "--tag",
                 "v2",
+                "--apostrophe-caveat",
             ],
             capture_output=True,
             text=True,
@@ -334,3 +337,159 @@ class TestCountPlaceholderLeakV2:
     def test_clean_campaign_id_no_false_positive(self):
         texts = {"q1": "The recall [20V477000] involves brake hoses."}
         assert count_placeholder_leak(texts) == 0
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 9. count_bare_bracket_answers
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestCountBareBracketAnswers:
+    def test_bare_bracket_counts(self):
+        texts = {"q1": "[18V781000, 19V263000]"}
+        assert count_bare_bracket_answers(texts) == 1
+
+    def test_bare_bracket_with_whitespace(self):
+        texts = {"q1": " [18V781000] "}
+        assert count_bare_bracket_answers(texts) == 1
+
+    def test_text_before_bracket_does_not_count(self):
+        texts = {"q1": "Yes [18V781000]."}
+        assert count_bare_bracket_answers(texts) == 0
+
+    def test_plain_number_does_not_count(self):
+        texts = {"q1": "3"}
+        assert count_bare_bracket_answers(texts) == 0
+
+    def test_decline_marker_does_not_count(self):
+        texts = {"q1": "NO_RELEVANT_RECALL_FOUND"}
+        assert count_bare_bracket_answers(texts) == 0
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 10. Apostrophe caveat flag
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestApostropheCaveat:
+    def test_without_flag_no_apostrophe_caveat(self, tmp_path: Path):
+        answer_row = {
+            "question_id": "q1",
+            "answer_text": "Brake fix [20V477000].",
+            "status": "answered",
+            "cited_ids": ["20V477000"],
+            "invalid_ids": [],
+        }
+        scored_row = {
+            "question_id": "q1",
+            "source": "generated",
+            "template": "remedy",
+            "status": "answered",
+            "invalid": False,
+            "invalid_reason": "",
+            "pass_rule_passed": True,
+            "faithfulness": 0.95,
+        }
+
+        old_ans = tmp_path / "old_answers.jsonl"
+        old_scr = tmp_path / "old_scored.jsonl"
+        new_ans = tmp_path / "new_answers.jsonl"
+        new_scr = tmp_path / "new_scored.jsonl"
+        results_md = tmp_path / "results.md"
+
+        _write_answers_jsonl(old_ans, [answer_row])
+        _write_scored_jsonl(old_scr, [scored_row])
+        _write_answers_jsonl(new_ans, [answer_row])
+        _write_scored_jsonl(new_scr, [scored_row])
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "scripts/compare_prompt_fix.py",
+                "--old-answers",
+                str(old_ans),
+                "--old-scored",
+                str(old_scr),
+                "--new-answers",
+                str(new_ans),
+                "--new-scored",
+                str(new_scr),
+                "--results-md",
+                str(results_md),
+                "--allow-dirty",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(PROJECT_ROOT),
+        )
+        assert result.returncode == 0, (
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+        content = results_md.read_text(encoding="utf-8")
+        # Labels caveat is still present.
+        assert "Labels and judge rows are scored against" in content
+        # Apostrophe caveat is absent.
+        assert "hw_002" not in content
+        assert "mojibake apostrophe" not in content
+
+    def test_with_flag_has_apostrophe_caveat(self, tmp_path: Path):
+        answer_row = {
+            "question_id": "q1",
+            "answer_text": "Brake fix [20V477000].",
+            "status": "answered",
+            "cited_ids": ["20V477000"],
+            "invalid_ids": [],
+        }
+        scored_row = {
+            "question_id": "q1",
+            "source": "generated",
+            "template": "remedy",
+            "status": "answered",
+            "invalid": False,
+            "invalid_reason": "",
+            "pass_rule_passed": True,
+            "faithfulness": 0.95,
+        }
+
+        old_ans = tmp_path / "old_answers.jsonl"
+        old_scr = tmp_path / "old_scored.jsonl"
+        new_ans = tmp_path / "new_answers.jsonl"
+        new_scr = tmp_path / "new_scored.jsonl"
+        results_md = tmp_path / "results.md"
+
+        _write_answers_jsonl(old_ans, [answer_row])
+        _write_scored_jsonl(old_scr, [scored_row])
+        _write_answers_jsonl(new_ans, [answer_row])
+        _write_scored_jsonl(new_scr, [scored_row])
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "scripts/compare_prompt_fix.py",
+                "--old-answers",
+                str(old_ans),
+                "--old-scored",
+                str(old_scr),
+                "--new-answers",
+                str(new_ans),
+                "--new-scored",
+                str(new_scr),
+                "--results-md",
+                str(results_md),
+                "--allow-dirty",
+                "--apostrophe-caveat",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(PROJECT_ROOT),
+        )
+        assert result.returncode == 0, (
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+        content = results_md.read_text(encoding="utf-8")
+        # Both caveats present.
+        assert "Labels and judge rows are scored against" in content
+        assert "hw_002, hw_019, and hw_028" in content
+        assert "mojibake apostrophe" in content
