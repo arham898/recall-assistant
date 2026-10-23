@@ -1605,3 +1605,55 @@ Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.52s | 1.71s | 0.70s | 1.85s |
+
+## Prompt-fix comparison: v2 (Module 2.5b)
+
+```
+Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_2026-10-19.jsonl --old-scored results/scored_hybrid_record_unfiltered_2026-10-19.jsonl --new-answers results/answers_hybrid_record_unfiltered_v2_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_v2_2026-10-23.jsonl --tag v2
+Date:    2026-10-23
+Commit:  a306904
+```
+
+### Pass rate by source and template
+
+| Template | old n | old passed | old rate | new n | new passed | new rate |
+|----------|-------|------------|----------|-------|------------|----------|
+| all_recalls | 20 | 8 | 0.400 | 20 | 8 | 0.400 |
+| consequence | 20 | 16 | 0.800 | 20 | 18 | 0.900 |
+| count | 20 | 10 | 0.500 | 20 | 12 | 0.600 |
+| existence | 20 | 18 | 0.900 | 20 | 19 | 0.950 |
+| handwritten | 30 | 23 | 0.767 | 30 | 24 | 0.800 |
+| remedy | 20 | 10 | 0.500 | 20 | 11 | 0.550 |
+| unanswerable | 20 | 19 | 0.950 | 20 | 19 | 0.950 |
+
+### Invalid reasons
+
+| Reason | old | new |
+|--------|-----|-----|
+| bad_citation | 11 | 4 |
+| uncited | 12 | 2 |
+
+### Example-ID and placeholder contamination
+
+| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" |
+|-----|--------------------------------------|-------------------------------------|
+| old | 8 | 0 |
+| new | 0 | 0 |
+
+### Faithfulness
+
+| Metric | old | new |
+|--------|-----|-----|
+| n | 101 | 114 |
+| mean | 0.824 | 0.610 |
+| median | 0.955 | 0.534 |
+| min | 0.068 | 0.229 |
+| flagged_below_0_5 | 14 | 51 |
+
+### Caveats
+
+- Labels and judge rows are scored against the 19 Oct answers; they have
+  not been re-run against the new answers.
+- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
+  19 Oct and correctly on this run, so those three rows are not a
+  like-for-like comparison.
