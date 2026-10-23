@@ -1657,3 +1657,56 @@ Commit:  a306904
 - hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
   19 Oct and correctly on this run, so those three rows are not a
   like-for-like comparison.
+
+## Prompt-fix comparison: v1-vs-v2 (Module 2.5b)
+
+```
+Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_2026-10-23.jsonl --old-scored results/scored_hybrid_record_unfiltered_2026-10-23.jsonl --new-answers results/answers_hybrid_record_unfiltered_v2_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_v2_2026-10-23.jsonl --tag v1-vs-v2
+Date:    2026-10-23
+Commit:  3754863
+```
+
+### Pass rate by source and template
+
+| Template | old n | old passed | old rate | new n | new passed | new rate |
+|----------|-------|------------|----------|-------|------------|----------|
+| all_recalls | 20 | 5 | 0.250 | 20 | 8 | 0.400 |
+| consequence | 20 | 16 | 0.800 | 20 | 18 | 0.900 |
+| count | 20 | 6 | 0.300 | 20 | 12 | 0.600 |
+| existence | 20 | 11 | 0.550 | 20 | 19 | 0.950 |
+| handwritten | 30 | 18 | 0.600 | 30 | 24 | 0.800 |
+| remedy | 20 | 14 | 0.700 | 20 | 11 | 0.550 |
+| unanswerable | 20 | 19 | 0.950 | 20 | 19 | 0.950 |
+
+### Invalid reasons
+
+| Reason | old | new |
+|--------|-----|-----|
+| bad_citation | 7 | 4 |
+| cut_off | 1 | 0 |
+| uncited | 34 | 2 |
+
+### Example-ID and placeholder contamination
+
+| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" |
+|-----|--------------------------------------|-------------------------------------|
+| old | 0 | 0 |
+| new | 0 | 0 |
+
+### Faithfulness
+
+| Metric | old | new |
+|--------|-----|-----|
+| n | 81 | 114 |
+| mean | 0.882 | 0.610 |
+| median | 0.961 | 0.534 |
+| min | 0.022 | 0.229 |
+| flagged_below_0_5 | 7 | 51 |
+
+### Caveats
+
+- Labels and judge rows are scored against the 19 Oct answers; they have
+  not been re-run against the new answers.
+- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
+  19 Oct and correctly on this run, so those three rows are not a
+  like-for-like comparison.
