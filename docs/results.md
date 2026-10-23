@@ -1764,3 +1764,55 @@ Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
 | metric | generation p50 | generation p95 | total p50 | total p95 |
 |--------|----------------|----------------|-----------|-----------|
 | value | 0.67s | 1.04s | 0.84s | 1.49s |
+
+## Prompt-fix comparison: v3 (Module 2.5b)
+
+```
+Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_2026-10-19.jsonl --old-scored results/scored_hybrid_record_unfiltered_2026-10-19.jsonl --new-answers results/answers_hybrid_record_unfiltered_v3_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_v3_2026-10-23.jsonl --tag v3 --apostrophe-caveat
+Date:    2026-10-23
+Commit:  8fa452a
+```
+
+### Pass rate by source and template
+
+| Template | old n | old passed | old rate | new n | new passed | new rate |
+|----------|-------|------------|----------|-------|------------|----------|
+| all_recalls | 20 | 8 | 0.400 | 20 | 8 | 0.400 |
+| consequence | 20 | 16 | 0.800 | 20 | 14 | 0.700 |
+| count | 20 | 10 | 0.500 | 20 | 15 | 0.750 |
+| existence | 20 | 18 | 0.900 | 20 | 17 | 0.850 |
+| handwritten | 30 | 23 | 0.767 | 30 | 23 | 0.767 |
+| remedy | 20 | 10 | 0.500 | 20 | 14 | 0.700 |
+| unanswerable | 20 | 19 | 0.950 | 20 | 17 | 0.850 |
+
+### Invalid reasons
+
+| Reason | old | new |
+|--------|-----|-----|
+| bad_citation | 11 | 11 |
+| uncited | 12 | 8 |
+
+### Example-ID and placeholder contamination
+
+| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" | bare-bracket answers |
+|-----|--------------------------------------|-------------------------------------|----------------------|
+| old | 8 | 0 | 8 |
+| new | 0 | 0 | 0 |
+
+### Faithfulness
+
+| Metric | old | new |
+|--------|-----|-----|
+| n | 101 | 109 |
+| mean | 0.824 | 0.894 |
+| median | 0.955 | 0.961 |
+| min | 0.068 | 0.029 |
+| flagged_below_0_5 | 14 | 6 |
+
+### Caveats
+
+- Labels and judge rows are scored against the 19 Oct answers; they have
+  not been re-run against the new answers.
+- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
+  19 Oct and correctly on this run, so those three rows are not a
+  like-for-like comparison.
