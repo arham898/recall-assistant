@@ -80,7 +80,7 @@ def update_results_section(
     )
 
     if pattern.search(text):
-        text = pattern.sub(lambda _m: section.rstrip(), text)
+        text = pattern.sub(lambda _m: section.rstrip() + "\n", text)
     else:
         if text and not text.endswith("\n"):
             text += "\n"

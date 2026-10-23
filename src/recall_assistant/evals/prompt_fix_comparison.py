@@ -118,10 +118,6 @@ def _fmt_pct(v: float) -> str:
     return f"{v:.3f}"
 
 
-def _row(cells: list[str]) -> str:
-    return "| " + " | ".join(cells) + " |"
-
-
 def format_comparison(
     old_scored: list[dict],
     new_scored: list[dict],

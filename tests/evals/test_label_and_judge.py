@@ -831,6 +831,30 @@ class TestUpdateResultsSectionBackslash:
 
 
 # ═══════════════════════════════════════════════════════════════════
+# 13c. update_results_section blank-line separation
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestUpdateResultsSectionBlankLine:
+    def test_blank_line_between_replaced_section_and_next_heading(self, tmp_path):
+        """A replaced section must end with exactly one blank line before the next ##."""
+        from recall_assistant.evals.run_metadata import update_results_section
+
+        md = tmp_path / "results.md"
+
+        # Write two sections; the second one gives us a following ## heading.
+        update_results_section("## First", "Content A.", path=md)
+        update_results_section("## Second", "Content B.", path=md)
+
+        # Now replace the first section with content that has NO trailing newline.
+        update_results_section("## First", "Content A revised", path=md)
+
+        text = md.read_text(encoding="utf-8")
+        # The file must contain: last line of first section, blank line, second heading.
+        assert "Content A revised\n\n## Second" in text
+
+
+# ═══════════════════════════════════════════════════════════════════
 # 14. Error verdict exclusion
 # ═══════════════════════════════════════════════════════════════════
 
