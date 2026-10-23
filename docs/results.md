@@ -1816,3 +1816,52 @@ Commit:  8fa452a
 - hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
   19 Oct and correctly on this run, so those three rows are not a
   like-for-like comparison.
+
+## Prompt-fix comparison: v2-vs-v3 (Module 2.5b)
+
+```
+Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_v2_2026-10-23.jsonl --old-scored results/scored_hybrid_record_unfiltered_v2_2026-10-23.jsonl --new-answers results/answers_hybrid_record_unfiltered_v3_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_v3_2026-10-23.jsonl --tag v2-vs-v3
+Date:    2026-10-23
+Commit:  b4538c7
+```
+
+### Pass rate by source and template
+
+| Template | old n | old passed | old rate | new n | new passed | new rate |
+|----------|-------|------------|----------|-------|------------|----------|
+| all_recalls | 20 | 8 | 0.400 | 20 | 8 | 0.400 |
+| consequence | 20 | 18 | 0.900 | 20 | 14 | 0.700 |
+| count | 20 | 12 | 0.600 | 20 | 15 | 0.750 |
+| existence | 20 | 19 | 0.950 | 20 | 17 | 0.850 |
+| handwritten | 30 | 24 | 0.800 | 30 | 23 | 0.767 |
+| remedy | 20 | 11 | 0.550 | 20 | 14 | 0.700 |
+| unanswerable | 20 | 19 | 0.950 | 20 | 17 | 0.850 |
+
+### Invalid reasons
+
+| Reason | old | new |
+|--------|-----|-----|
+| bad_citation | 4 | 11 |
+| uncited | 2 | 8 |
+
+### Example-ID and placeholder contamination
+
+| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" | bare-bracket answers |
+|-----|--------------------------------------|-------------------------------------|----------------------|
+| old | 0 | 0 | 66 |
+| new | 0 | 0 | 0 |
+
+### Faithfulness
+
+| Metric | old | new |
+|--------|-----|-----|
+| n | 114 | 109 |
+| mean | 0.610 | 0.894 |
+| median | 0.534 | 0.961 |
+| min | 0.229 | 0.029 |
+| flagged_below_0_5 | 51 | 6 |
+
+### Caveats
+
+- Labels and judge rows are scored against the 19 Oct answers; they have
+  not been re-run against the new answers.
