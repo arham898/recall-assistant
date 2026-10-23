@@ -1663,7 +1663,7 @@ Commit:  a306904
 ```
 Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_2026-10-23.jsonl --old-scored results/scored_hybrid_record_unfiltered_2026-10-23.jsonl --new-answers results/answers_hybrid_record_unfiltered_v2_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_v2_2026-10-23.jsonl --tag v1-vs-v2
 Date:    2026-10-23
-Commit:  3754863
+Commit:  e318a47
 ```
 
 ### Pass rate by source and template
@@ -1688,10 +1688,10 @@ Commit:  3754863
 
 ### Example-ID and placeholder contamination
 
-| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" |
-|-----|--------------------------------------|-------------------------------------|
-| old | 0 | 0 |
-| new | 0 | 0 |
+| Run | answers with 24V123000 or 25V456000 | answers with "campaign_id" or "<" | bare-bracket answers |
+|-----|--------------------------------------|-------------------------------------|----------------------|
+| old | 0 | 0 | 3 |
+| new | 0 | 0 | 66 |
 
 ### Faithfulness
 
@@ -1707,10 +1707,6 @@ Commit:  3754863
 
 - Labels and judge rows are scored against the 19 Oct answers; they have
   not been re-run against the new answers.
-- hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
-  19 Oct and correctly on this run, so those three rows are not a
-  like-for-like comparison.
-
 ## Answer evaluation: hybrid_record_unfiltered_v3 (Module 2.3)
 
 ```
