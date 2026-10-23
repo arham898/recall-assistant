@@ -38,18 +38,26 @@ def load_answer_texts(path: Path) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
-def pass_rate_by_template(scored: list[dict]) -> dict[str, dict[str, Any]]:
-    """Group scored rows by template, return n / passed / rate per template."""
+def pass_rate_by_source_and_template(scored: list[dict]) -> dict[str, dict[str, Any]]:
+    """Group scored rows by source/template, return n / passed / rate.
+
+    Generated rows are keyed by their template name.
+    Handwritten and unanswerable rows are keyed by source.
+    """
     buckets: dict[str, list[dict]] = {}
     for r in scored:
-        tmpl = r.get("template") or "(none)"
-        buckets.setdefault(tmpl, []).append(r)
+        source = r.get("source", "generated")
+        if source == "generated":
+            key = r.get("template") or "(none)"
+        else:
+            key = source
+        buckets.setdefault(key, []).append(r)
     result: dict[str, dict[str, Any]] = {}
-    for tmpl in sorted(buckets):
-        rows = buckets[tmpl]
+    for key in sorted(buckets):
+        rows = buckets[key]
         n = len(rows)
         passed = sum(1 for r in rows if r["pass_rule_passed"])
-        result[tmpl] = {"n": n, "passed": passed, "rate": passed / n if n else 0.0}
+        result[key] = {"n": n, "passed": passed, "rate": passed / n if n else 0.0}
     return result
 
 
@@ -68,9 +76,12 @@ def count_example_ids(texts: dict[str, str]) -> int:
     return sum(1 for t in texts.values() if any(eid in t for eid in _EXAMPLE_IDS))
 
 
+_LEAK_PATTERNS = ("campaign_id", "<", "two digits", "NNV")
+
+
 def count_placeholder_leak(texts: dict[str, str]) -> int:
-    """Count answers whose text contains ``campaign_id`` or ``<``."""
-    return sum(1 for t in texts.values() if "campaign_id" in t or "<" in t)
+    """Count answers whose text contains a prompt-leaking pattern."""
+    return sum(1 for t in texts.values() if any(p in t for p in _LEAK_PATTERNS))
 
 
 def faithfulness_summary(scored: list[dict]) -> dict[str, Any]:
@@ -121,12 +132,12 @@ def format_comparison(
     parts.append("```")
     parts.append("")
 
-    # --- Table 1: pass rate by template ---
-    old_pr = pass_rate_by_template(old_scored)
-    new_pr = pass_rate_by_template(new_scored)
+    # --- Table 1: pass rate by source and template ---
+    old_pr = pass_rate_by_source_and_template(old_scored)
+    new_pr = pass_rate_by_source_and_template(new_scored)
     all_templates = sorted(set(old_pr) | set(new_pr))
 
-    parts.append("### Pass rate by template")
+    parts.append("### Pass rate by source and template")
     parts.append("")
     parts.append(
         "| Template | old n | old passed | old rate | new n | new passed | new rate |"

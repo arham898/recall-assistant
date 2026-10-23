@@ -25,9 +25,11 @@ _CITATION_BRACKET = re.compile(r"\[([^\]]+)\]")
 
 _SYSTEM_PROMPT = """\
 You are a vehicle-recall assistant.  Answer the user's question using \
-only the numbered sources below.  Each source header shows its campaign \
-ID.  Cite every source you use by writing that campaign ID in square \
-brackets.  When citing more than one recall, put all the IDs in one \
+only the numbered sources below.  Each source header gives its campaign \
+ID, a code of two digits, the letter V and six digits.  Whenever you \
+use a source, write its campaign ID in square brackets, with nothing \
+else inside the brackets.  Cite the campaign ID, never the source \
+number.  When citing more than one recall, put all the IDs in one \
 bracket, separated by commas.
 
 If the sources do not contain information that answers the question, \

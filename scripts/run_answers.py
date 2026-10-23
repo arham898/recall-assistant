@@ -72,6 +72,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Allow running on a dirty worktree",
     )
+    parser.add_argument(
+        "--tag",
+        default=None,
+        help="Optional tag appended to the label (e.g. v2)",
+    )
     return parser.parse_args(argv)
 
 
@@ -94,6 +99,19 @@ def seal_hash(seal: dict[str, Any]) -> str:
     """MD5 of the JSON-serialised card seal, first 8 hex chars."""
     raw = json.dumps(seal, sort_keys=True).encode("utf-8")
     return hashlib.md5(raw).hexdigest()[:8]
+
+
+# ---------------------------------------------------------------------------
+# Label builder
+# ---------------------------------------------------------------------------
+
+
+def build_label(mode: str, chunker: str, filt_tag: str, tag: str | None = None) -> str:
+    """Build the run label from mode, chunker, filter tag, and optional tag."""
+    base = f"{mode}_{chunker}_{filt_tag}"
+    if tag:
+        return f"{base}_{tag}"
+    return base
 
 
 # ---------------------------------------------------------------------------
@@ -378,7 +396,7 @@ def main(argv: list[str] | None = None) -> None:
 
     # ── write JSONL ──
     filt_tag = "filtered" if filter_on else "unfiltered"
-    label = f"{args.mode}_{args.chunker}_{filt_tag}"
+    label = build_label(args.mode, args.chunker, filt_tag, tag=args.tag)
     command = "python " + " ".join(sys.argv)
     results_dir = PROJECT_ROOT / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -403,6 +421,8 @@ def main(argv: list[str] | None = None) -> None:
         },
         "command": command,
     }
+    if args.tag:
+        metadata["tag"] = args.tag
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(json.dumps(metadata, ensure_ascii=False) + "\n")

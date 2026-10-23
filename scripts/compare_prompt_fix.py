@@ -27,7 +27,16 @@ from recall_assistant.evals.run_metadata import (
     update_results_section,
 )
 
-SECTION_HEADER = "## Prompt-fix comparison (Module 2.5b)"
+
+def section_header(tag: str | None = None) -> str:
+    """Build the results.md section header, optionally including a tag."""
+    if tag:
+        return f"## Prompt-fix comparison: {tag} (Module 2.5b)"
+    return "## Prompt-fix comparison (Module 2.5b)"
+
+
+# Backward-compatible constant for the untagged case.
+SECTION_HEADER = section_header()
 
 
 # ---------------------------------------------------------------------------
@@ -61,6 +70,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--allow-dirty",
         action="store_true",
         help="Allow running on a dirty worktree",
+    )
+    parser.add_argument(
+        "--tag",
+        default=None,
+        help="Optional tag included in the results.md section header",
     )
     return parser.parse_args(argv)
 
@@ -106,10 +120,11 @@ def main(argv: list[str] | None = None) -> None:
     content = format_comparison(
         old_scored, new_scored, old_texts, new_texts, command, commit
     )
-    update_results_section(SECTION_HEADER, content, path=args.results_md)
+    header = section_header(args.tag)
+    update_results_section(header, content, path=args.results_md)
 
     # Print to stdout.
-    print(f"{SECTION_HEADER}\n")
+    print(f"{header}\n")
     print(content)
 
 

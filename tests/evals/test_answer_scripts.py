@@ -16,6 +16,7 @@ from scripts.run_answers import (
     _project_cost,
     _save_cache,
     _upper_bound_cost,
+    build_label,
     check_unique_sanitised_ids,
     compute_cost,
     prompt_hash,
@@ -193,6 +194,7 @@ class TestScriptHelp:
         assert "--chunker" in result.stdout
         assert "--filter" in result.stdout
         assert "--limit" in result.stdout
+        assert "--tag" in result.stdout
         assert "ModuleNotFoundError" not in result.stderr, result.stderr
         assert "ImportError" not in result.stderr, result.stderr
 
@@ -212,7 +214,28 @@ class TestScriptHelp:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# 6. Cache key sanitisation
+# 6. Label building
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestLabelBuilding:
+    def test_untagged_label(self):
+        assert (
+            build_label("hybrid", "record", "unfiltered") == "hybrid_record_unfiltered"
+        )
+
+    def test_tagged_label(self):
+        assert (
+            build_label("hybrid", "record", "unfiltered", tag="v2")
+            == "hybrid_record_unfiltered_v2"
+        )
+
+    def test_no_trailing_underscore_without_tag(self):
+        assert not build_label("rerank", "field", "filtered").endswith("_")
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 7. Cache key sanitisation
 # ═══════════════════════════════════════════════════════════════════
 
 

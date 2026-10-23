@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from scripts.compare_prompt_fix import SECTION_HEADER, section_header
 
 from recall_assistant.config import PROJECT_ROOT
 from recall_assistant.evals.answer_eval import load_answers_jsonl
@@ -18,6 +19,7 @@ from recall_assistant.evals.prompt_fix_comparison import (
     count_example_ids,
     count_placeholder_leak,
     faithfulness_summary,
+    pass_rate_by_source_and_template,
 )
 
 # ═══════════════════════════════════════════════════════════════════
@@ -191,5 +193,144 @@ class TestSubprocessComparison:
         assert results_md.exists()
         content = results_md.read_text(encoding="utf-8")
         assert "## Prompt-fix comparison (Module 2.5b)" in content
-        assert "Pass rate by template" in content
+        assert "Pass rate by source and template" in content
         assert "Caveats" in content
+
+    def test_tagged_header(self, tmp_path: Path):
+        answer_row = {
+            "question_id": "q1",
+            "answer_text": "Brake fix [20V477000].",
+            "status": "answered",
+            "cited_ids": ["20V477000"],
+            "invalid_ids": [],
+        }
+        scored_row = {
+            "question_id": "q1",
+            "source": "generated",
+            "template": "remedy",
+            "status": "answered",
+            "invalid": False,
+            "invalid_reason": "",
+            "pass_rule_passed": True,
+            "faithfulness": 0.95,
+        }
+
+        old_ans = tmp_path / "old_answers.jsonl"
+        old_scr = tmp_path / "old_scored.jsonl"
+        new_ans = tmp_path / "new_answers.jsonl"
+        new_scr = tmp_path / "new_scored.jsonl"
+        results_md = tmp_path / "results.md"
+
+        _write_answers_jsonl(old_ans, [answer_row])
+        _write_scored_jsonl(old_scr, [scored_row])
+        _write_answers_jsonl(new_ans, [answer_row])
+        _write_scored_jsonl(new_scr, [scored_row])
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "scripts/compare_prompt_fix.py",
+                "--old-answers",
+                str(old_ans),
+                "--old-scored",
+                str(old_scr),
+                "--new-answers",
+                str(new_ans),
+                "--new-scored",
+                str(new_scr),
+                "--results-md",
+                str(results_md),
+                "--allow-dirty",
+                "--tag",
+                "v2",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(PROJECT_ROOT),
+        )
+        assert result.returncode == 0, (
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+        content = results_md.read_text(encoding="utf-8")
+        assert "## Prompt-fix comparison: v2 (Module 2.5b)" in content
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 6. Section header
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestSectionHeader:
+    def test_untagged_matches_constant(self):
+        assert SECTION_HEADER == "## Prompt-fix comparison (Module 2.5b)"
+
+    def test_tagged_includes_tag(self):
+        assert section_header("v2") == "## Prompt-fix comparison: v2 (Module 2.5b)"
+
+    def test_function_matches_constant(self):
+        assert section_header() == SECTION_HEADER
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 7. pass_rate_by_source_and_template
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestPassRateBySourceAndTemplate:
+    def test_generated_grouped_by_template(self):
+        scored = [
+            {"source": "generated", "template": "remedy", "pass_rule_passed": True},
+            {"source": "generated", "template": "remedy", "pass_rule_passed": False},
+            {"source": "generated", "template": "count", "pass_rule_passed": True},
+        ]
+        result = pass_rate_by_source_and_template(scored)
+        assert result["remedy"]["n"] == 2
+        assert result["remedy"]["passed"] == 1
+        assert result["count"]["n"] == 1
+
+    def test_handwritten_grouped_as_handwritten(self):
+        scored = [
+            {"source": "handwritten", "template": None, "pass_rule_passed": True},
+            {"source": "handwritten", "template": None, "pass_rule_passed": True},
+        ]
+        result = pass_rate_by_source_and_template(scored)
+        assert "handwritten" in result
+        assert result["handwritten"]["n"] == 2
+        assert result["handwritten"]["passed"] == 2
+
+    def test_unanswerable_grouped_as_unanswerable(self):
+        scored = [
+            {"source": "unanswerable", "template": None, "pass_rule_passed": True},
+        ]
+        result = pass_rate_by_source_and_template(scored)
+        assert "unanswerable" in result
+        assert result["unanswerable"]["n"] == 1
+
+    def test_mixed_sources(self):
+        scored = [
+            {"source": "generated", "template": "remedy", "pass_rule_passed": True},
+            {"source": "handwritten", "template": None, "pass_rule_passed": False},
+            {"source": "unanswerable", "template": None, "pass_rule_passed": True},
+        ]
+        result = pass_rate_by_source_and_template(scored)
+        assert set(result.keys()) == {"remedy", "handwritten", "unanswerable"}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 8. count_placeholder_leak (v2 patterns)
+# ═══════════════════════════════════════════════════════════════════
+
+
+class TestCountPlaceholderLeakV2:
+    def test_finds_two_digits(self):
+        texts = {"q1": "a code of two digits, the letter V..."}
+        assert count_placeholder_leak(texts) == 1
+
+    def test_finds_nnv(self):
+        texts = {"q1": "Use the NNV format for citations."}
+        assert count_placeholder_leak(texts) == 1
+
+    def test_clean_campaign_id_no_false_positive(self):
+        texts = {"q1": "The recall [20V477000] involves brake hoses."}
+        assert count_placeholder_leak(texts) == 0
