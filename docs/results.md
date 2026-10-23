@@ -1663,7 +1663,7 @@ Commit:  a306904
 ```
 Command: python scripts/compare_prompt_fix.py --old-answers results/answers_hybrid_record_unfiltered_2026-10-23.jsonl --old-scored results/scored_hybrid_record_unfiltered_2026-10-23.jsonl --new-answers results/answers_hybrid_record_unfiltered_v2_2026-10-23.jsonl --new-scored results/scored_hybrid_record_unfiltered_v2_2026-10-23.jsonl --tag v1-vs-v2
 Date:    2026-10-23
-Commit:  e318a47
+Commit:  64e3da7
 ```
 
 ### Pass rate by source and template
@@ -1707,6 +1707,7 @@ Commit:  e318a47
 
 - Labels and judge rows are scored against the 19 Oct answers; they have
   not been re-run against the new answers.
+
 ## Answer evaluation: hybrid_record_unfiltered_v3 (Module 2.3)
 
 ```
