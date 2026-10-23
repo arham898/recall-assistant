@@ -151,3 +151,19 @@ Record of AI agent actions during development — what the agent did, how I caug
 |Guide side: carried the wrong 2.4 claim about code checks into the 2.5 plan without checking the scored file; the hw_004 row showed invalid_ids and ended it. Also gave me an ignored-files command that listed the whole .venv, a progress-check regex that didn't match in VS Code's find box, and a category count command that split on ";" and would have reproduced the tally bug.|
 
 |My side: commit message "faliure", amended before push.|
+
+|First 2.5b plan: the "one digit off" test passed invalid_ids in as an input, so it could not fail; the loaders were copies of read_jsonl; the comparison script had no tests and all its logic in scripts/; the new prompt used a [<campaign_id>] placeholder, a new copyable token. All four caught in plan review and fixed before approval.|
+
+|score_answers.py keys its results.md section by label only. Scoring the v1 run overwrote the 19 Oct hybrid_record_unfiltered section, which the labels, judge and tally all refer to. Reverted with git checkout; --tag added to run_answers.py and carried through to the scored filename and section header.|
+
+|compare_prompt_fix.py printed the hw_002/hw_019/hw_028 apostrophe caveat unconditionally, so the v1-vs-v2 section stated it falsely. Put behind --apostrophe-caveat with a test each way; the section regenerated, not hand-edited.|
+
+|R2: the results-section writer in run_metadata.py stripped the trailing newline, so a section ending in a list ran straight into the next ## heading. Present since 2.3, first triggered by the v1-vs-v2 section. Fixed with a test that fails on the old code. R2 also found the dead _row helper in prompt_fix_comparison.py, there since 4ebb361; removed.|
+
+|Upstream: google/gemini-2.5-flash-lite rate-limited on OpenRouter's shared pool three times during the v3 run (429, limit_source upstream_provider_shared_pool). The client's three retries suit transient errors, not a pool outage of minutes. Open item for layer 3: longer backoff on 429. The answer cache made each retry free.|
+
+|HHEM is not bit-reproducible: one identical answer scored 0.93906 and 0.93838 across two runs (batch padding). Faithfulness reported to three places from now on.|
+
+|Guide side: proposed the v1 wording with nothing describing the citation shape (uncited 12 to 34), then the v2 wording that produced 66 bare-bracket answers. Both found by the comparison script, neither by the guide. Also missed that a tagged run would still be labelled "(Module 2.3)" by the scorer's fixed header.|
+
+|My side: ran the scoring block before the answers run had been done, and twice re-ran the answers command into a rate limit instead of probing first.|
