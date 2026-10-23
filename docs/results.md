@@ -1710,3 +1710,57 @@ Commit:  3754863
 - hw_002, hw_019, and hw_028 were sent with a mojibake apostrophe on
   19 Oct and correctly on this run, so those three rows are not a
   like-for-like comparison.
+
+## Answer evaluation: hybrid_record_unfiltered_v3 (Module 2.3)
+
+```
+Command: python scripts/score_answers.py --answers results/answers_hybrid_record_unfiltered_v3_2026-10-23.jsonl
+Date:    2026-10-23
+```
+
+### Code-check pass rates
+| Source | n | passed | rate | wrongly_declined | invalid |
+|--------|---|--------|------|------------------|---------|
+| generated | 100 | 68 | 0.680 | 2 | 13 |
+| handwritten | 30 | 23 | 0.767 | 1 | 4 |
+
+### By template (generated only)
+| Template | n | passed | rate | wrongly_declined | invalid |
+|----------|---|--------|------|------------------|---------|
+| all_recalls | 20 | 8 | 0.400 | 0 | 3 |
+| consequence | 20 | 14 | 0.700 | 0 | 5 |
+| count | 20 | 15 | 0.750 | 0 | 0 |
+| existence | 20 | 17 | 0.850 | 1 | 2 |
+| remedy | 20 | 14 | 0.700 | 1 | 3 |
+
+### Unanswerable (n=20)
+| declined (pass) | invalid | answered (fail) |
+|-----------------|---------|-----------------|
+| 17 | 2 | 1 |
+
+Invalid breakdown: uncited=2
+
+### Faithfulness (vectara/hallucination_evaluation_model)
+
+| n | mean | median | p25 | min | flagged (below 0.5) | seconds |
+|---|------|--------|-----|-----|---------------------|---------|
+| 109 | 0.894 | 0.961 | 0.914 | 0.029 | 6 | 539.09s |
+
+Lowest 5:
+- gen_count_FISKER_OCEAN_2024: 0.029
+- gen_count_VOLKSWAGEN_ATLAS_CROSS_SPORT_2021: 0.221
+- gen_all_recalls_NIKOLA_TRE_BEV_2022: 0.294
+- gen_count_ROSENBAUER_AVENGER_2020: 0.447
+- gen_count_TESLA_MODEL_3_2022: 0.450
+
+Model revision: `de9a5e6ba9ba49531a022dba17e35ffeb2a6fad8`
+
+### Cost
+| total | per_question |
+|-------|-------------|
+| $0.05255 | $0.00035 |
+
+### Latency
+| metric | generation p50 | generation p95 | total p50 | total p95 |
+|--------|----------------|----------------|-----------|-----------|
+| value | 0.67s | 1.04s | 0.84s | 1.49s |
