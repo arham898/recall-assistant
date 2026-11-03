@@ -90,10 +90,26 @@ The note is one line and names the reason, so failures can be tallied later.
 Citation rules, set during labelling on 19 to 20 Oct 2026:
 
 A cited campaign ID that does not correspond to any retrieved card fails the answer, whatever the question asked. This covers fabricated IDs, IDs copied from the prompt’s own example, and one-digit typos. The test is “not among the cards the model was given”, not “not in NHTSA’s data”.
-A manufacturer’s internal recall code (for example Audi’s 90S9) used in place of the campaign ID for a card that was retrieved is noted, not failed.
+A manufacturer’s internal recall code (for example Audi’s 90S9) cited in place of a campaign ID is marked `bad_citation` by the code check and fails the row, even when the card was retrieved. The hand label judges content and may still pass the row.
 A real retrieved card cited for the wrong model year or wrong vehicle is noted, not failed, unless the question asked for the full list, in which case extras count against it.
 Count questions pass on the number alone. A right number from a wrong set is a pass with a note.
 A decline when the gold recall was not retrieved is still a fail; the note records that the cause is retrieval, not the answer.
 Notes are kept terse and carry the campaign IDs involved, so they can be grouped in failure analysis.
 
 Labels: 100 rows, 74 pass, 26 fail. By stratum: unanswerable 20 (1 fail), handwritten 30 (7 fail), generated 50 (18 fail).
+
+## Known hard questions
+
+**gen_remedy_INTERNATIONAL_HV_2018.** "What's the fix for the fuel system recalls on the 2018 International HV?" The International HV 2018 has five campaigns in recall_vehicles: 18V644000 (EXTERIOR LIGHTING:BRAKE LIGHTS), 19V216000 (FUEL SYSTEM, DIESEL: PRE-HEATER), 20V219000 (FUEL SYSTEM, DIESEL: PRE-HEATER), 22V691000 (ENGINE), and 23V119000 (ELECTRICAL SYSTEM:BODY CONTROL MODULE/BCM). The two gold campaigns are fleet-wide filings: 19V216000 covers 23 make/model/year rows and 20V219000 covers 25 rows, spanning IC Bus (1300 FBC, CE, HC, TC) and International (Durastar, HV, MV, Workstar) for 2018 to 2021. In the 19 Oct 2026 run neither gold was retrieved; 22V691000 was. The row is kept as a hard retrieval case: a single-vehicle question whose gold recalls are filed against two dozen vehicles.
+
+## Known limits of the generator
+
+NHTSA component tags are assigned at the filing level and sometimes cover the administrative category rather than the physical part. Three generated rows expose this:
+
+- **gen_existence_FOREST_RIVER_XLR_TOYHAULER_2021.** Question asks for "wheel recalls". Gold campaign 20V767000, component EQUIPMENT:OTHER:LABELS: "The Federal Placard and Cargo Carrying Capacity (CCC) label may state a lower weight than the actual weight."
+- **gen_remedy_LEXUS_RC_F_2021.** Question asks for "tire recall". Gold campaign 22V615000, component EQUIPMENT:OTHER:LABELS: "The tire information label does not list the vehicle's weight capacity."
+- **gen_remedy_ROAD_RESCUE_TYPE_I_2018.** Question asks for "suspension recall". Gold campaign 20V284000, component SERVICE BRAKES: "REV Ambulance Group Orlando, Inc. (REV) is recalling certain 2018-2020 Type 1 ambulances built on Ram 4500 and 5500 chassis equipped with Compressible Liquid Adaptive Suspension Systems (C.L.A.S.S.)... The rear brake caliper flexible line may have been routed so that it contacts a suspension component, possibly causing excessive wear and a loss of rear brakes."
+
+In all three cases the model declined (correctly, from its perspective: no tire/wheel/suspension defect was described). The code marks them as `wrongly_declined` because the gold ID was retrieved. These are tagged 2 and 10 in the failure worksheet and are not fixed here.
+
+A related limit: NHTSA lists some manufacturers under more than one make spelling. Mercedes-Benz appears as both `MERCEDES BENZ` (no hyphen) and `MERCEDES-BENZ` (with hyphen). The generator treats each spelling as a separate make, so gold campaigns for `gen_all_recalls_MERCEDES_BENZ_C_300_4MATIC_2018` are drawn only from recall_vehicles rows where `make = 'MERCEDES BENZ'` and `model = 'C 300 4MATIC'`. Campaign 18V725000 (starter battery short-circuit) is filed under `make = 'MERCEDES-BENZ'`, `model = 'C 300'`, a different triplet, so it is not gold for the 4MATIC row. The answer that cites it is not wrong about NHTSA's data; it is wrong about which vehicle the question asked about.
