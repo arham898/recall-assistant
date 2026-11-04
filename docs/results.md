@@ -1467,8 +1467,8 @@ Agreement: 0.900
 
 ```
 Command: python scripts/tally_failures.py --worksheet docs/error-analysis.md
-Date:    2026-10-22
-Commit:  89eb605
+Date:    2026-11-03
+Commit:  456b13a
 ```
 
 57 failure rows, 31 with more than one category.
@@ -1487,14 +1487,14 @@ Commit:  89eb605
 | 7 | Unanswerable answered | 1 |
 | 8 | Format leak | 21 |
 | 9 | Safety advice omitted | 0 |
-| 10 | Reference problem, not answer problem | 5 |
+| 10 | Reference problem, not answer problem | 4 |
 | 11 | Judge false fail: answer correct | 2 |
 
 ### By template
 
 | Template | 1 | 1b | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | Total |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| all_recalls | 0 | 7 | 5 | 6 | 0 | 2 | 1 | 0 | 9 | 0 | 1 | 0 | 31 |
+| all_recalls | 0 | 7 | 5 | 6 | 0 | 2 | 1 | 0 | 9 | 0 | 0 | 0 | 30 |
 | consequence | 1 | 0 | 2 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 1 | 7 |
 | count | 0 | 1 | 2 | 3 | 4 | 0 | 0 | 0 | 8 | 0 | 0 | 0 | 18 |
 | existence | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 4 |
