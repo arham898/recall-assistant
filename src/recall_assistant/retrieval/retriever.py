@@ -110,7 +110,7 @@ class Retriever:
         self,
         question: str,
         k: int = 10,
-        rerank_candidates: int = 30,
+        rerank_candidates: int = 1,
         pool_size: int = 50,
         rrf_k: int = 60,
         ef_search: int = 40,
