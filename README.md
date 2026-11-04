@@ -88,6 +88,19 @@ uv run python -m recall_assistant.cli ask "seat belt problems" --make FORD --mod
 
 Full metrics in [docs/results.md](docs/results.md).
 
+### CI eval gate
+
+The `eval-gate` job in CI loads a 692-campaign sample into a scratch
+Postgres database, embeds it, and runs 25 smoke questions through four
+retrieval modes, filtered and unfiltered, eight configurations. It compares
+hit@5 against a stored baseline and fails the run if either gated
+configuration (hybrid or rerank, unfiltered) drops by more than 5 points.
+A deliberate regression PR (#2) showed the check failing on a one-line
+change while the unit tests stayed green. `eval-gate` is a required check
+on `main`.
+
+![eval gate blocking a PR](docs/images/eval-gate-blocked.png)
+
 ## Limitations
 
 - This is a learning project, not a production system.

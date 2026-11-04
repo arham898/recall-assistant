@@ -1862,3 +1862,70 @@ Commit:  b4538c7
 
 - Labels and judge rows are scored against the 19 Oct answers; they have
   not been re-run against the new answers.
+
+## CI eval gate (Module 2.6)
+
+### Smoke set
+
+30 questions selected deterministically (seed 42): 15 generated (3 per
+template, alphabetical), 10 handwritten answerable, 5 unanswerable.
+25 answerable questions are scored.
+
+```
+Command: python scripts/make_ci_sample.py
+```
+
+### CI sample
+
+692 campaigns, 6053 rows, 6.99 MB.
+File: `tests/data/ci_sample.tsv`.
+
+```
+Command: python scripts/make_ci_sample.py
+```
+
+### Baseline
+
+```
+Command: python scripts/update_baseline.py
+Commit:  715c636
+```
+
+| Config | hit@5 | MRR |
+|--------|-------|-----|
+| dense_record_filtered | 1.0000 | 0.9133 |
+| dense_record_unfiltered | 0.9600 | 0.7167 |
+| hybrid_record_filtered | 1.0000 | 0.8900 |
+| hybrid_record_unfiltered | 0.9600 | 0.7647 |
+| keyword_record_filtered | 0.9600 | 0.8258 |
+| keyword_record_unfiltered | 0.7200 | 0.5135 |
+| rerank_record_filtered | 1.0000 | 1.0000 |
+| rerank_record_unfiltered | 0.9600 | 0.9067 |
+
+### Gated configurations and threshold
+
+The gate checks `hybrid_record_unfiltered` and `rerank_record_unfiltered`.
+A run fails if hit@5 drops more than 5 percentage points from the baseline.
+On a 25-question smoke set, one question is 4 points, so one extra miss
+alone does not trip the gate.
+
+### Regression demo
+
+PR #2 changed one line: `Retriever.rerank` default
+`rerank_candidates` from 30 to 1
+(`src/recall_assistant/retrieval/retriever.py`, line 113).
+
+`python -m recall_assistant.evals.ci_gate --check` output:
+
+```
+OK   hybrid_record_unfiltered: hit@5 drop=0.000000 (baseline=0.9600 -> current=0.9600)
+FAIL rerank_record_unfiltered: hit@5 dropped 0.320000 (baseline=0.9600 -> current=0.6400, threshold=0.05)
+```
+
+Exit code 1. The same output appears in CI and locally.
+lint-and-test was green in CI on the same commit (b228dde).
+
+The eval loop calls `retriever.rerank(question=..., k=10)` without
+passing `rerank_candidates`, so it uses the Retriever method default,
+not `Settings.rerank_candidates` from config.py.  Changing the Settings
+value would not affect the gate.
