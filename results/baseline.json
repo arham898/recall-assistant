@@ -1,0 +1,92 @@
+{
+  "git_commit": "715c636",
+  "date": "2026-11-04",
+  "command": "python scripts/update_baseline.py",
+  "n_questions": 25,
+  "sha256": {
+    "ci_sample_tsv": "9dd67e94c4a45ef2dd35b24bd721d36d4716f06e37f5b248fe429d3d6b14f71b",
+    "smoke_jsonl": "cc4d46683be154d04caed6f3f297cf438d3d7e00b2b25926d4fb73d9ee811e31"
+  },
+  "metrics": {
+    "dense_record_filtered": {
+      "n": 25,
+      "hit@5": 1.0,
+      "hit@10": 1.0,
+      "recall@5": 0.9933333333333333,
+      "recall@10": 1.0,
+      "mrr": 0.9133333333333333,
+      "latency_p50": 0.06722670001909137,
+      "latency_p95": 0.07517860014922917
+    },
+    "dense_record_unfiltered": {
+      "n": 25,
+      "hit@5": 0.96,
+      "hit@10": 0.96,
+      "recall@5": 0.86,
+      "recall@10": 0.9533333333333333,
+      "mrr": 0.7166666666666667,
+      "latency_p50": 0.07239759992808104,
+      "latency_p95": 0.08003879990428686
+    },
+    "hybrid_record_filtered": {
+      "n": 25,
+      "hit@5": 1.0,
+      "hit@10": 1.0,
+      "recall@5": 0.9933333333333333,
+      "recall@10": 1.0,
+      "mrr": 0.89,
+      "latency_p50": 0.0252165999263525,
+      "latency_p95": 0.02840329986065626
+    },
+    "hybrid_record_unfiltered": {
+      "n": 25,
+      "hit@5": 0.96,
+      "hit@10": 0.96,
+      "recall@5": 0.9133333333333333,
+      "recall@10": 0.96,
+      "mrr": 0.7646666666666667,
+      "latency_p50": 0.03987089986912906,
+      "latency_p95": 0.05525969993323088
+    },
+    "keyword_record_filtered": {
+      "n": 25,
+      "hit@5": 0.96,
+      "hit@10": 1.0,
+      "recall@5": 0.9533333333333333,
+      "recall@10": 1.0,
+      "mrr": 0.8257777777777778,
+      "latency_p50": 0.0033193000126630068,
+      "latency_p95": 0.004359400132670999
+    },
+    "keyword_record_unfiltered": {
+      "n": 25,
+      "hit@5": 0.72,
+      "hit@10": 0.84,
+      "recall@5": 0.5933333333333334,
+      "recall@10": 0.7733333333333333,
+      "mrr": 0.5134920634920634,
+      "latency_p50": 0.014853799948468804,
+      "latency_p95": 0.025778300128877163
+    },
+    "rerank_record_filtered": {
+      "n": 25,
+      "hit@5": 1.0,
+      "hit@10": 1.0,
+      "recall@5": 0.9933333333333333,
+      "recall@10": 1.0,
+      "mrr": 1.0,
+      "latency_p50": 0.16447070008143783,
+      "latency_p95": 0.4079807000234723
+    },
+    "rerank_record_unfiltered": {
+      "n": 25,
+      "hit@5": 0.96,
+      "hit@10": 1.0,
+      "recall@5": 0.9333333333333332,
+      "recall@10": 0.98,
+      "mrr": 0.9066666666666667,
+      "latency_p50": 1.2238584998995066,
+      "latency_p95": 1.3950483999215066
+    }
+  }
+}

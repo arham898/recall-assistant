@@ -26,6 +26,9 @@ models/
 
 # Generated metrics
 results/
+!results/
+results/*
+!results/baseline.json
 
 # IDE and tools
 .vscode/
