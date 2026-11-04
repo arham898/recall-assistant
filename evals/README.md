@@ -100,7 +100,7 @@ Labels: 100 rows, 74 pass, 26 fail. By stratum: unanswerable 20 (1 fail), handwr
 
 ## Known hard questions
 
-**gen_remedy_INTERNATIONAL_HV_2018.** "What's the fix for the fuel system recalls on the 2018 International HV?" The International HV 2018 has five campaigns in recall_vehicles: 18V644000 (EXTERIOR LIGHTING:BRAKE LIGHTS), 19V216000 (FUEL SYSTEM, DIESEL: PRE-HEATER), 20V219000 (FUEL SYSTEM, DIESEL: PRE-HEATER), 22V691000 (ENGINE), and 23V119000 (ELECTRICAL SYSTEM:BODY CONTROL MODULE/BCM). The two gold campaigns are fleet-wide filings: 19V216000 covers 23 make/model/year rows and 20V219000 covers 25 rows, spanning IC Bus (1300 FBC, CE, HC, TC) and International (Durastar, HV, MV, Workstar) for 2018 to 2021. In the 19 Oct 2026 run neither gold was retrieved; 22V691000 was. The row is kept as a hard retrieval case: a single-vehicle question whose gold recalls are filed against two dozen vehicles.
+**gen_remedy_INTERNATIONAL_HV_2018.** "What's the fix for the fuel system recalls on the 2018 International HV?" The International HV 2018 has five campaigns in recall_vehicles: 18V644000 (EXTERIOR LIGHTING:BRAKE LIGHTS), 19V216000 (FUEL SYSTEM, DIESEL: PRE-HEATER), 20V219000 (FUEL SYSTEM, DIESEL: PRE-HEATER), 22V691000 (ENGINE), and 23V119000 (ELECTRICAL SYSTEM:BODY CONTROL MODULE/BCM). The two gold campaigns are fleet-wide filings: 19V216000 covers 23 make/model/year rows and 20V219000 covers 25 rows, spanning IC Bus (1300 FBC, CE, CESB, HC, TC) and International (Durastar, HV, MV, Workstar) for 2018 to 2021. In the 19 Oct 2026 run neither gold was retrieved; 22V691000 was. The row is kept as a hard retrieval case: a single-vehicle question whose gold recalls are filed against two dozen vehicles.
 
 ## Known limits of the generator
 
