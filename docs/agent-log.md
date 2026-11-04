@@ -167,3 +167,30 @@ Record of AI agent actions during development — what the agent did, how I caug
 |Guide side: proposed the v1 wording with nothing describing the citation shape (uncited 12 to 34), then the v2 wording that produced 66 bare-bracket answers. Both found by the comparison script, neither by the guide. Also missed that a tagged run would still be labelled "(Module 2.3)" by the scorer's fixed header.|
 
 |My side: ran the scoring block before the answers run had been done, and twice re-ran the answers command into a rate limit instead of probing first.|
+|Golden batch: proposed changing the C 300 4MATIC row's pass_rule from cite_all_gold to cite_any_gold after seeing it fail. Rejected: changing the metric after the result, and out of scope.|
+
+|Golden batch: asked to replace the 90S9 sentence, it appended a note contradicting the sentence it left in place. Caught by reading the diff; sentence replaced.|
+
+|Golden batch: wrote the INTERNATIONAL HV note from guesses ("narrow model-year slice", "nearly identical component descriptions") instead of database rows, and explained a component tag with FMVSS text from general knowledge. Both rewritten from recall_vehicles rows and the recalls' own component and defect fields.|
+
+|2.6 first plan measured the baseline against the full index while CI measures against the sample; had an --allow-dirty override; --help subprocess tests; a boundary test at 0.90 minus 0.85 that fails on correct code because the float is 0.05000000000000004; silent latin-1 replace. All caught in plan review.|
+
+|2.6 second plan ran guard_scratch_database after load_ci_sample, so the mass delete would have wiped the full index before the guard looked at it. Reordered: migrations, count, guard, upsert, with a test that upsert_recalls is never called when the guard fires.|
+
+|2.6 second plan had the CLI test's embed subprocess building Settings from .env, so it would have embedded into the full database while the fixture used recall_assistant_test. Explicit env passed to the subprocess.|
+
+|2.6 plan's round-trip seed text contained an em dash, which is not latin-1 and would have failed the strict write for the wrong reason. Removed.|
+
+|2.6 plan said "fill to ~300" when 25 questions times 30 candidates gives up to 750; the real sample is 692. Also "1 header + 6052 data" and 6.67 MB in the write-up, both guesses: the file has no header and is 6,990,348 bytes.|
+
+|2.6 build: TestCheckCLI embedded all 692 campaigns and took 295 s, suite 5:57. Moved onto the five seed campaigns with --sample and --smoke; suite 2:00.|
+
+|2.6 build: tests/data/ci_sample.tsv and results/baseline.json were both git-ignored (data/ and results/ rules) and would have been missing from the push. Found by the untracked list; exceptions added.|
+
+|Regression demo plan predicted rerank hit@5 of 0.12 to 0.40 with 3 candidates, treating hybrid's top 3 as random draws from the sample. With 3 it would be hybrid hit@3; set to 1 so it is hybrid hit@1 (0.64).|
+
+|2.6 write-up draft claimed the demo PR "confirmed the gate blocks merges". The PR targeted layer-2-evals, where the ruleset does not apply, and the merge button was live. Reworded to what was measured: the check failed on a one-line change.|
+
+|Guide side: told me the C 300 row was handwritten (it is generated); framed INTERNATIONAL_HV_2018 as "ambiguous between two vehicles" when the data shows fleet-wide filings; counted 24 vehicle rows for 20V219000 where the query showed 25; assumed prompt_fix_comparison.py was in scripts/ and asked for a move that was not needed; gave a CREATE DATABASE command that PowerShell's nested quoting broke (createdb fixed it); expected git check-ignore to print nothing for a re-included file, when it prints the ! rule.|
+
+|My side: committed the golden-batch README before the diff review instead of after; the "may be valid" worksheet note on 18V725000 that started the batch was mine.|

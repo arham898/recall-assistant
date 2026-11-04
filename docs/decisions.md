@@ -188,3 +188,27 @@ gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by de
 - Caveats that stay in every 19 Oct comparison: hand labels and judge rows are against the 19 Oct answers; hw_002, hw_019 and hw_028 reached the model with a broken apostrophe on 19 Oct and correctly on every 23 Oct run.
 - --tag added to run_answers.py so a second run of the same configuration on the same day gets its own files and its own results.md section instead of overwriting the first.
 - Cost: about 5p per 150-answer run, four runs. The v3 run was interrupted three times by an upstream rate limit and still cost 5p because the answer cache kept every completed call.
+
+## Layer 2, golden-set fixes
+
+- 18V725000 stays out of the gold for gen_all_recalls_MERCEDES_BENZ_C_300_4MATIC_2018. recall_vehicles files it under MERCEDES-BENZ / C 300 / 2018 (and E 300); the 4MATIC row's three gold campaigns sit under MERCEDES BENZ (no hyphen) / C 300 4MATIC. The generator matched the exact triplet, so it was right and my worksheet note "may be valid" was wrong. The answer cited a recall for a different variant: category 3, not 10. Worksheet row changed from 2;6;3;10 to 2;6;3 and the tally regenerated: category 10 from 5 to 4, 96 tags.
+- 90S9 rule: the code's rule stands. A manufacturer code in brackets is marked bad_citation and fails the row even when the card was retrieved, because an owner who looks it up on NHTSA finds nothing. The README said "noted, not failed" and was wrong; one sentence rewritten. The hand label still judges content and may pass the row. 19 Oct numbers unchanged (handwritten 23 of 30, 6 invalid; bad_citation 11).
+- INTERNATIONAL_HV_2018 kept as a hard retrieval case, not an ambiguous question. The two gold campaigns are fleet-wide filings (19V216000 against 23 make/model/year rows, 20V219000 against 25, across IC Bus and International for 2018 to 2021); International HV 2018 has five campaigns in total. Neither gold was retrieved on 19 Oct; 22V691000 was.
+- Three generator limits documented, no fix: NHTSA component tags that name the filing category rather than the part (20V767000 placard under wheels, 22V615000 tire label, 20V284000 brake lines near a suspension part). All three are wrongly_declined, tagged 2;10.
+- Layer 3 note: NHTSA spells one make two ways (MERCEDES-BENZ, MERCEDES BENZ); joins the converter-makes item.
+
+## Module 2.6: CI eval gate
+
+- Baseline is measured on the sample, not the full index. The gate runs against a 692-campaign sample in CI, so the baseline comes from a database holding only that sample (scratch database recall_ci, created with createdb). Measuring it on the full index would compare different exams.
+- Hard negatives: for each of the 25 answerable smoke questions the sample holds its gold campaigns plus the 30 hybrid/record candidates the reranker sees (rerank_candidates = 30). That gave 692 unique campaigns, so no random filler was used. Golds plus filler would make hit@5 1.0 forever.
+- Smoke set: 30 questions at seed 42 (3 per generated template, 10 handwritten answerable, 5 unanswerable); 25 scored. Threshold: more than 5 points on hit@5 for hybrid_record_unfiltered or rerank_record_unfiltered. One question is 4 points on 25, so the gate fires on two or more extra misses.
+- Baseline (commit 715c636): hybrid_record_unfiltered hit@5 0.96 MRR 0.7647; rerank_record_unfiltered hit@5 0.96 MRR 0.9067. Eight configurations recorded; only the two unfiltered ones are gated.
+- The gate is a job in ci.yml with no path filter. protect-main requires a named check; a separate path-filtered workflow would leave the check pending on PRs that do not touch retrieval.
+- The answer-level check never fails the job (continue-on-error, exits 0, runs only when OPENROUTER_API_KEY is set). After the 23 Oct 429s an LLM call is not a gate.
+- baseline.json records the commit and SHA-256 of ci_sample.tsv and smoke.jsonl, hashed after normalising CRLF to LF because the checkout is CRLF on Windows and LF in CI; --check refuses with "baseline stale" before connecting if either differs.
+- update_baseline.py refuses on a dirty tree with no override, and refuses if the target database already holds more campaigns than the sample, so it cannot wipe the full index.
+- The TSV is written with "\t".join, latin-1 strict, rows sorted by campaign_id, make, model, year, "\n" endings: a rerun on unchanged data is byte-identical (checked by hash). Components round-trip; full field comparison on all 692 campaigns.
+- make_ci_sample.py is run rarely: the TSV is 6.99 MB and every regeneration adds that to history. Two .gitignore exceptions (tests/data/ci_sample.tsv under data/, results/baseline.json under results/).
+- The CLI integration test runs on the five seed campaigns with --sample and --smoke, not the real sample. The first version embedded all 692 and took 295 s; suite 511 passed in 2:00 after the change.
+- Regression demo, commit b228dde: Retriever.rerank default rerank_candidates 30 to 1. lint-and-test green; eval-gate red: rerank hit@5 0.96 to 0.64 (16 of 25, which is hybrid hit@1), hybrid unchanged, exit 1, identical output locally and in CI. PR base was layer-2-evals so the diff is one line; eval-gate is a required check on main.
+- Found on the way: the eval loop calls retriever.rerank(question, k=10) and takes everything else from the method defaults, so Settings.rerank_candidates is not what the gate measures. Two sources of truth; layer 3 item.
