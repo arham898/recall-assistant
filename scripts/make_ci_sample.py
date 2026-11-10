@@ -24,6 +24,7 @@ from recall_assistant.evals.ci_gate import (
 )
 from recall_assistant.evals.golden import GoldenRow
 from recall_assistant.ingest.embedder import SentenceTransformerEmbedder
+from recall_assistant.ingest.loader import load_recall_rows_by_ids
 from recall_assistant.ingest.parser import parse_recalls
 from recall_assistant.retrieval.hybrid import hybrid_search
 
@@ -62,36 +63,7 @@ def _verify_round_trip(
 
     # Load database rows for comparison.
     id_list = sorted(campaign_ids)
-    with conn.cursor() as cur:
-        cur.execute(
-            "SELECT * FROM recalls WHERE campaign_id = ANY(%s) ORDER BY campaign_id",
-            (id_list,),
-        )
-        col_names = [desc.name for desc in cur.description]
-        db_recalls = {
-            row[col_names.index("campaign_id")]: dict(zip(col_names, row))
-            for row in cur.fetchall()
-        }
-
-        cur.execute(
-            "SELECT campaign_id, make, model, year "
-            "FROM recall_vehicles WHERE campaign_id = ANY(%s) "
-            "ORDER BY campaign_id, make, model, year",
-            (id_list,),
-        )
-        db_vehicles: dict[str, list[tuple[str, str, int | None]]] = {}
-        for cid, make, model, year in cur.fetchall():
-            db_vehicles.setdefault(cid, []).append((make, model, year))
-
-        cur.execute(
-            "SELECT campaign_id, component "
-            "FROM recall_components WHERE campaign_id = ANY(%s) "
-            "ORDER BY campaign_id, component",
-            (id_list,),
-        )
-        db_components: dict[str, list[str]] = {}
-        for cid, comp in cur.fetchall():
-            db_components.setdefault(cid, []).append(comp)
+    db_recalls, db_vehicles, db_components = load_recall_rows_by_ids(conn, campaign_ids)
 
     for cid in id_list:
         parsed = parsed_by_cid.get(cid)

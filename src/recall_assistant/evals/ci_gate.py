@@ -24,12 +24,13 @@ from recall_assistant.evals.golden import GoldenRow
 from recall_assistant.evals.retrieval_eval import (
     MODES,
     RowResult,
+    _load_jsonl,
     aggregate_metrics,
     check_no_duplicate_campaigns,
     has_complete_vehicle,
     load_golden_rows,
 )
-from recall_assistant.ingest.loader import upsert_recalls
+from recall_assistant.ingest.loader import load_recall_rows_by_ids, upsert_recalls
 from recall_assistant.ingest.migrator import run_migrations
 from recall_assistant.ingest.parser import COL, EXPECTED_COLUMNS, parse_recalls
 from recall_assistant.retrieval import Hit, VehicleFilter
@@ -214,36 +215,9 @@ def export_campaigns_tsv(
         return 0
 
     id_list = sorted(campaign_ids)
-    with conn.cursor() as cur:
-        cur.execute(
-            "SELECT * FROM recalls WHERE campaign_id = ANY(%s) ORDER BY campaign_id",
-            (id_list,),
-        )
-        recall_cols = [desc.name for desc in cur.description]
-        recall_rows = {
-            row[recall_cols.index("campaign_id")]: dict(zip(recall_cols, row))
-            for row in cur.fetchall()
-        }
-
-        cur.execute(
-            "SELECT campaign_id, make, model, year "
-            "FROM recall_vehicles WHERE campaign_id = ANY(%s) "
-            "ORDER BY campaign_id, make, model, year",
-            (id_list,),
-        )
-        vehicles_by_cid: dict[str, list[tuple[str, str, int | None]]] = {}
-        for cid, make, model, year in cur.fetchall():
-            vehicles_by_cid.setdefault(cid, []).append((make, model, year))
-
-        cur.execute(
-            "SELECT campaign_id, component "
-            "FROM recall_components WHERE campaign_id = ANY(%s) "
-            "ORDER BY campaign_id, component",
-            (id_list,),
-        )
-        components_by_cid: dict[str, list[str]] = {}
-        for cid, comp in cur.fetchall():
-            components_by_cid.setdefault(cid, []).append(comp)
+    recall_rows, vehicles_by_cid, components_by_cid = load_recall_rows_by_ids(
+        conn, campaign_ids
+    )
 
     # Build rows: one per (campaign, vehicle, component).
     # If a campaign has no vehicles, skip (shouldn't happen in practice).
@@ -321,14 +295,8 @@ def export_campaigns_tsv(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="latin-1", errors="strict", newline="") as f:
-        # Use csv.writer with the same dialect as parse_recalls' csv.reader
-        # (delimiter="\t", default QUOTE_MINIMAL, quotechar='"').  This
-        # properly escapes double-quotes so round-trips through csv.reader
-        # are lossless.
-        import csv
-
-        writer = csv.writer(f, delimiter="\t", lineterminator="\n")
-        writer.writerows(tsv_rows)
+        for row in tsv_rows:
+            f.write("\t".join(row) + "\n")
 
     return len({r[COL["CAMPNO"]] for r in tsv_rows})
 
@@ -340,14 +308,7 @@ def export_campaigns_tsv(
 
 def _load_smoke_rows(path: Path | None = None) -> list[GoldenRow]:
     """Load smoke questions from the committed JSONL."""
-    p = path or SMOKE_PATH
-    rows: list[GoldenRow] = []
-    with open(p, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                rows.append(GoldenRow.model_validate_json(line))
-    return rows
+    return _load_jsonl(path or SMOKE_PATH)
 
 
 def run_smoke_eval(

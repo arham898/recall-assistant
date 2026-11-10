@@ -201,9 +201,9 @@ class TestUpdateBaselineRefusesDirty:
 
     def test_exits_dirty(self, tmp_path: Path, monkeypatch):
         monkeypatch.setattr("scripts.update_baseline.is_worktree_dirty", lambda: True)
-        # Patch ConnectionPool so any DB access would blow up.
+        # Patch psycopg.connect so any DB access would blow up.
         monkeypatch.setattr(
-            "psycopg_pool.ConnectionPool",
+            "psycopg.connect",
             lambda *a, **kw: (_ for _ in ()).throw(
                 AssertionError("should not connect")
             ),
@@ -353,6 +353,17 @@ EXPORT_SEED = [
         "remedy": "dealer will replace radiator hose",
         "components": ["ENGINE"],
     },
+    {
+        "campaign_id": "TSV_006",
+        "manufacturer": "VOLKSWAGEN GROUP",
+        "component": "SUSPENSION",
+        "vehicles": [("VOLKSWAGEN", "TIGUAN", 2021)],
+        "defect": "rear suspension knuckle corrosion",
+        "consequence": "loss of stability risk",
+        "remedy": "dealer will replace knuckle",
+        "components": ["SUSPENSION"],
+        "mfr_comp_ptno": '"5QN 505 435 no closing quote',
+    },
 ]
 
 
@@ -406,11 +417,11 @@ class TestExportRoundTrip:
         cids = {r["campaign_id"] for r in EXPORT_SEED}
         tsv_path = tmp_path / "roundtrip.tsv"
         n = export_campaigns_tsv(db_conn, cids, tsv_path)
-        assert n == 5
+        assert n == 6
 
         recalls, skipped = parse_recalls(tsv_path)
         assert skipped == 0
-        assert len(recalls) == 5
+        assert len(recalls) == 6
 
         parsed_by_cid = {r.campaign_id: r for r in recalls}
         for seed in EXPORT_SEED:
