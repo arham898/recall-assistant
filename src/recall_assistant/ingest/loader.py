@@ -1,6 +1,9 @@
 """Load Recall records into Postgres with upsert semantics."""
 
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import psycopg
 
@@ -126,6 +129,17 @@ def upsert_recalls(
                     """,
                     (recall.campaign_id, v.make, v.model, v.year),
                 )
+            # Replace components: delete old ones, insert current set.
+            cur.execute(
+                "DELETE FROM recall_components WHERE campaign_id = %s",
+                (recall.campaign_id,),
+            )
+            for comp in recall.components:
+                cur.execute(
+                    "INSERT INTO recall_components (campaign_id, component) "
+                    "VALUES (%s, %s)",
+                    (recall.campaign_id, comp),
+                )
             upserted += 1
 
         # Delete campaigns no longer in the filtered set.
@@ -160,3 +174,51 @@ def upsert_recalls(
     conn.commit()
     logger.info("Upserted %d campaigns, removed %d", upserted, to_remove)
     return upserted, to_remove
+
+
+def load_recall_rows_by_ids(
+    conn: psycopg.Connection,
+    campaign_ids: set[str],
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, list[tuple[str, str, int | None]]],
+    dict[str, list[str]],
+]:
+    """Load recalls, vehicles and components for given campaign IDs.
+
+    Returns ``(recalls_by_cid, vehicles_by_cid, components_by_cid)``
+    where recalls_by_cid maps campaign_id to a dict of column values.
+    """
+    id_list = sorted(campaign_ids)
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM recalls WHERE campaign_id = ANY(%s) ORDER BY campaign_id",
+            (id_list,),
+        )
+        col_names = [desc.name for desc in cur.description]
+        recalls_by_cid: dict[str, dict[str, Any]] = {
+            row[col_names.index("campaign_id")]: dict(zip(col_names, row))
+            for row in cur.fetchall()
+        }
+
+        cur.execute(
+            "SELECT campaign_id, make, model, year "
+            "FROM recall_vehicles WHERE campaign_id = ANY(%s) "
+            "ORDER BY campaign_id, make, model, year",
+            (id_list,),
+        )
+        vehicles_by_cid: dict[str, list[tuple[str, str, int | None]]] = {}
+        for cid, make, model, year in cur.fetchall():
+            vehicles_by_cid.setdefault(cid, []).append((make, model, year))
+
+        cur.execute(
+            "SELECT campaign_id, component "
+            "FROM recall_components WHERE campaign_id = ANY(%s) "
+            "ORDER BY campaign_id, component",
+            (id_list,),
+        )
+        components_by_cid: dict[str, list[str]] = {}
+        for cid, comp in cur.fetchall():
+            components_by_cid.setdefault(cid, []).append(comp)
+
+    return recalls_by_cid, vehicles_by_cid, components_by_cid

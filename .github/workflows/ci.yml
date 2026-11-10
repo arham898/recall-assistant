@@ -55,3 +55,61 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: "5432"
         run: uv run pytest -v
+
+  eval-gate:
+    runs-on: ubuntu-latest
+
+    env:
+      POSTGRES_USER: recall
+      POSTGRES_PASSWORD: recall
+      POSTGRES_DB: recall_ci
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: recall
+          POSTGRES_PASSWORD: recall
+          POSTGRES_DB: recall_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U recall"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Cache Hugging Face models
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/huggingface
+          key: hf-models-v1
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Load CI sample
+        run: uv run python -m recall_assistant.evals.ci_gate --load-sample
+
+      - name: Embed
+        run: uv run python scripts/embed.py --chunker record
+
+      - name: Check eval gate
+        run: uv run python -m recall_assistant.evals.ci_gate --check
+
+      - name: Answer check (advisory)
+        if: env.OPENROUTER_API_KEY != ''
+        continue-on-error: true
+        run: uv run python -m recall_assistant.evals.ci_gate --answers

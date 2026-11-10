@@ -20,6 +20,8 @@ import openai
 if TYPE_CHECKING:
     import httpx2
 
+    from recall_assistant.config import Settings
+
 from recall_assistant.llm import LLMResult
 
 log = logging.getLogger(__name__)
@@ -197,3 +199,28 @@ class OpenRouterClient:
             f"Failed after {self._max_retries} retries "
             f"({total_attempts} total attempts)"
         ) from last_exc
+
+
+# ---------------------------------------------------------------------------
+# Factory
+# ---------------------------------------------------------------------------
+
+
+def build_openrouter_client(
+    settings: Settings,
+    *,
+    temperature: float | None = None,
+) -> OpenRouterClient:
+    """Build an OpenRouterClient from application settings.
+
+    If *temperature* is not given, uses ``settings.llm_temperature``.
+    """
+    return OpenRouterClient(
+        api_key=settings.openrouter_api_key,
+        temperature=(
+            temperature if temperature is not None else settings.llm_temperature
+        ),
+        request_timeout=settings.llm_request_timeout,
+        max_retries=settings.llm_max_retries,
+        max_retry_wait=settings.llm_max_retry_wait,
+    )

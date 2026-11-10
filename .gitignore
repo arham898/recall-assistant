@@ -16,6 +16,9 @@ CLAUDE.local.md
 
 # Data (raw downloads, git-ignored)
 data/
+!tests/data/
+tests/data/*
+!tests/data/ci_sample.tsv
 
 # Model caches
 .cache/
@@ -23,6 +26,9 @@ models/
 
 # Generated metrics
 results/
+!results/
+results/*
+!results/baseline.json
 
 # IDE and tools
 .vscode/

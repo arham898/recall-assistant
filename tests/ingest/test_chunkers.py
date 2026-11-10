@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import pytest
 
 from recall_assistant.ingest.chunkers import (
     _compact_vehicles,
+    _component_text,
     _compress_year_list,
     _full_vehicles,
     chunk_fields,
@@ -65,6 +68,7 @@ def tokenizer() -> FakeTokenizer:
 def _make_recall(
     campaign_id: str = "24V001",
     component: str = "ENGINE",
+    components: list[str] | None = None,
     defect: str = "The engine may stall unexpectedly.",
     consequence: str = "Stalling increases crash risk.",
     remedy: str = "Dealers will update the software.",
@@ -75,6 +79,8 @@ def _make_recall(
             RecallVehicle(make="TOYOTA", model="CAMRY", year=2020),
             RecallVehicle(make="TOYOTA", model="COROLLA", year=2021),
         ]
+    if components is None:
+        components = [component]
     return Recall(
         campaign_id=campaign_id,
         manufacturer="TOYOTA MOTOR",
@@ -95,6 +101,7 @@ def _make_recall(
         do_not_drive=False,
         park_outside=False,
         vehicles=vehicles,
+        components=components,
     )
 
 
@@ -283,6 +290,119 @@ class TestChunkFields:
         assert len(defect_chunks) > 1
         assert defect_chunks[0].field_name == "defect_summary:0"
         assert defect_chunks[1].field_name == "defect_summary:1"
+
+
+# ---------------------------------------------------------------------------
+# Exact body tests (single-component baseline)
+# ---------------------------------------------------------------------------
+
+
+class TestExactBody:
+    """Assert full card text for the default single-component fixture.
+
+    These tests catch any accidental change to card format; the expected
+    strings are hardcoded, not built by helper functions.
+    """
+
+    def test_single_component_record_exact_body(self, tokenizer):
+        recall = _make_recall()
+        body = chunk_record(recall, tokenizer)[0].body
+        assert body == (
+            "Vehicles: TOYOTA CAMRY (2020), TOYOTA COROLLA (2021)\n"
+            "Component: ENGINE\n"
+            "Defect: The engine may stall unexpectedly.\n"
+            "Consequence: Stalling increases crash risk.\n"
+            "Remedy: Dealers will update the software."
+        )
+
+    def test_single_component_field_exact_body(self, tokenizer):
+        recall = _make_recall()
+        chunks = chunk_fields(recall, tokenizer)
+        defect_chunk = next(c for c in chunks if c.field_name == "defect_summary:0")
+        assert defect_chunk.body == (
+            "TOYOTA CAMRY, TOYOTA COROLLA | ENGINE — The engine may stall unexpectedly."
+        )
+
+
+# ---------------------------------------------------------------------------
+# Component text helper
+# ---------------------------------------------------------------------------
+
+
+class TestComponentText:
+    def test_multi_components_joined_sorted_deduped(self):
+        """Components are sorted, de-duped, joined by ' | '."""
+        recall = _make_recall(
+            component="SEAT BELTS:PRETENSIONER",
+            components=[
+                "SEAT BELTS:PRETENSIONER",
+                "AIR BAGS:FRONTAL:DRIVER SIDE:INFLATOR MODULE",
+                "AIR BAGS:SIDE/WINDOW",
+                "AIR BAGS:FRONTAL:PASSENGER SIDE:INFLATOR MODULE",
+                "AIR BAGS:SIDE/WINDOW",  # duplicate
+            ],
+        )
+        assert _component_text(recall) == (
+            "AIR BAGS:FRONTAL:DRIVER SIDE:INFLATOR MODULE | "
+            "AIR BAGS:FRONTAL:PASSENGER SIDE:INFLATOR MODULE | "
+            "AIR BAGS:SIDE/WINDOW | "
+            "SEAT BELTS:PRETENSIONER"
+        )
+
+    def test_single_component(self):
+        recall = _make_recall(component="ENGINE", components=["ENGINE"])
+        assert _component_text(recall) == "ENGINE"
+
+    def test_empty_components_raises(self):
+        recall = _make_recall(component="ENGINE", components=[])
+        with pytest.raises(ValueError, match="no components"):
+            _component_text(recall)
+
+
+# ---------------------------------------------------------------------------
+# Multi-component chunks
+# ---------------------------------------------------------------------------
+
+
+class TestMultiComponentChunks:
+    """Multi-component recalls list all components on every card."""
+
+    MULTI_COMPONENTS: ClassVar[list[str]] = [
+        "SEAT BELTS:PRETENSIONER",
+        "AIR BAGS:FRONTAL",
+    ]
+
+    def test_record_chunker_lists_all_components(self, tokenizer):
+        recall = _make_recall(
+            component="SEAT BELTS:PRETENSIONER",
+            components=self.MULTI_COMPONENTS,
+        )
+        body = chunk_record(recall, tokenizer)[0].body
+        assert "AIR BAGS:FRONTAL | SEAT BELTS:PRETENSIONER" in body
+
+    def test_field_chunker_lists_all_components(self, tokenizer):
+        recall = _make_recall(
+            component="SEAT BELTS:PRETENSIONER",
+            components=self.MULTI_COMPONENTS,
+        )
+        for c in chunk_fields(recall, tokenizer):
+            assert "AIR BAGS:FRONTAL | SEAT BELTS:PRETENSIONER" in c.body
+
+    def test_components_appear_in_order(self, tokenizer):
+        """Components are sorted regardless of input order."""
+        recall = _make_recall(
+            component="SEAT BELTS:PRETENSIONER",
+            components=[
+                "SEAT BELTS:PRETENSIONER",
+                "ENGINE",
+                "AIR BAGS:FRONTAL",
+            ],
+        )
+        body = chunk_record(recall, tokenizer)[0].body
+        pos_airbags = body.index("AIR BAGS:FRONTAL")
+        pos_engine = body.index("ENGINE")
+        pos_seatbelts = body.index("SEAT BELTS:PRETENSIONER")
+        assert pos_airbags < pos_engine < pos_seatbelts
 
 
 # ---------------------------------------------------------------------------
