@@ -140,7 +140,7 @@ def parse_recalls(path: Path) -> tuple[list[Recall], int]:
     skipped = 0
 
     with open(path, encoding="latin-1", newline="") as f:
-        reader = csv.reader(f, delimiter="\t")
+        reader = csv.reader(f, delimiter="\t", quoting=csv.QUOTE_NONE)
         for line_num, row in enumerate(reader, start=1):
             if len(row) < EXPECTED_COLUMNS:
                 logger.warning(
