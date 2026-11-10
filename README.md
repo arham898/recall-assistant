@@ -38,7 +38,7 @@ Data flows from NHTSA flat files through a parser, filter, chunker (record or fi
 ## Layers
 
 - [x] Layer 1: Ingestion, hybrid retrieval, LLM answers with citations, CLI
-- [ ] Layer 2: Evals (golden question set, retrieval and answer-quality metrics)
+- [x] Layer 2: Evals (golden question set, retrieval and answer-quality metrics)
 - [ ] Layer 3: API and deployment (FastAPI service, Docker Compose, CI)
 - [ ] Layer 4: Tracing (OpenTelemetry spans, cost and latency tracking)
 - [ ] Layer 5: Agent (tool-using agent with retrieval and SQL tools)
@@ -88,6 +88,43 @@ uv run python -m recall_assistant.cli ask "seat belt problems" --make FORD --mod
 
 Full metrics in [docs/results.md](docs/results.md).
 
+### Layer 2: evals
+
+The golden set has 150 questions: 100 generated from five templates, 30 handwritten, and 20 unanswerable. All 150 are scored by automated code checks; 100 were hand-labelled for judge calibration.
+
+**Retrieval** (record chunker, unfiltered, n=130; "Retrieval evaluation: cards_all_components (Module 2.2)" in [docs/results.md](docs/results.md)):
+
+| Mode | hit@5 | MRR |
+|------|-------|-----|
+| dense | 0.900 | 0.756 |
+| keyword | 0.700 | 0.537 |
+| hybrid | 0.931 | 0.756 |
+| rerank | 0.985 | 0.888 |
+
+```
+Command: python scripts/eval_retrieval.py --label cards_all_components
+```
+
+**Answers** (hybrid_record_unfiltered, 130 answerable questions; "Answer evaluation: hybrid_record_unfiltered_v3 (Module 2.3)" in [docs/results.md](docs/results.md)): the 19 Oct baseline passed 85/130; after prompt fixes (v3) that rose to 91/130. v3 had 8 uncited and 11 bad_citation. HHEM faithfulness median for v3: 0.961.
+
+```
+Command: python scripts/score_answers.py --answers results/answers_hybrid_record_unfiltered_v3_2026-10-23.jsonl
+```
+
+**Judge calibration** ("Judge calibration (Module 2.4)" in [docs/results.md](docs/results.md)): 100 hand labels. The v2 LLM judge reached test kappa 0.758 and test agreement 0.900. The deterministic code checks agree with the hand labels 0.900 of the time.
+
+```
+Command: python scripts/calibrate_judge.py --labels evals\labels.jsonl --answers results\answers_hybrid_record_unfiltered_2026-10-19.jsonl --prompt-version v2
+```
+
+**Failure analysis** ("Failure analysis (Module 2.5)" in [docs/results.md](docs/results.md)): 57 failure rows. The two largest categories: "wrong year or vehicle admitted" (22) and "format leak" (21).
+
+```
+Command: python scripts/tally_failures.py --worksheet docs/error-analysis.md
+```
+
+The CI eval gate is described in the subsection below. Full per-template breakdowns, faithfulness distributions, and prompt-fix comparisons are in [docs/results.md](docs/results.md); design rationale is in [docs/decisions.md](docs/decisions.md).
+
 ### CI eval gate
 
 The `eval-gate` job in CI loads a 692-campaign sample into a scratch
@@ -107,4 +144,3 @@ on `main`.
 - Only covers NHTSA recall data; does not include other vehicle safety datasets.
 - LLM answers are not guaranteed to be accurate — always verify against the source data.
 - No authentication or access control is implemented.
-- No retrieval or answer quality metrics yet; those are measured in layer 2.
