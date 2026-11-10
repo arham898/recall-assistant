@@ -1929,3 +1929,22 @@ The eval loop calls `retriever.rerank(question=..., k=10)` without
 passing `rerank_candidates`, so it uses the Retriever method default,
 not `Settings.rerank_candidates` from config.py.  Changing the Settings
 value would not affect the gate.
+
+## Module 2.7: parser quoting (10 Nov 2026)
+
+parse_recalls read the raw file with csv.reader's default quoting. NHTSA's flat file has no quoting, so a field that starts with a double quote was read as a quoted field. Fixed by reading with quoting=csv.QUOTE_NONE (commit: Fix parser quoting for leading double quotes).
+
+Raw file: 6 rows with a field starting with a double quote, all in the manufacturer component columns (22V176000 column 26, unclosed on the line; 23V860000 column 24, closed). Command: python -c "import sys;t=chr(9)+chr(34);print(sum(1 for l in open(sys.argv[1],encoding='latin-1') if t in l or l.startswith(chr(34))))" data\raw\FLAT_RCL_POST_2010.txt
+
+Effect on the database, measured by reloading with the fixed parser (python scripts/load_recalls.py, then python scripts/embed.py --chunker record and --chunker field; counts from SELECT count(*) on recalls, recall_vehicles, recall_components and chunks; seals from the card-seal query in the README):
+
+| | Before | After |
+|---|---|---|
+| Recalls | 7,514 | 7,514 |
+| Vehicle rows | 36,353 | 36,354 |
+| Component rows | 9,166 | 9,166 |
+| Chunks | 30,085 | 30,085 |
+| Record seal | 5bf59bab631a0c2fafd65244086fe871 | d468839ac340366f2ab6849868d960e5 |
+| Field seal | 86b0f6433e1e875ae1d4c270745012db | c7bd3d4414e29b3c14b3f5c9ae756338 |
+
+One vehicle row was missing: 22V176000, VOLKSWAGEN TAOS 2022 (raw record 223441). Its four cards (one record, three field) changed header and were re-embedded; the loader reported 0 removed and the embed scripts 1 and 3 chunks. 22V176000 is in no golden, smoke or CI-sample file, so every eval number above stands as produced; they ran on cards without the Taos row.

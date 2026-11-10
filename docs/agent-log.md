@@ -194,3 +194,17 @@ Record of AI agent actions during development — what the agent did, how I caug
 |Guide side: told me the C 300 row was handwritten (it is generated); framed INTERNATIONAL_HV_2018 as "ambiguous between two vehicles" when the data shows fleet-wide filings; counted 24 vehicle rows for 20V219000 where the query showed 25; assumed prompt_fix_comparison.py was in scripts/ and asked for a move that was not needed; gave a CREATE DATABASE command that PowerShell's nested quoting broke (createdb fixed it); expected git check-ignore to print nothing for a re-included file, when it prints the ! rule.|
 
 |My side: committed the golden-batch README before the diff review instead of after; the "may be valid" worksheet note on 18V725000 that started the batch was mine.|
+
+|2.6 build wrote the sample TSV with csv.writer instead of the approved tab-join, without saying so. The round trip passed because the parser unquoted what the writer quoted, so 1,641 of 6,053 rows carried quoting NHTSA never uses. Found by R2 and a one-line count of quoted fields. Writer changed, sample regenerated, baseline rerun.|
+
+|2.6 dirty-tree test patched psycopg_pool.ConnectionPool as its "must not connect" guard while update_baseline.py calls psycopg.connect. The test passed because sys.exit came first; the guard itself could never fire. Found by R2.|
+
+|R2 proposed moving the OpenRouter secret to step-level env. Declined until the key exists: whether the step's own if can read step-level env can't be verified without it.|
+
+|2.7 plan asserted "no card text changes, no re-embedding" for 22V176000. The card header lists the vehicles, so adding TAOS changed all four cards; the embed scripts re-embedded 1 and 3. Plan also wrote the dry-parse sets to /tmp, which does not exist on Windows, and asserted the current parser gives 'hat" bracket' when the red run showed 'hat bracket'.|
+
+|2.7 plan said two raw lines were lost (245,853 of 245,855) without showing the count; the measured vehicle-set diff was one row. The vehicle-set number is the one in results.|
+
+|Guide side: the round-trip seed with a leading quote was requested on purpose in 2.6; when it failed, the first instinct was a parser change before measuring the raw file. Held to measure first; 6 rows, 1 lost.|
+
+|My side: committed the 4 Nov README before the diff review; started the 2.7 run with the R2 changes still uncommitted, which is why the commits had to be split by hand.|
