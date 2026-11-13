@@ -220,3 +220,13 @@ gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by de
 - Reload, not a rebuild: the upsert added one vehicle row, the chunk upsert cleared and re-embedded only the four cards whose header changed. Both card seals moved; old and new recorded in results. All layer 2 numbers stand as produced, with the caveat that they ran on cards missing that row.
 - 2.6 R2 outcome: _load_smoke_rows was a copy of _load_jsonl (import now); the three recall-loading queries were in two places (now load_recall_rows_by_ids in the loader, used by the exporter and the round-trip check); the dirty-tree test's "must not connect" patch targeted ConnectionPool while the script calls psycopg.connect, so it could never fire (patched on psycopg.connect now); the TSV writer was csv.writer, not the approved tab-join, and 1,641 of 6,053 rows had quoted fields; writer changed, sample regenerated (0 quoted fields), baseline rerun with every quality metric unchanged. Declined: moving the OpenRouter secret from job-level to step-level env until the key exists and the step's if can be verified.
 - Latency fields in baseline.json are informational and change on every run; candidate for removal.
+
+## Module 3.1: FastAPI service
+
+- Streaming is real: tokens go to the client as the LLM produces them. The first plan ran the whole answer and then sent the finished text word by word; that would have made time to first token equal to total latency. Both paths call the same classify(), so the done event's status is the one the non-streaming route would have returned.
+- Clients take citations from the done event, never from token events. Gemini split "22V176000" across two chunks in the first real run.
+- stream() performs the upstream request before returning an iterator, so a spend-limit stop is a plain 503, same as the non-streaming route. The cost: the sources event waits for the upstream to accept the request, so sources and the first token arrive together. Time to first token at the client therefore includes the LLM connection wait. That is the definition 3.4 uses.
+- API_KEY fails closed: the app refuses to start without it. No "auth off" mode.
+- db_pool_max (5) is a new setting. settings.pool_size (50) is the retrieval candidate pool and would have opened 50 Postgres connections.
+- latency_ms on the /ask route and in the done event covers retrieval plus the LLM call. The middleware's latency is time to headers, which for a streaming response is before the answer is complete; use the route's line.
+- Longer backoff on OpenRouter 429 deferred again: stream() shares generate()'s retry loop, so it is one change for both and belongs with the load test in 3.4.

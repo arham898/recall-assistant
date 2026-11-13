@@ -208,3 +208,10 @@ Record of AI agent actions during development — what the agent did, how I caug
 |Guide side: the round-trip seed with a leading quote was requested on purpose in 2.6; when it failed, the first instinct was a parser change before measuring the raw file. Held to measure first; 6 rows, 1 lost.|
 
 |My side: committed the 4 Nov README before the diff review; started the 2.7 run with the R2 changes still uncommitted, which is why the commits had to be split by hand.|
+
+## Module 3.1
+
+- Plan 1 described "streaming" as running rag.answer() to completion and then sending the text one whitespace-split word at a time. Caught in review before approval.
+- Plan 2 assumed the usage chunk from OpenRouter has choices == []. A one-call probe showed finish_reason='stop' on two consecutive chunks and usage on a chunk whose choices were populated. The planned rule would never have emitted the final event, and every streaming answer would have been marked invalid by the broken-stream handling. Fixed from the probe output before any code was written.
+- Plan 2 wrote stream() as a generator function. Calling it would have done nothing until the first next(), inside the SSE generator, after the 200 had gone out, so the planned 503 could not fire. The planned test passed anyway because the fake raised at call time. Fixed to perform the request eagerly, with a test on the real client using a mocked SDK.
+- The structured request log line was emitted to a logger with no handler, so nothing appeared under uvicorn. Tests using caplog passed. Found by running the server and reading the console; fixed with a handler and a test against a real handler.
