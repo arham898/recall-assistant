@@ -3,10 +3,15 @@
 answer() is the main entry point.  It returns an AnswerResult with a
 status of "answered", "declined" or "invalid", along with the cited
 campaign IDs, the full prompt, token usage and latencies.
+
+The public helpers retrieve(), build_prompt(), classify() and
+prompt_hash() are used by the streaming API route so it can perform
+each step independently while reusing the same classification logic.
 """
 
 from __future__ import annotations
 
+import hashlib
 import re
 import time
 from dataclasses import dataclass
@@ -174,6 +179,47 @@ def _classify(
 
 
 # ---------------------------------------------------------------------------
+# Public helpers (used by the streaming API route)
+# ---------------------------------------------------------------------------
+
+
+def retrieve(
+    question: str,
+    retriever: object,
+    mode: str,
+    k: int,
+    vehicle_filter: VehicleFilter | None,
+    settings: Settings,
+) -> tuple[list[Hit], float]:
+    """Retrieve hits for a question.  Returns (hits, latency_s)."""
+    return _retrieve(question, retriever, mode, k, vehicle_filter, settings)
+
+
+def build_prompt(question: str, hits: list[Hit]) -> list[dict]:
+    """Build the chat messages from a question and retrieved hits."""
+    return _build_messages(question, hits)
+
+
+def classify(
+    text: str,
+    hits: list[Hit],
+    finish_reason: str,
+) -> tuple[Literal["answered", "declined", "invalid"], list[str], list[str]]:
+    """Parse citations and classify an LLM response.
+
+    Returns ``(status, cited_ids, invalid_ids)``.
+    """
+    cited_tokens = _parse_citations(text)
+    retrieved_ids = {h.campaign_id for h in hits}
+    return _classify(text, cited_tokens, retrieved_ids, finish_reason)
+
+
+def prompt_hash() -> str:
+    """SHA-256 of the system prompt, first 12 hex chars."""
+    return hashlib.sha256(_SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:12]
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -195,12 +241,12 @@ def answer(
     settings = settings or Settings()
 
     # 1. Retrieve
-    hits, retrieval_latency = _retrieve(
+    hits, retrieval_latency = retrieve(
         question, retriever, mode, k, vehicle_filter, settings
     )
 
     # 2. Build prompt
-    messages = _build_messages(question, hits)
+    messages = build_prompt(question, hits)
 
     # 3. Generate (latency includes any retry waits inside the client)
     start = time.perf_counter()
@@ -210,10 +256,8 @@ def answer(
     generation_latency = time.perf_counter() - start
 
     # 4. Parse and classify
-    cited_tokens = _parse_citations(llm_result.text)
-    retrieved_ids = {h.campaign_id for h in hits}
-    status, valid_ids, invalid_ids = _classify(
-        llm_result.text, cited_tokens, retrieved_ids, llm_result.finish_reason
+    status, valid_ids, invalid_ids = classify(
+        llm_result.text, hits, llm_result.finish_reason
     )
 
     return AnswerResult(

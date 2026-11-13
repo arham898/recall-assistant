@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     rerank_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     rerank_candidates: int = 30
 
+    # API
+    api_key: str = ""
+    db_pool_max: int = 5
+
     # LLM
     openrouter_api_key: str = ""
     llm_model: str = ""

@@ -9,8 +9,9 @@ from __future__ import annotations
 import hashlib
 import math
 import random
+from collections.abc import Iterator
 
-from recall_assistant.llm import LLMResult
+from recall_assistant.llm import LLMResult, StreamEvent, StreamUsage
 from recall_assistant.retrieval import Hit
 
 # ---------------------------------------------------------------------------
@@ -90,6 +91,32 @@ class FakeLLMClient:
             latency_s=0.1,
             cost=self.cost,
             retries=0,
+        )
+
+    def stream(
+        self,
+        messages: list[dict],
+        model: str,
+        max_tokens: int,
+    ) -> Iterator[StreamEvent]:
+        """Return an iterator that yields char-at-a-time then a final event.
+
+        Concatenation of all token fields equals ``self.text`` exactly.
+        """
+        self.calls.append((messages, model, max_tokens))
+        return self._iter_stream()
+
+    def _iter_stream(self) -> Iterator[StreamEvent]:
+        for ch in self.text:
+            yield StreamEvent(token=ch)
+        yield StreamEvent(
+            token="",
+            finish_reason=self.finish_reason,
+            usage=StreamUsage(
+                prompt_tokens=self.prompt_tokens,
+                completion_tokens=self.completion_tokens,
+                cost=self.cost,
+            ),
         )
 
 

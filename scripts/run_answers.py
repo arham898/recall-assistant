@@ -30,7 +30,7 @@ from recall_assistant.evals.run_metadata import (
     is_worktree_dirty,
     sanitise_path_component,
 )
-from recall_assistant.rag import _SYSTEM_PROMPT, answer
+from recall_assistant.rag import answer, prompt_hash
 from recall_assistant.retrieval import VehicleFilter
 
 CACHE_DIR = PROJECT_ROOT / ".cache" / "answers"
@@ -78,16 +78,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Optional tag appended to the label (e.g. v2)",
     )
     return parser.parse_args(argv)
-
-
-# ---------------------------------------------------------------------------
-# Prompt hash
-# ---------------------------------------------------------------------------
-
-
-def prompt_hash() -> str:
-    """SHA-256 of the system prompt template, first 12 hex chars."""
-    return hashlib.sha256(_SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:12]
 
 
 # ---------------------------------------------------------------------------
