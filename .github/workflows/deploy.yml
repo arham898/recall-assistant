@@ -1,0 +1,110 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main, layer-3-api]
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/arham898/recall-assistant
+  RG: rg-recall-assistant
+  APP: recall-assistant-app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Update Container App image
+        run: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az containerapp update \
+            --resource-group ${{ env.RG }} \
+            --name ${{ env.APP }} \
+            --image ${{ env.IMAGE }}:${{ github.sha }}
+
+      - name: Wait for new revision to be ready and healthy
+        run: |
+          FQDN=$(az containerapp show \
+            --resource-group ${{ env.RG }} \
+            --name ${{ env.APP }} \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          LATEST=$(az containerapp show \
+            --resource-group ${{ env.RG }} \
+            --name ${{ env.APP }} \
+            --query properties.latestRevisionName \
+            --output tsv)
+          echo "Latest revision: ${LATEST}"
+          DEADLINE=$((SECONDS + 300))
+          while [ $SECONDS -lt $DEADLINE ]; do
+            STATE=$(az containerapp revision show \
+              --resource-group ${{ env.RG }} \
+              --name ${{ env.APP }} \
+              --revision "${LATEST}" \
+              --query properties.runningState \
+              --output tsv 2>/dev/null || echo "unknown")
+            if [ "${STATE}" = "Failed" ]; then
+              echo "FAILED: revision ${LATEST} entered Failed state."
+              exit 1
+            fi
+            READY=$(az containerapp show \
+              --resource-group ${{ env.RG }} \
+              --name ${{ env.APP }} \
+              --query properties.latestReadyRevisionName \
+              --output tsv)
+            if [ "${READY}" = "${LATEST}" ]; then
+              echo "Revision ${LATEST} is the latest ready revision."
+              BODY=$(curl -s "https://${FQDN}/health" || true)
+              STATUS=$(echo "${BODY}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || true)
+              DB=$(echo "${BODY}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('db_reachable',''))" 2>/dev/null || true)
+              echo "  health status=${STATUS} db_reachable=${DB}"
+              if [ "${STATUS}" = "ok" ] && [ "${DB}" = "True" ]; then
+                echo "Health check passed."
+                echo "${BODY}" | python3 -m json.tool
+                exit 0
+              fi
+              echo "  not yet healthy, retrying..."
+            else
+              echo "  latestReady=${READY}, waiting for ${LATEST}..."
+            fi
+            sleep 15
+          done
+          echo "FAILED: revision ${LATEST} did not become healthy within 5 minutes."
+          exit 1
