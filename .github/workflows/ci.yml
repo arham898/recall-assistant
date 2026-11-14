@@ -54,7 +54,7 @@ jobs:
           POSTGRES_DB: recall_assistant
           POSTGRES_HOST: localhost
           POSTGRES_PORT: "5432"
-        run: uv run pytest -v
+        run: uv run pytest -v -m "not docker"
 
   eval-gate:
     runs-on: ubuntu-latest
@@ -113,3 +113,56 @@ jobs:
         if: env.OPENROUTER_API_KEY != ''
         continue-on-error: true
         run: uv run python -m recall_assistant.evals.ci_gate --answers
+
+  docker-build:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: recall
+          POSTGRES_PASSWORD: recall
+          POSTGRES_DB: recall_assistant
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U recall"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dev dependencies
+        run: uv sync --only-dev
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: recall-assistant:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Docker tests
+        env:
+          RECALL_IMAGE: recall-assistant:ci
+          POSTGRES_USER: recall
+          POSTGRES_PASSWORD: recall
+          POSTGRES_DB: recall_assistant
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+        run: uv run pytest -v -m docker

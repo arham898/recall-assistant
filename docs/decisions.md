@@ -230,3 +230,13 @@ gemini-2.5-flash-lite: $0.10/$0.40 per million tokens, and thinking is off by de
 - db_pool_max (5) is a new setting. settings.pool_size (50) is the retrieval candidate pool and would have opened 50 Postgres connections.
 - latency_ms on the /ask route and in the done event covers retrieval plus the LLM call. The middleware's latency is time to headers, which for a streaming response is before the answer is complete; use the route's line.
 - Longer backoff on OpenRouter 429 deferred again: stream() shares generate()'s retry loop, so it is one change for both and belongs with the load test in 3.4.
+
+## Module 3.2: Docker
+
+- CPU torch comes from the PyTorch CPU index as a uv source for torch, not from excluding CUDA packages at install time. The first plan listed 19 --no-install-package flags; that installs the CUDA wheel and leaves out its libraries, and breaks the next time torch renames a package. The index change also removed the same 19 packages from CI, which had been installing them on every run since layer 1.
+- torch stays at 2.14.1. uv lock re-resolved torch to 2.15.0 when its source changed; I pinned it back so layers 1 and 2 keep their measurement basis. Upgrading torch is a separate decision with its own numbers.
+- Models are baked into the image at build time (217 MB) and loaded with HF_HUB_OFFLINE=1, so a cold start never downloads. The image is large (see results); the alternative is a slow first request after scaling from zero.
+- The container test reaches Postgres through host.docker.internal with --add-host=host.docker.internal:host-gateway, which works on Docker Desktop and on the Ubuntu runner. --network host does not work on Docker Desktop.
+- In CI, missing Docker fails the test; locally it skips. A skip in CI would pass green with nothing tested.
+- One docker-build job builds the image once with the GHA cache and runs the container test against that tag. The test builds its own image only when RECALL_IMAGE is unset.
+- The compose api service sets only POSTGRES_HOST=db; everything else comes from .env. ${VAR:-} defaults were removed because they set empty strings that override Settings defaults.
